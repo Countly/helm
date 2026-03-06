@@ -37,11 +37,11 @@ brokers:
     deleteClaim: false
   config:
     default.replication.factor: 2
-    min.insync.replicas: 1       # PRODUCTION: Set to 2 for durability
+    min.insync.replicas: 2       # PRODUCTION: Set to 2 for durability
     log.retention.hours: 168
     log.segment.bytes: "1073741824"
     compression.type: lz4
-    auto.create.topics.enable: true  # PRODUCTION: Set to false
+    auto.create.topics.enable: false # PRODUCTION: Set to false
     offsets.topic.replication.factor: 2
     num.partitions: 24
     transaction.state.log.replication.factor: 2
@@ -100,7 +100,7 @@ cruiseControl:
 kafkaConnect:
   enabled: true
   name: connect-ch
-  image: "countly/kafka-connect-clickhouse:1.3.5"
+  image: "gcr.io/countly-dev-313620/strimzi/kafka-connect-clickhouse:1.3.5"
   replicas: 2
   bootstrapServers: ""
   resources:

@@ -11,8 +11,9 @@ Each chart manages secrets in its own namespace. Secrets use a **lookup-or-creat
 | `<release>-common` | countly | countly | Encryption key, session secret, password secret |
 | `<release>-clickhouse` | countly | countly | ClickHouse URL, credentials |
 | `<release>-kafka` | countly | countly | Kafka brokers, SASL credentials |
-| `app-mongodb-conn` | countly-mongodb (operator) | mongodb | MongoDB connection string |
-| `app-user-password` | countly-mongodb | mongodb | MongoDB user passwords |
+| `<release>-mongodb` | countly | countly | MongoDB connection string for the app |
+| `app-user-password` | countly-mongodb | mongodb | MongoDB app user password (operator) |
+| `metrics-user-password` | countly-mongodb | mongodb | MongoDB metrics user password (operator) |
 | `clickhouse-default-password` | countly-clickhouse | clickhouse | ClickHouse default user password |
 | `clickhouse-auth` | countly-kafka | kafka | ClickHouse creds for Kafka Connect |
 

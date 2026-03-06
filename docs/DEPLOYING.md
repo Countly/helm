@@ -49,11 +49,12 @@ helm install countly-kafka ./charts/countly-kafka \
 helm install countly ./charts/countly \
   -f values-common.yaml \
   -f environments/tier1/values.yaml \
-  --set image.tag=latest \
+  --set image.tag=26.01 \
   --set secrets.common.encryptionReportsKey=<key> \
   --set secrets.common.webSessionSecret=<secret> \
   --set secrets.common.passwordSecret=<secret> \
   --set secrets.clickhouse.password=<clickhouse-password> \
+  --set secrets.mongodb.password=<app-password> \
   -n countly --create-namespace
 ```
 

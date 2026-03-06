@@ -1,6 +1,10 @@
 global:
   clusterProfile: production
 
+# --- Network Policy ---
+networkPolicy:
+  enabled: true
+
 # --- countly chart overrides ---
 api:
   replicaCount: 2
@@ -114,7 +118,8 @@ brokers:
         size: 200Gi
   config:
     default.replication.factor: 2
-    min.insync.replicas: 1
+    min.insync.replicas: 2
+    auto.create.topics.enable: false
   scheduling:
     topologySpreadConstraints:
       - maxSkew: 1

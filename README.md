@@ -2,6 +2,8 @@
 
 Helm-based deployment for Countly across 4 namespaces, each managed by its own chart.
 
+> **Quick Start:** Install [operators](#1-prerequisites), [build the Kafka Connect image](#2-build-kafka-connect-image), then run `helmfile -e tier1 apply`. For production, use `tier2`. See [docs/DEPLOYING.md](docs/DEPLOYING.md) for the full guide.
+
 | Chart | Namespace | What it deploys |
 |-------|-----------|-----------------|
 | `countly` | countly | API, Frontend, Ingestor, Aggregator, JobServer + Ingress |
@@ -124,7 +126,9 @@ On **first install**, these must be provided (via `--set`, overlay file, or exte
 | Session secret | `secrets.common.webSessionSecret` | Min 8 chars |
 | Password secret | `secrets.common.passwordSecret` | Min 8 chars |
 | ClickHouse password | `secrets.clickhouse.password` | Used by app + Connect |
-| MongoDB password | `users.app.password` | In countly-mongodb chart |
+| MongoDB app password | `users.app.password` | In countly-mongodb chart |
+| MongoDB metrics password | `users.metrics.password` | In countly-mongodb chart |
+| MongoDB password (app side) | `secrets.mongodb.password` | In countly chart (must match `users.app.password`) |
 
 On **upgrades**, existing secrets are preserved automatically (lookup-or-create pattern).
 
@@ -155,6 +159,7 @@ helm install countly-mongodb ./charts/countly-mongodb \
   -f values-common.yaml \
   -f environments/tier1/values.yaml \
   --set users.app.password='<mongo-password>' \
+  --set users.metrics.password='<metrics-password>' \
   -n mongodb --create-namespace
 
 # 2. ClickHouse
@@ -181,6 +186,7 @@ helm install countly ./charts/countly \
   --set secrets.common.webSessionSecret='<secret>' \
   --set secrets.common.passwordSecret='<secret>' \
   --set secrets.clickhouse.password='<ch-password>' \
+  --set secrets.mongodb.password='<mongo-password>' \
   -n countly --create-namespace
 ```
 
@@ -281,4 +287,5 @@ Secrets with `helm.sh/resource-policy: keep` survive uninstall. Delete manually 
 - [docs/DEPLOYING.md](docs/DEPLOYING.md) — Extended deployment guide
 - [docs/SECRET-MANAGEMENT.md](docs/SECRET-MANAGEMENT.md) — Secret rotation, external secrets, cross-chart credentials
 - [docs/VERSION-MATRIX.md](docs/VERSION-MATRIX.md) — Pinned operator/image version combinations
+- [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — Common issues and fixes
 - [examples/](examples/) — Customer overlay, secrets overlay, and Helmfile examples

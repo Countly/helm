@@ -97,12 +97,15 @@ Constructs from service DNS if not provided explicitly, matching the ClickHouse/
 {{- if .Values.secrets.mongodb.connectionString -}}
 {{ .Values.secrets.mongodb.connectionString }}
 {{- else -}}
-{{- $host := .Values.secrets.mongodb.host | default (printf "countly-mongodb-svc.mongodb.svc.cluster.local") -}}
+{{- if not .Values.secrets.mongodb.password -}}
+{{- fail "MongoDB password is required. Set secrets.mongodb.password." -}}
+{{- end -}}
+{{- $host := .Values.secrets.mongodb.host | default (printf "%s-mongodb-svc.%s.svc.cluster.local" .Release.Name (.Values.mongodbNamespace | default "mongodb")) -}}
 {{- $port := .Values.secrets.mongodb.port | default "27017" -}}
 {{- $user := .Values.secrets.mongodb.username | default "app" -}}
 {{- $pass := .Values.secrets.mongodb.password -}}
 {{- $db := .Values.secrets.mongodb.database | default "admin" -}}
-{{- $rs := .Values.secrets.mongodb.replicaSet | default "countly-mongodb" -}}
+{{- $rs := .Values.secrets.mongodb.replicaSet | default (printf "%s-mongodb" .Release.Name) -}}
 mongodb://{{ $user }}:{{ $pass }}@{{ $host }}:{{ $port }}/{{ $db }}?replicaSet={{ $rs }}&ssl=false
 {{- end -}}
 {{- end -}}

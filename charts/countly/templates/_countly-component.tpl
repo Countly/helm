@@ -52,6 +52,8 @@ spec:
         runAsNonRoot: true
         runAsUser: 1001
         fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: {{ $component }}
           image: "{{ if $root.Values.global.imageRegistry }}{{ $root.Values.global.imageRegistry }}/{{ end }}{{ $root.Values.image.repository }}:{{ $root.Values.image.tag }}"
@@ -63,6 +65,8 @@ spec:
               drop:
                 - ALL
             readOnlyRootFilesystem: true
+            seccompProfile:
+              type: RuntimeDefault
           {{- if $values.command }}
           args:
             {{- toYaml $values.command | nindent 12 }}

@@ -18,13 +18,14 @@ serviceAccount:
   annotations: {}
 
 image:
-  repository: countly-unified
-  tag: "26.01"
+  repository: gcr.io/countly-dev-313620/countly-unified@sha256
+  tag: "10f94c1e4285488004e779b523157de16f981239b8d1509f9b586da8341b0ee4"
   pullPolicy: IfNotPresent
 
 # Cross-namespace references
 clickhouseNamespace: clickhouse
 kafkaNamespace: kafka
+mongodbNamespace: mongodb
 
 # --- Component Definitions ---
 
@@ -382,11 +383,11 @@ secrets:
   mongodb:
     existingSecret: ""
     key: "connectionString.standard"
-    connectionString: ""
+    connectionString: ""  # If set, used as-is (bypasses password requirement)
     host: ""
     port: "27017"
     username: "app"
-    password: ""
+    password: ""  # REQUIRED on first install (must match users.app.password in countly-mongodb chart)
     database: "admin"
     replicaSet: ""
 

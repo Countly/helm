@@ -105,6 +105,7 @@
     },
     "clickhouseNamespace": { "type": "string", "description": "Namespace where ClickHouse is deployed" },
     "kafkaNamespace": { "type": "string", "description": "Namespace where Kafka is deployed" },
+    "mongodbNamespace": { "type": "string", "description": "Namespace where MongoDB is deployed" },
     "ingress": {
       "type": "object",
       "properties": {
