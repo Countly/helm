@@ -3,7 +3,7 @@ name: countly-clickhouse
 description: ClickHouse operator CRs for Countly
 type: application
 version: 0.1.0
-appVersion: "25.8"
+appVersion: "26.2"
 home: https://countly.com
 icon: https://count.ly/images/logos/countly-logo.svg
 sources:
