@@ -30,7 +30,7 @@ helm install clickhouse-operator \
 ```bash
 helm repo add strimzi https://strimzi.io/charts/
 helm install strimzi-kafka-operator strimzi/strimzi-kafka-operator \
-  --version 0.47.0 \
+  --version 0.49.1 \
   --create-namespace -n kafka
 ```
 
