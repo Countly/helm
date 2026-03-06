@@ -3,7 +3,7 @@ name: countly-mongodb
 description: MongoDB Community operator CRs for Countly
 type: application
 version: 0.1.0
-appVersion: "8.0.13"
+appVersion: "8.2.5"
 home: https://countly.com
 icon: https://count.ly/images/logos/countly-logo.svg
 sources:
