@@ -15,7 +15,7 @@ createNamespace: false
 strimzi:
   apiVersion: kafka.strimzi.io/v1beta2
 
-version: "4.0.0"
+version: "4.2.0"
 
 brokers:
   replicas: 3
@@ -100,7 +100,7 @@ cruiseControl:
 kafkaConnect:
   enabled: true
   name: connect-ch
-  image: "gcr.io/countly-dev-313620/strimzi/kafka-connect-clickhouse:1.3.5"
+  image: "gcr.io/countly-dev-313620/strimzi/kafka-connect-clickhouse:4.2.0-1.3.5-strimzi-amd64"
   replicas: 2
   bootstrapServers: ""
   resources:
