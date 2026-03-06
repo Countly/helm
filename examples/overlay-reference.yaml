@@ -45,7 +45,7 @@ global:
 #
 #   version:
 #     clickhouse chart → version: "26.2"    (ClickHouse server version)
-#     kafka chart      → version: "4.1.1"   (Kafka version)
+#     kafka chart      → version: "4.2.0"   (Kafka version)
 #
 #   secrets:
 #     countly chart    → secrets: { keep, rotationId, common, clickhouse, kafka, mongodb }
@@ -514,7 +514,7 @@ ingress:
 # =============================================================================
 
 mongodb:
-  version: "8.0.13"
+  version: "8.2.5"
   members: 3                                     # ReplicaSet size (1, 3, 5)
   image: quay.io/mongodb/mongodb-community-server
   imageTag: ""                                   # Defaults to <version>-ubi8
@@ -585,7 +585,7 @@ exporter:
 # NOTE: The following keys conflict with other charts and use the clickhouse
 # chart's structure here. See [CHART-SPECIFIC] note above.
 #
-#   version: "26.2"             ← clickhouse version (kafka uses version: "4.1.1")
+#   version: "26.2"             ← clickhouse version (kafka uses version: "4.2.0")
 #   image:                      ← already defined above with countly structure
 #     server: clickhouse/clickhouse-server
 #     keeper: clickhouse/clickhouse-keeper
@@ -665,13 +665,13 @@ podDisruptionBudget:
 # =============================================================================
 # NOTE: The following keys conflict with other charts:
 #
-#   version: "4.1.1"            ← kafka version (clickhouse uses version: "26.2")
+#   version: "4.2.0"            ← kafka version (clickhouse uses version: "26.2")
 #   clickhouseNamespace:        ← already defined above
 
 strimzi:
   apiVersion: kafka.strimzi.io/v1beta2
 
-# version: "4.1.1"             # ← Would conflict with clickhouse's version key
+# version: "4.2.0"             # ← Would conflict with clickhouse's version key
 
 brokers:
   replicas: 3

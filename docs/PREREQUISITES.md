@@ -30,17 +30,24 @@ helm install clickhouse-operator \
 ```bash
 helm repo add strimzi https://strimzi.io/charts/
 helm install strimzi-kafka-operator strimzi/strimzi-kafka-operator \
-  --version 0.49.1 \
+  --version 0.51.0 \
   --create-namespace -n kafka
 ```
 
-## 3. MongoDB Community Operator
+## 3. MongoDB Controllers for Kubernetes (MCK)
 
 ```bash
-MONGODB_OPERATOR_VERSION=0.13.0
+MCK_VERSION=1.7.0
 helm repo add mongodb https://mongodb.github.io/helm-charts
-helm install mongodb-operator mongodb/community-operator \
-  --version ${MONGODB_OPERATOR_VERSION} \
+helm repo update
+
+# Apply CRDs (Helm does not upgrade CRDs — manual apply required on install and upgrade)
+kubectl apply -f "https://raw.githubusercontent.com/mongodb/mongodb-kubernetes/${MCK_VERSION}/public/crds.yaml"
+
+# Install MCK (watchedResources limits scope to community CRs only)
+helm upgrade --install mongodb-kubernetes-operator mongodb/mongodb-kubernetes \
+  --version ${MCK_VERSION} \
+  --set operator.watchedResources[0]=mongodbcommunity \
   --create-namespace -n mongodb
 ```
 
