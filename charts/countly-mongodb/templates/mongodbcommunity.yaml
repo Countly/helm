@@ -2,6 +2,8 @@ apiVersion: mongodbcommunity.mongodb.com/v1
 kind: MongoDBCommunity
 metadata:
   name: {{ include "countly-mongodb.fullname" . }}
+  annotations:
+    "helm.sh/resource-policy": keep
   labels:
     {{- include "countly-mongodb.labels" . | nindent 4 }}
 spec:
