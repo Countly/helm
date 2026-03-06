@@ -1,0 +1,47 @@
+---
+repositories: []
+
+helmDefaults:
+  wait: true
+  timeout: 600
+  createNamespace: true
+
+releases:
+  - name: countly-mongodb
+    chart: ./charts/countly-mongodb
+    namespace: mongodb
+    values:
+      - values-common.yaml
+      - "environments/{{ .Environment.Name }}/values.yaml"
+
+  - name: countly-clickhouse
+    chart: ./charts/countly-clickhouse
+    namespace: clickhouse
+    values:
+      - values-common.yaml
+      - "environments/{{ .Environment.Name }}/values.yaml"
+
+  - name: countly-kafka
+    chart: ./charts/countly-kafka
+    namespace: kafka
+    values:
+      - values-common.yaml
+      - "environments/{{ .Environment.Name }}/values.yaml"
+    needs:
+      - mongodb/countly-mongodb
+      - clickhouse/countly-clickhouse
+
+  - name: countly
+    chart: ./charts/countly
+    namespace: countly
+    values:
+      - values-common.yaml
+      - "environments/{{ .Environment.Name }}/values.yaml"
+    needs:
+      - mongodb/countly-mongodb
+      - clickhouse/countly-clickhouse
+      - kafka/countly-kafka
+
+environments:
+  tier1:
+  tier2:

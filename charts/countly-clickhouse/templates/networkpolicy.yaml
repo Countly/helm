@@ -1,0 +1,55 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "countly-clickhouse.fullname" . }}-default-deny
+  labels:
+    {{- include "countly-clickhouse.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress: []
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "countly-clickhouse.fullname" . }}-allow
+  labels:
+    {{- include "countly-clickhouse.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow intra-namespace traffic (ClickHouse <-> Keeper)
+    - from:
+        - podSelector: {}
+    # Allow traffic from Countly and Kafka namespaces
+    - from:
+        {{- range .Values.networkPolicy.allowedNamespaces }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . }}
+        {{- end }}
+      ports:
+        - port: 8123
+          protocol: TCP
+        - port: 9000
+          protocol: TCP
+    # Allow monitoring if configured
+    {{- if .Values.networkPolicy.allowMonitoring }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.monitoringNamespaceSelector | nindent 14 }}
+      ports:
+        - port: 8123
+          protocol: TCP
+        - port: 9363
+          protocol: TCP
+    {{- end }}
+    {{- if .Values.networkPolicy.additionalIngress }}
+    {{- toYaml .Values.networkPolicy.additionalIngress | nindent 4 }}
+    {{- end }}
+{{- end }}

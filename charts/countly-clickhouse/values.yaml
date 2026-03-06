@@ -1,0 +1,133 @@
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+  clusterProfile: small
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+createNamespace: false
+
+clickhouseOperator:
+  apiVersion: clickhouse.com/v1alpha1
+
+version: "25.8"
+shards: 1
+replicas: 2
+
+image:
+  server: clickhouse/clickhouse-server
+  keeper: clickhouse/clickhouse-keeper
+
+database: countly_drill
+
+auth:
+  defaultUserPassword:
+    existingSecret: ""
+    secretName: clickhouse-default-password
+    key: password
+    password: ""
+  adminUser:
+    enabled: false
+    # Precomputed SHA256 hex of the admin password (64 hex chars).
+    # Generate: echo -n 'your_password' | sha256sum | cut -d' ' -f1
+    # Supply via overlay (DO NOT commit to VCS).
+    # Use a long random password to mitigate offline guessing attacks.
+    passwordSha256Hex: ""
+
+server:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
+    fsGroup: 101
+  resources:
+    requests:
+      cpu: "1"
+      memory: "4Gi"
+    limits:
+      cpu: "2"
+      memory: "8Gi"
+  persistence:
+    storageClass: ""
+    size: 10Gi
+  settings:
+    maxConnections: 4096
+    extraConfig: ""
+    extraUsersConfig: ""
+    prometheus:
+      enabled: true
+      port: 9363
+      endpoint: /metrics
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    topologySpreadConstraints: []
+    antiAffinity:
+      enabled: true
+      type: preferred
+      topologyKey: kubernetes.io/hostname
+      weight: 100
+
+keeper:
+  replicas: 1
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
+    fsGroup: 101
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+  persistence:
+    storageClass: ""
+    size: 5Gi
+  settings:
+    prometheus:
+      enabled: true
+      port: 9363
+      endpoint: /metrics
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    antiAffinity:
+      enabled: true
+      type: preferred
+      topologyKey: kubernetes.io/hostname
+      weight: 100
+
+podDisruptionBudget:
+  server:
+    enabled: false
+    maxUnavailable: 1
+  keeper:
+    enabled: false
+    maxUnavailable: 1
+
+networkPolicy:
+  enabled: false
+  allowedNamespaces:
+    - countly
+    - kafka
+  allowMonitoring: false
+  monitoringNamespaceSelector:
+    kubernetes.io/metadata.name: monitoring
+  additionalIngress: []
+
+serviceMonitor:
+  enabled: false
+  interval: "15s"
+  serviceType: headless    # "headless" for per-pod scraping, "clusterIP" for any-pod
+
+secrets:
+  keep: true

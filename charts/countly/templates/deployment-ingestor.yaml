@@ -1,0 +1,7 @@
+{{- include "countly.component.deployment" (dict "root" . "component" "ingestor" "values" .Values.ingestor) }}
+---
+{{- include "countly.component.service" (dict "root" . "component" "ingestor" "values" .Values.ingestor) }}
+---
+{{- include "countly.component.hpa" (dict "root" . "component" "ingestor" "values" .Values.ingestor) }}
+---
+{{- include "countly.component.pdb" (dict "root" . "component" "ingestor" "values" .Values.ingestor) }}

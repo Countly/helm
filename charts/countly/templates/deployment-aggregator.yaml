@@ -1,0 +1,7 @@
+{{- include "countly.component.deployment" (dict "root" . "component" "aggregator" "values" .Values.aggregator) }}
+---
+{{- include "countly.component.service" (dict "root" . "component" "aggregator" "values" .Values.aggregator) }}
+---
+{{- include "countly.component.hpa" (dict "root" . "component" "aggregator" "values" .Values.aggregator) }}
+---
+{{- include "countly.component.pdb" (dict "root" . "component" "aggregator" "values" .Values.aggregator) }}

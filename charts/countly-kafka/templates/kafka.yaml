@@ -1,0 +1,148 @@
+{{- $rf := index .Values.brokers.config "default.replication.factor" | default 1 }}
+{{- if gt (int $rf) (int .Values.brokers.replicas) }}
+{{- fail (printf "default.replication.factor (%d) cannot exceed broker replicas (%d)" (int $rf) (int .Values.brokers.replicas)) }}
+{{- end }}
+{{- if .Values.kafkaConnect.enabled }}
+{{- $connectRf := index .Values.kafkaConnect.workerConfig "config.storage.replication.factor" | default 1 }}
+{{- if gt (int $connectRf) (int .Values.brokers.replicas) }}
+{{- fail (printf "kafkaConnect config.storage.replication.factor (%d) cannot exceed broker replicas (%d)" (int $connectRf) (int .Values.brokers.replicas)) }}
+{{- end }}
+{{- end }}
+---
+apiVersion: {{ .Values.strimzi.apiVersion }}
+kind: KafkaNodePool
+metadata:
+  name: {{ include "countly-kafka.fullname" . }}-brokers
+  labels:
+    strimzi.io/cluster: {{ include "countly-kafka.fullname" . }}
+    {{- include "countly-kafka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.brokers.replicas }}
+  roles:
+    - broker
+  storage:
+    type: jbod
+    volumes:
+      {{- range .Values.brokers.persistence.volumes }}
+      - id: {{ .id }}
+        type: persistent-claim
+        size: {{ .size }}
+        {{- if or .storageClass $.Values.global.storageClass }}
+        class: {{ .storageClass | default $.Values.global.storageClass | quote }}
+        {{- end }}
+        deleteClaim: {{ $.Values.brokers.persistence.deleteClaim }}
+      {{- end }}
+  resources:
+    {{- toYaml .Values.brokers.resources | nindent 4 }}
+  jvmOptions:
+    -Xms: {{ .Values.brokers.jvmOptions.xms }}
+    -Xmx: {{ .Values.brokers.jvmOptions.xmx }}
+  template:
+    pod:
+      {{- with .Values.brokers.scheduling.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.brokers.scheduling.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.brokers.scheduling.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.brokers.scheduling.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- range .Values.brokers.scheduling.topologySpreadConstraints }}
+        - maxSkew: {{ .maxSkew }}
+          topologyKey: {{ .topologyKey }}
+          whenUnsatisfiable: {{ .whenUnsatisfiable }}
+          labelSelector:
+            matchLabels:
+              strimzi.io/cluster: {{ include "countly-kafka.fullname" $ }}
+              strimzi.io/pool-name: {{ include "countly-kafka.fullname" $ }}-brokers
+        {{- end }}
+      {{- end }}
+---
+apiVersion: {{ .Values.strimzi.apiVersion }}
+kind: KafkaNodePool
+metadata:
+  name: {{ include "countly-kafka.fullname" . }}-controllers
+  labels:
+    strimzi.io/cluster: {{ include "countly-kafka.fullname" . }}
+    {{- include "countly-kafka.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.controllers.replicas }}
+  roles:
+    - controller
+  storage:
+    type: persistent-claim
+    size: {{ .Values.controllers.persistence.size }}
+    {{- if or .Values.controllers.persistence.storageClass .Values.global.storageClass }}
+    class: {{ .Values.controllers.persistence.storageClass | default .Values.global.storageClass | quote }}
+    {{- end }}
+  resources:
+    {{- toYaml .Values.controllers.resources | nindent 4 }}
+  template:
+    pod:
+      {{- with .Values.controllers.scheduling.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.controllers.scheduling.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.controllers.scheduling.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.controllers.scheduling.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- range .Values.controllers.scheduling.topologySpreadConstraints }}
+        - maxSkew: {{ .maxSkew }}
+          topologyKey: {{ .topologyKey }}
+          whenUnsatisfiable: {{ .whenUnsatisfiable }}
+          labelSelector:
+            matchLabels:
+              strimzi.io/cluster: {{ include "countly-kafka.fullname" $ }}
+              strimzi.io/pool-name: {{ include "countly-kafka.fullname" $ }}-controllers
+        {{- end }}
+      {{- end }}
+---
+apiVersion: {{ .Values.strimzi.apiVersion }}
+kind: Kafka
+metadata:
+  name: {{ include "countly-kafka.fullname" . }}
+  labels:
+    {{- include "countly-kafka.labels" . | nindent 4 }}
+  annotations:
+    strimzi.io/kraft: enabled
+    strimzi.io/node-pools: enabled
+spec:
+  kafka:
+    version: {{ .Values.version | quote }}
+    listeners:
+      {{- range .Values.listeners }}
+      - name: {{ .name }}
+        port: {{ .port }}
+        type: {{ .type }}
+        tls: {{ .tls }}
+      {{- end }}
+    config:
+      {{- range $key, $value := .Values.brokers.config }}
+      {{ $key }}: {{ $value | quote }}
+      {{- end }}
+  entityOperator: {}
+  {{- if .Values.cruiseControl.enabled }}
+  cruiseControl:
+    resources:
+      {{- toYaml .Values.cruiseControl.resources | nindent 6 }}
+    jvmOptions:
+      -Xms: {{ .Values.cruiseControl.jvmOptions.xms }}
+      -Xmx: {{ .Values.cruiseControl.jvmOptions.xmx }}
+    {{- if .Values.cruiseControl.autoRebalance }}
+    autoRebalance:
+      {{- toYaml .Values.cruiseControl.autoRebalance | nindent 6 }}
+    {{- end }}
+  {{- end }}

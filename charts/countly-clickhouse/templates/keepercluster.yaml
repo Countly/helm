@@ -1,0 +1,29 @@
+apiVersion: {{ .Values.clickhouseOperator.apiVersion }}
+kind: KeeperCluster
+metadata:
+  name: {{ include "countly-clickhouse.fullname" . }}-keeper
+  labels:
+    {{- include "countly-clickhouse.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.keeper.replicas }}
+  dataVolumeClaimSpec:
+    {{- if or .Values.keeper.persistence.storageClass .Values.global.storageClass }}
+    storageClassName: {{ .Values.keeper.persistence.storageClass | default .Values.global.storageClass | quote }}
+    {{- end }}
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: {{ .Values.keeper.persistence.size }}
+  containerTemplate:
+    image:
+      repository: {{ .Values.image.keeper }}
+      tag: {{ .Values.version | quote }}
+    resources:
+      {{- toYaml .Values.keeper.resources | nindent 6 }}
+  podTemplate:
+    {{- if .Values.keeper.securityContext }}
+    securityContext:
+      {{- toYaml .Values.keeper.securityContext | nindent 6 }}
+    {{- end }}
+    {{- include "countly-clickhouse.scheduling" (dict "values" .Values.keeper "global" .Values.global "component" "clickhouse-keeper") | nindent 4 }}

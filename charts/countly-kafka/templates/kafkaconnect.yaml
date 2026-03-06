@@ -1,0 +1,88 @@
+{{- if .Values.kafkaConnect.enabled }}
+apiVersion: {{ .Values.strimzi.apiVersion }}
+kind: KafkaConnect
+metadata:
+  name: {{ include "countly-kafka.connectName" . }}
+  labels:
+    {{- include "countly-kafka.labels" . | nindent 4 }}
+  annotations:
+    strimzi.io/use-connector-resources: "true"
+spec:
+  version: {{ .Values.version | quote }}
+  replicas: {{ .Values.kafkaConnect.replicas }}
+  bootstrapServers: {{ include "countly-kafka.bootstrapServers" . }}
+  image: {{ .Values.kafkaConnect.image }}
+  resources:
+    {{- toYaml .Values.kafkaConnect.resources | nindent 4 }}
+  jvmOptions:
+    -Xms: {{ .Values.kafkaConnect.jvmOptions.xms }}
+    -Xmx: {{ .Values.kafkaConnect.jvmOptions.xmx }}
+  config:
+    {{- range $key, $value := .Values.kafkaConnect.workerConfig }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  template:
+    pod:
+      {{- $scheduling := .Values.kafkaConnect.scheduling | default dict }}
+      {{- $antiAffinity := $scheduling.antiAffinity | default dict }}
+      {{- if (and (hasKey $antiAffinity "enabled") $antiAffinity.enabled) }}
+      affinity:
+        podAntiAffinity:
+          {{- if eq ($antiAffinity.type | default "preferred") "required" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  strimzi.io/cluster: {{ include "countly-kafka.connectName" . }}
+                  strimzi.io/kind: KafkaConnect
+              topologyKey: {{ $antiAffinity.topologyKey | default "kubernetes.io/hostname" }}
+          {{- else }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: {{ $antiAffinity.weight | default 100 }}
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    strimzi.io/cluster: {{ include "countly-kafka.connectName" . }}
+                    strimzi.io/kind: KafkaConnect
+                topologyKey: {{ $antiAffinity.topologyKey | default "kubernetes.io/hostname" }}
+          {{- end }}
+      {{- end }}
+    connectContainer:
+      env:
+        - name: CLICKHOUSE_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "countly-kafka.clickhouseSecretName" . }}
+              key: username
+        - name: CLICKHOUSE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "countly-kafka.clickhouseSecretName" . }}
+              key: password
+        - name: CLICKHOUSE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-kafka.fullname" . }}-connect-env
+              key: CLICKHOUSE_HOST
+        - name: CLICKHOUSE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-kafka.fullname" . }}-connect-env
+              key: CLICKHOUSE_PORT
+        - name: CLICKHOUSE_SSL
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-kafka.fullname" . }}-connect-env
+              key: CLICKHOUSE_SSL
+        - name: CLICKHOUSE_DB
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-kafka.fullname" . }}-connect-env
+              key: CLICKHOUSE_DB
+        {{- range $key, $value := .Values.kafkaConnect.env }}
+        - name: {{ $key }}
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-kafka.fullname" $ }}-connect-env
+              key: {{ $key }}
+        {{- end }}
+{{- end }}

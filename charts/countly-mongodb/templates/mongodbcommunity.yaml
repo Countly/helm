@@ -1,0 +1,113 @@
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata:
+  name: {{ include "countly-mongodb.fullname" . }}
+  labels:
+    {{- include "countly-mongodb.labels" . | nindent 4 }}
+spec:
+  members: {{ .Values.mongodb.members }}
+  type: ReplicaSet
+  version: {{ .Values.mongodb.version | quote }}
+  security:
+    authentication:
+      modes: ["SCRAM"]
+    {{- if .Values.mongodb.tls.enabled }}
+    tls:
+      enabled: true
+    {{- end }}
+  users:
+    - name: {{ .Values.users.app.name }}
+      db: {{ .Values.users.app.database }}
+      passwordSecretRef:
+        name: {{ .Values.users.app.passwordSecretName }}
+        key: {{ .Values.users.app.passwordSecretKey }}
+      roles:
+        {{- toYaml .Values.users.app.roles | nindent 8 }}
+      scramCredentialsSecretName: {{ .Values.users.app.name }}-scram
+      connectionStringSecretName: {{ include "countly-mongodb.fullname" . }}-{{ .Values.users.app.name }}-mongodb-conn
+    {{- if .Values.users.metrics.enabled }}
+    - name: {{ .Values.users.metrics.name }}
+      db: {{ .Values.users.metrics.database }}
+      passwordSecretRef:
+        name: {{ .Values.users.metrics.passwordSecretName }}
+        key: {{ .Values.users.metrics.passwordSecretKey }}
+      roles:
+        {{- toYaml .Values.users.metrics.roles | nindent 8 }}
+      scramCredentialsSecretName: {{ .Values.users.metrics.name }}-scram
+      connectionStringSecretName: {{ include "countly-mongodb.fullname" . }}-{{ .Values.users.metrics.name }}-mongodb-conn
+    {{- end }}
+  statefulSet:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: mongod
+              resources:
+                {{- toYaml .Values.mongodb.resources | nindent 16 }}
+            {{- if .Values.exporter.enabled }}
+            - name: mongodb-exporter
+              image: {{ .Values.exporter.image }}
+              args:
+                {{- toYaml .Values.exporter.args | nindent 16 }}
+              ports:
+                - name: metrics
+                  containerPort: {{ .Values.exporter.port }}
+              resources:
+                {{- toYaml .Values.exporter.resources | nindent 16 }}
+              env:
+                - name: MONGODB_URI
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ include "countly-mongodb.fullname" . }}-{{ .Values.users.metrics.name }}-mongodb-conn
+                      key: connectionString.standard
+                      optional: true
+            {{- end }}
+          {{- $scheduling := .Values.mongodb.scheduling | default dict }}
+          {{- $globalScheduling := .Values.global.scheduling | default dict }}
+          {{- $nodeSelector := merge ($scheduling.nodeSelector | default dict) ($globalScheduling.nodeSelector | default dict) }}
+          {{- if $nodeSelector }}
+          nodeSelector:
+            {{- toYaml $nodeSelector | nindent 12 }}
+          {{- end }}
+          {{- $tolerations := concat ($globalScheduling.tolerations | default list) ($scheduling.tolerations | default list) }}
+          {{- if $tolerations }}
+          tolerations:
+            {{- toYaml $tolerations | nindent 12 }}
+          {{- end }}
+          {{- if $scheduling.affinity }}
+          affinity:
+            {{- toYaml $scheduling.affinity | nindent 12 }}
+          {{- else }}
+          {{- $antiAffinity := $scheduling.antiAffinity | default dict }}
+          {{- if (and (hasKey $antiAffinity "enabled") $antiAffinity.enabled) }}
+          affinity:
+            podAntiAffinity:
+              {{- if eq ($antiAffinity.type | default "preferred") "required" }}
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      app: {{ include "countly-mongodb.fullname" . }}
+                  topologyKey: {{ $antiAffinity.topologyKey | default "kubernetes.io/hostname" }}
+              {{- else }}
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: {{ $antiAffinity.weight | default 100 }}
+                  podAffinityTerm:
+                    labelSelector:
+                      matchLabels:
+                        app: {{ include "countly-mongodb.fullname" . }}
+                    topologyKey: {{ $antiAffinity.topologyKey | default "kubernetes.io/hostname" }}
+              {{- end }}
+          {{- end }}
+          {{- end }}
+      volumeClaimTemplates:
+        - metadata:
+            name: data-volume
+          spec:
+            {{- if or .Values.mongodb.persistence.storageClass .Values.global.storageClass }}
+            storageClassName: {{ .Values.mongodb.persistence.storageClass | default .Values.global.storageClass | quote }}
+            {{- end }}
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: {{ .Values.mongodb.persistence.size }}

@@ -1,0 +1,90 @@
+{{/*
+Kafka Connect API access — always created when kafkaConnect is enabled.
+Strimzi auto-creates a restrictive NetworkPolicy on Connect pods.
+This additive policy allows the Countly namespace to reach the REST API.
+*/}}
+{{- if .Values.kafkaConnect.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "countly-kafka.fullname" . }}-connect-api
+  labels:
+    {{- include "countly-kafka.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      strimzi.io/cluster: {{ include "countly-kafka.connectName" . }}
+      strimzi.io/kind: KafkaConnect
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        {{- range .Values.networkPolicy.allowedNamespaces }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . }}
+        {{- end }}
+      ports:
+        - port: 8083
+          protocol: TCP
+{{- end }}
+{{- if .Values.networkPolicy.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "countly-kafka.fullname" . }}-default-deny
+  labels:
+    {{- include "countly-kafka.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress: []
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "countly-kafka.fullname" . }}-allow-kafka
+  labels:
+    {{- include "countly-kafka.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow intra-namespace traffic (brokers, controllers, connect)
+    - from:
+        - podSelector: {}
+    # Allow Countly namespace to reach Kafka brokers
+    - from:
+        {{- range .Values.networkPolicy.allowedNamespaces }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . }}
+        {{- end }}
+      ports:
+        - port: 9092
+          protocol: TCP
+{{- if .Values.networkPolicy.allowMonitoring }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "countly-kafka.fullname" . }}-allow-monitoring
+  labels:
+    {{- include "countly-kafka.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.monitoringNamespaceSelector | nindent 14 }}
+      ports:
+        - port: 9404
+          protocol: TCP
+{{- end }}
+{{- end }}

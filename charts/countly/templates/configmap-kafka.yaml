@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "countly.fullname" . }}-config-kafka
+  labels:
+    {{- include "countly.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := .Values.config.kafka }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}

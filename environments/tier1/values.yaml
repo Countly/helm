@@ -1,0 +1,126 @@
+global:
+  clusterProfile: small
+
+# --- countly chart overrides ---
+api:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1.5Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  hpa:
+    maxReplicas: 3
+
+frontend:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "500m", memory: "1.5Gi" }
+
+ingestor:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1.5Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  hpa:
+    maxReplicas: 4
+
+aggregator:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1.5Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  hpa:
+    minReplicas: 1
+    maxReplicas: 4
+  pdb:
+    enabled: false
+  scheduling:
+    antiAffinity:
+      enabled: false
+
+jobserver:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "500m", memory: "1.5Gi" }
+
+config:
+  kafka:
+    COUNTLY_CONFIG__KAFKA_REPLICATIONFACTOR: "1"
+
+# --- countly-mongodb overrides ---
+mongodb:
+  members: 1
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  persistence:
+    size: 50Gi
+  scheduling:
+    antiAffinity:
+      enabled: false
+
+# --- countly-clickhouse overrides ---
+shards: 1
+replicas: 1
+
+server:
+  resources:
+    requests: { cpu: "500m", memory: "2Gi" }
+    limits: { cpu: "1", memory: "4Gi" }
+  persistence:
+    size: 50Gi
+  scheduling:
+    antiAffinity:
+      enabled: false
+
+keeper:
+  replicas: 1
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+  persistence:
+    size: 5Gi
+
+# --- countly-kafka overrides ---
+brokers:
+  replicas: 1
+  resources:
+    requests: { cpu: "500m", memory: "2Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  jvmOptions:
+    xms: "1g"
+    xmx: "1g"
+  persistence:
+    volumes:
+      - id: 0
+        size: 50Gi
+  config:
+    default.replication.factor: 1
+    min.insync.replicas: 1
+    offsets.topic.replication.factor: 1
+    transaction.state.log.replication.factor: 1
+
+controllers:
+  replicas: 1
+  resources:
+    requests: { cpu: "250m", memory: "1Gi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+  persistence:
+    size: 10Gi
+
+cruiseControl:
+  enabled: false
+
+kafkaConnect:
+  replicas: 1
+  resources:
+    requests: { cpu: "500m", memory: "2Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  jvmOptions:
+    xms: "1g"
+    xmx: "1g"
+  workerConfig:
+    config.storage.replication.factor: 1
+    offset.storage.replication.factor: 1
+    status.storage.replication.factor: 1

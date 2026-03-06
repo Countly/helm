@@ -1,0 +1,51 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "countly-mongodb.fullname" . }}-default-deny
+  labels:
+    {{- include "countly-mongodb.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress: []
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "countly-mongodb.fullname" . }}-allow
+  labels:
+    {{- include "countly-mongodb.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow intra-namespace traffic (replica set members)
+    - from:
+        - podSelector: {}
+    # Allow Countly namespace to reach MongoDB
+    - from:
+        {{- range .Values.networkPolicy.allowedNamespaces }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . }}
+        {{- end }}
+      ports:
+        - port: 27017
+          protocol: TCP
+    # Allow monitoring if configured
+    {{- if .Values.networkPolicy.allowMonitoring }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml .Values.networkPolicy.monitoringNamespaceSelector | nindent 14 }}
+      ports:
+        - port: {{ .Values.exporter.port }}
+          protocol: TCP
+    {{- end }}
+    {{- if .Values.networkPolicy.additionalIngress }}
+    {{- toYaml .Values.networkPolicy.additionalIngress | nindent 4 }}
+    {{- end }}
+{{- end }}

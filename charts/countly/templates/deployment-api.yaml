@@ -1,0 +1,7 @@
+{{- include "countly.component.deployment" (dict "root" . "component" "api" "values" .Values.api) }}
+---
+{{- include "countly.component.service" (dict "root" . "component" "api" "values" .Values.api) }}
+---
+{{- include "countly.component.hpa" (dict "root" . "component" "api" "values" .Values.api) }}
+---
+{{- include "countly.component.pdb" (dict "root" . "component" "api" "values" .Values.api) }}

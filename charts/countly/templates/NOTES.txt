@@ -1,0 +1,17 @@
+Countly has been deployed!
+
+Get the application URL:
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+  https://{{ .host }}
+{{- end }}
+{{- else }}
+  kubectl port-forward svc/{{ include "countly.fullname" . }}-frontend {{ .Values.frontend.port }}:{{ .Values.frontend.port }} -n {{ .Release.Namespace }}
+{{- end }}
+
+Deployed components:
+{{- if .Values.api.enabled }}  - API (port {{ .Values.api.port }}){{ end }}
+{{- if .Values.frontend.enabled }}  - Frontend (port {{ .Values.frontend.port }}){{ end }}
+{{- if .Values.ingestor.enabled }}  - Ingestor (port {{ .Values.ingestor.port }}){{ end }}
+{{- if .Values.aggregator.enabled }}  - Aggregator{{ end }}
+{{- if .Values.jobserver.enabled }}  - Job Server (port {{ .Values.jobserver.port }}){{ end }}

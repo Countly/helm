@@ -1,0 +1,39 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "countly-clickhouse.fullname" . }}-server
+  labels:
+    {{- include "countly-clickhouse.labels" . | nindent 4 }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      countly.io/component: clickhouse-server
+      countly.io/metrics: "true"
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.serviceMonitor.interval | default "15s" }}
+      path: /metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "countly-clickhouse.fullname" . }}-keeper
+  labels:
+    {{- include "countly-clickhouse.labels" . | nindent 4 }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      countly.io/component: clickhouse-keeper
+      countly.io/metrics: "true"
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.serviceMonitor.interval | default "15s" }}
+      path: /metrics
+{{- end }}

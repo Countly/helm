@@ -1,0 +1,8 @@
+{{- $extraAffinity := dict "podAffinity" (dict "preferredDuringSchedulingIgnoredDuringExecution" (list (dict "weight" 100 "podAffinityTerm" (dict "labelSelector" (dict "matchLabels" (dict "app.kubernetes.io/name" (include "countly.name" .) "app.kubernetes.io/component" "api")) "topologyKey" "kubernetes.io/hostname")))) }}
+{{- include "countly.component.deployment" (dict "root" . "component" "frontend" "values" .Values.frontend "extraAffinity" $extraAffinity) }}
+---
+{{- include "countly.component.service" (dict "root" . "component" "frontend" "values" .Values.frontend) }}
+---
+{{- include "countly.component.hpa" (dict "root" . "component" "frontend" "values" .Values.frontend) }}
+---
+{{- include "countly.component.pdb" (dict "root" . "component" "frontend" "values" .Values.frontend) }}

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: countly-mongodb
+description: MongoDB Community operator CRs for Countly
+type: application
+version: 0.1.0
+appVersion: "8.0.13"
+home: https://countly.com
+icon: https://count.ly/images/logos/countly-logo.svg
+sources:
+  - https://github.com/Countly/countly-server
+keywords:
+  - mongodb
+  - database
+  - countly
+maintainers:
+  - name: Countly
+    url: https://countly.com

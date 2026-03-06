@@ -1,0 +1,43 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "countly-clickhouse.fullname" . }}-server-metrics
+  labels:
+    {{- include "countly-clickhouse.labels" . | nindent 4 }}
+    countly.io/component: clickhouse-server
+    countly.io/metrics: "true"
+spec:
+  type: ClusterIP
+  {{- if eq (.Values.serviceMonitor.serviceType | default "headless") "headless" }}
+  clusterIP: None
+  {{- end }}
+  selector:
+    countly.io/component: clickhouse-server
+  ports:
+    - name: metrics
+      port: {{ (.Values.server.settings.prometheus).port | default 9363 }}
+      targetPort: {{ (.Values.server.settings.prometheus).port | default 9363 }}
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "countly-clickhouse.fullname" . }}-keeper-metrics
+  labels:
+    {{- include "countly-clickhouse.labels" . | nindent 4 }}
+    countly.io/component: clickhouse-keeper
+    countly.io/metrics: "true"
+spec:
+  type: ClusterIP
+  {{- if eq (.Values.serviceMonitor.serviceType | default "headless") "headless" }}
+  clusterIP: None
+  {{- end }}
+  selector:
+    countly.io/component: clickhouse-keeper
+  ports:
+    - name: metrics
+      port: {{ (.Values.keeper.settings.prometheus).port | default 9363 }}
+      targetPort: {{ (.Values.keeper.settings.prometheus).port | default 9363 }}
+      protocol: TCP
+{{- end }}

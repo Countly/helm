@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "countly.fullname" . }}-config-jobserver
+  labels:
+    {{- include "countly.labels" . | nindent 4 }}
+data:
+  NODE_OPTIONS: {{ .Values.nodeOptions.jobserver | quote }}
+  {{- range $key, $value := .Values.config.jobserver }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}

@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["version"],
+  "properties": {
+    "global": { "type": "object" },
+    "createNamespace": { "type": "boolean" },
+    "strimzi": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" }
+      }
+    },
+    "version": { "type": "string", "minLength": 1 },
+    "brokers": {
+      "type": "object",
+      "properties": {
+        "replicas": { "type": "integer", "minimum": 1 },
+        "resources": { "type": "object" },
+        "jvmOptions": { "type": "object" },
+        "persistence": {
+          "type": "object",
+          "properties": {
+            "volumes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["id", "size"],
+                "properties": {
+                  "id": { "type": "integer" },
+                  "size": { "type": "string" },
+                  "storageClass": { "type": "string" }
+                }
+              }
+            },
+            "deleteClaim": { "type": "boolean" }
+          }
+        },
+        "config": { "type": "object" },
+        "scheduling": { "type": "object" }
+      }
+    },
+    "controllers": {
+      "type": "object",
+      "properties": {
+        "replicas": { "type": "integer", "minimum": 1 },
+        "resources": { "type": "object" },
+        "persistence": { "type": "object" },
+        "scheduling": { "type": "object" }
+      }
+    },
+    "listeners": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "port", "type", "tls"],
+        "properties": {
+          "name": { "type": "string" },
+          "port": { "type": "integer" },
+          "type": { "type": "string" },
+          "tls": { "type": "boolean" }
+        }
+      }
+    },
+    "cruiseControl": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "resources": { "type": "object" }
+      }
+    },
+    "kafkaConnect": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "name": { "type": "string" },
+        "image": { "type": "string", "minLength": 1 },
+        "replicas": { "type": "integer", "minimum": 1 },
+        "bootstrapServers": { "type": "string" },
+        "resources": { "type": "object" },
+        "workerConfig": { "type": "object" },
+        "clickhouse": {
+          "type": "object",
+          "properties": {
+            "existingSecret": { "type": "string" },
+            "secretName": { "type": "string" },
+            "host": { "type": "string" },
+            "port": { "type": "string" },
+            "ssl": { "type": "string" },
+            "database": { "type": "string" },
+            "username": { "type": "string" },
+            "password": { "type": "string" }
+          }
+        },
+        "env": { "type": "object" },
+        "scheduling": { "type": "object" },
+        "connectors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "class", "tasksMax"],
+            "properties": {
+              "name": { "type": "string" },
+              "enabled": { "type": "boolean" },
+              "state": { "type": "string", "enum": ["running", "paused", "stopped"] },
+              "class": { "type": "string" },
+              "tasksMax": { "type": "integer", "minimum": 1, "maximum": 100 },
+              "autoRestart": {
+                "type": "object",
+                "properties": {
+                  "enabled": { "type": "boolean" },
+                  "maxRestarts": { "type": "integer" }
+                }
+              },
+              "config": { "type": "object" },
+              "dlq": {
+                "type": "object",
+                "properties": {
+                  "topicName": { "type": "string" },
+                  "topicReplicationFactor": { "type": "integer" },
+                  "headerEnabled": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "clickhouseNamespace": { "type": "string", "description": "Namespace where ClickHouse is deployed" },
+    "secrets": {
+      "type": "object",
+      "properties": {
+        "keep": { "type": "boolean" }
+      }
+    }
+  }
+}

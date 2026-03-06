@@ -1,0 +1,105 @@
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+  clusterProfile: small
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+createNamespace: false
+
+mongodb:
+  version: "8.0.13"
+  members: 2
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "2Gi"
+    limits:
+      cpu: "2"
+      memory: "8Gi"
+
+  persistence:
+    storageClass: ""
+    size: 100Gi
+
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    antiAffinity:
+      enabled: true
+      type: preferred
+      topologyKey: kubernetes.io/hostname
+      weight: 100
+
+  tls:
+    enabled: false
+
+users:
+  app:
+    name: app
+    database: admin
+    roles:
+      - name: readWriteAnyDatabase
+        db: admin
+      - name: dbAdmin
+        db: admin
+    passwordSecretName: app-user-password
+    passwordSecretKey: password
+    password: ""
+
+  metrics:
+    enabled: true
+    name: metrics
+    database: admin
+    roles:
+      - name: clusterMonitor
+        db: admin
+      - name: read
+        db: local
+    passwordSecretName: metrics-user-password
+    passwordSecretKey: password
+    password: ""
+
+exporter:
+  enabled: true
+  image: percona/mongodb_exporter:0.40.0
+  port: 9216
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+  service:
+    enabled: true
+  args:
+    - --collect-all
+    - --collector.diagnosticdata
+    - --collector.replicasetstatus
+    - --collector.dbstats
+    - --collector.topmetrics
+    - --collector.indexstats
+    - --collector.collstats
+
+podDisruptionBudget:
+  enabled: false
+  maxUnavailable: 1
+
+networkPolicy:
+  enabled: false
+  allowedNamespaces:
+    - countly
+  allowMonitoring: false
+  monitoringNamespaceSelector:
+    kubernetes.io/metadata.name: monitoring
+  additionalIngress: []
+
+secrets:
+  keep: true

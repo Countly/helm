@@ -1,0 +1,16 @@
+{{- if .Values.kafkaConnect.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "countly-kafka.fullname" . }}-connect-env
+  labels:
+    {{- include "countly-kafka.labels" . | nindent 4 }}
+data:
+  CLICKHOUSE_HOST: {{ include "countly-kafka.clickhouseHost" . | quote }}
+  CLICKHOUSE_PORT: {{ .Values.kafkaConnect.clickhouse.port | quote }}
+  CLICKHOUSE_SSL: {{ .Values.kafkaConnect.clickhouse.ssl | quote }}
+  CLICKHOUSE_DB: {{ .Values.kafkaConnect.clickhouse.database | quote }}
+  {{- range $key, $value := .Values.kafkaConnect.env }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+{{- end }}

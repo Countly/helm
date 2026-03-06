@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["version"],
+  "properties": {
+    "global": { "type": "object" },
+    "createNamespace": { "type": "boolean" },
+    "clickhouseOperator": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" }
+      }
+    },
+    "version": { "type": "string", "minLength": 1 },
+    "shards": { "type": "integer", "minimum": 1 },
+    "replicas": { "type": "integer", "minimum": 1 },
+    "image": {
+      "type": "object",
+      "properties": {
+        "server": { "type": "string", "minLength": 1 },
+        "keeper": { "type": "string", "minLength": 1 }
+      }
+    },
+    "database": { "type": "string" },
+    "auth": {
+      "type": "object",
+      "properties": {
+        "defaultUserPassword": {
+          "type": "object",
+          "properties": {
+            "existingSecret": { "type": "string" },
+            "secretName": { "type": "string" },
+            "key": { "type": "string" },
+            "password": { "type": "string" }
+          }
+        },
+        "adminUser": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "passwordSha256Hex": {
+              "type": "string",
+              "description": "SHA256 hex hash of admin password (64 hex chars)"
+            }
+          },
+          "if": { "properties": { "enabled": { "const": true } } },
+          "then": {
+            "required": ["passwordSha256Hex"],
+            "properties": {
+              "passwordSha256Hex": { "pattern": "^[0-9a-f]{64}$" }
+            }
+          }
+        }
+      }
+    },
+    "server": {
+      "type": "object",
+      "properties": {
+        "securityContext": { "type": "object" },
+        "resources": { "type": "object" },
+        "persistence": {
+          "type": "object",
+          "properties": {
+            "storageClass": { "type": "string" },
+            "size": { "type": "string", "pattern": "^[0-9]+(Mi|Gi|Ti)$" }
+          }
+        },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "maxConnections": { "type": "integer" },
+            "extraConfig": { "type": "string" },
+            "extraUsersConfig": { "type": "string" },
+            "prometheus": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "port": { "type": "integer" },
+                "endpoint": { "type": "string" }
+              }
+            }
+          }
+        },
+        "scheduling": { "type": "object" }
+      }
+    },
+    "keeper": {
+      "type": "object",
+      "properties": {
+        "replicas": { "type": "integer", "minimum": 1 },
+        "securityContext": { "type": "object" },
+        "resources": { "type": "object" },
+        "persistence": {
+          "type": "object",
+          "properties": {
+            "storageClass": { "type": "string" },
+            "size": { "type": "string", "pattern": "^[0-9]+(Mi|Gi|Ti)$" }
+          }
+        },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "prometheus": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "port": { "type": "integer" },
+                "endpoint": { "type": "string" }
+              }
+            }
+          }
+        },
+        "scheduling": { "type": "object" }
+      }
+    },
+    "podDisruptionBudget": {
+      "type": "object",
+      "properties": {
+        "server": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "maxUnavailable": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "keeper": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "maxUnavailable": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "serviceMonitor": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "interval": { "type": "string" },
+        "serviceType": { "type": "string", "enum": ["headless", "clusterIP"] }
+      }
+    },
+    "secrets": {
+      "type": "object",
+      "properties": {
+        "keep": { "type": "boolean" }
+      }
+    }
+  }
+}

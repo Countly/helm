@@ -1,0 +1,56 @@
+apiVersion: {{ .Values.clickhouseOperator.apiVersion }}
+kind: ClickHouseCluster
+metadata:
+  name: {{ include "countly-clickhouse.fullname" . }}
+  labels:
+    {{- include "countly-clickhouse.labels" . | nindent 4 }}
+spec:
+  shards: {{ .Values.shards }}
+  replicas: {{ .Values.replicas }}
+  keeperClusterRef:
+    name: {{ include "countly-clickhouse.fullname" . }}-keeper
+  dataVolumeClaimSpec:
+    {{- if or .Values.server.persistence.storageClass .Values.global.storageClass }}
+    storageClassName: {{ .Values.server.persistence.storageClass | default .Values.global.storageClass | quote }}
+    {{- end }}
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: {{ .Values.server.persistence.size }}
+  containerTemplate:
+    image:
+      repository: {{ .Values.image.server }}
+      tag: {{ .Values.version | quote }}
+    resources:
+      {{- toYaml .Values.server.resources | nindent 6 }}
+  podTemplate:
+    {{- if .Values.server.securityContext }}
+    securityContext:
+      {{- toYaml .Values.server.securityContext | nindent 6 }}
+    {{- end }}
+    {{- include "countly-clickhouse.scheduling" (dict "values" .Values.server "global" .Values.global "component" "clickhouse-server") | nindent 4 }}
+  settings:
+    defaultUserPassword:
+      secret:
+        name: {{ include "countly-clickhouse.passwordSecretName" . }}
+        key: {{ .Values.auth.defaultUserPassword.key }}
+    extraConfig:
+      listen_host: "0.0.0.0"
+      interserver_listen_host: "0.0.0.0"
+      max_connections: {{ .Values.server.settings.maxConnections | default 4096 }}
+      default_database: {{ .Values.database | default "countly_drill" }}
+    {{- $adminEnabled := .Values.auth.adminUser.enabled | default false }}
+    {{- if $adminEnabled }}
+    extraUsersConfig:
+      users:
+        admin:
+          password_sha256_hex: {{ required "auth.adminUser.passwordSha256Hex required when adminUser enabled" .Values.auth.adminUser.passwordSha256Hex }}
+          access_management: 1
+          networks:
+            ip:
+              - "0.0.0.0/0"
+              - "::/0"
+          profile: default
+          quota: default
+    {{- end }}

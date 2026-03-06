@@ -1,0 +1,18 @@
+apiVersion: v2
+name: countly-clickhouse
+description: ClickHouse operator CRs for Countly
+type: application
+version: 0.1.0
+appVersion: "25.8"
+home: https://countly.com
+icon: https://count.ly/images/logos/countly-logo.svg
+sources:
+  - https://github.com/Countly/countly-server
+keywords:
+  - clickhouse
+  - database
+  - analytics
+  - countly
+maintainers:
+  - name: Countly
+    url: https://countly.com

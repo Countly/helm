@@ -1,0 +1,13 @@
+{{- if .Values.podDisruptionBudget.server.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "countly-clickhouse.fullname" . }}-server-pdb
+  labels:
+    {{- include "countly-clickhouse.labels" . | nindent 4 }}
+spec:
+  maxUnavailable: {{ .Values.podDisruptionBudget.server.maxUnavailable | default 1 }}
+  selector:
+    matchLabels:
+      countly.io/component: clickhouse-server
+{{- end }}

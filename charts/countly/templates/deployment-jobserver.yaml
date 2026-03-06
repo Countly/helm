@@ -1,0 +1,7 @@
+{{- include "countly.component.deployment" (dict "root" . "component" "jobserver" "values" .Values.jobserver) }}
+---
+{{- include "countly.component.service" (dict "root" . "component" "jobserver" "values" .Values.jobserver) }}
+---
+{{- include "countly.component.hpa" (dict "root" . "component" "jobserver" "values" .Values.jobserver) }}
+---
+{{- include "countly.component.pdb" (dict "root" . "component" "jobserver" "values" .Values.jobserver) }}

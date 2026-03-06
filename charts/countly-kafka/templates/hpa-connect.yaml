@@ -1,0 +1,36 @@
+{{- if and .Values.kafkaConnect.enabled .Values.kafkaConnect.hpa.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "countly-kafka.connectName" . }}-hpa
+  labels:
+    {{- include "countly-kafka.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: {{ .Values.strimzi.apiVersion }}
+    kind: KafkaConnect
+    name: {{ include "countly-kafka.connectName" . }}
+  minReplicas: {{ .Values.kafkaConnect.hpa.minReplicas }}
+  maxReplicas: {{ .Values.kafkaConnect.hpa.maxReplicas }}
+  metrics:
+    {{- if .Values.kafkaConnect.hpa.metrics.cpu }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.kafkaConnect.hpa.metrics.cpu.averageUtilization }}
+    {{- end }}
+    {{- if .Values.kafkaConnect.hpa.metrics.memory }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.kafkaConnect.hpa.metrics.memory.averageUtilization }}
+    {{- end }}
+  {{- if .Values.kafkaConnect.hpa.behavior }}
+  behavior:
+    {{- toYaml .Values.kafkaConnect.hpa.behavior | nindent 4 }}
+  {{- end }}
+{{- end }}

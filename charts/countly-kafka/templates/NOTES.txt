@@ -1,0 +1,18 @@
+Kafka (Strimzi) has been deployed!
+
+Cluster: {{ include "countly-kafka.fullname" . }}
+Brokers: {{ .Values.brokers.replicas }}
+Controllers: {{ .Values.controllers.replicas }}
+Version: {{ .Values.version }}
+
+Verify readiness:
+  kubectl get kafka {{ include "countly-kafka.fullname" . }} -n {{ .Release.Namespace }}
+
+Bootstrap servers:
+  {{ include "countly-kafka.fullname" . }}-kafka-bootstrap.{{ .Release.Namespace }}.svc:9092
+
+{{- if .Values.kafkaConnect.enabled }}
+Kafka Connect: {{ include "countly-kafka.connectName" . }}
+  kubectl get kafkaconnect -n {{ .Release.Namespace }}
+  kubectl get kafkaconnectors -n {{ .Release.Namespace }}
+{{- end }}

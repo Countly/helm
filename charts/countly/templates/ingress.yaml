@@ -1,0 +1,199 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "countly.fullname" . }}
+  labels:
+    {{- include "countly.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          # Ingestor routes (high-volume ingestion endpoints)
+          - path: /i/bulk
+            pathType: Exact
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-ingestor
+                port:
+                  number: {{ $.Values.ingestor.port }}
+          - path: /i/feedback/input
+            pathType: Exact
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-ingestor
+                port:
+                  number: {{ $.Values.ingestor.port }}
+          - path: /i/feedback/inputs
+            pathType: Exact
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-ingestor
+                port:
+                  number: {{ $.Values.ingestor.port }}
+          - path: /i
+            pathType: Exact
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-ingestor
+                port:
+                  number: {{ $.Values.ingestor.port }}
+          # Other /i/ sub-paths route to API
+          - path: /i/
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-api
+                port:
+                  number: {{ $.Values.api.port }}
+          # API routes
+          - path: /o
+            pathType: Exact
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-api
+                port:
+                  number: {{ $.Values.api.port }}
+          - path: /o/
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-api
+                port:
+                  number: {{ $.Values.api.port }}
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-api
+                port:
+                  number: {{ $.Values.api.port }}
+          # Job server routes
+          - path: /jobs
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-jobserver
+                port:
+                  number: {{ $.Values.jobserver.port }}
+          # Frontend routes (static assets + dashboard)
+          - path: /appimages
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-frontend
+                port:
+                  number: {{ $.Values.frontend.port }}
+          - path: /images
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-frontend
+                port:
+                  number: {{ $.Values.frontend.port }}
+          - path: /sdk
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-frontend
+                port:
+                  number: {{ $.Values.frontend.port }}
+          - path: /views
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-frontend
+                port:
+                  number: {{ $.Values.frontend.port }}
+          - path: /stylesheets
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-frontend
+                port:
+                  number: {{ $.Values.frontend.port }}
+          - path: /javascripts
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-frontend
+                port:
+                  number: {{ $.Values.frontend.port }}
+          - path: /fonts
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-frontend
+                port:
+                  number: {{ $.Values.frontend.port }}
+          - path: /star
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-frontend
+                port:
+                  number: {{ $.Values.frontend.port }}
+          - path: /surveys
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-frontend
+                port:
+                  number: {{ $.Values.frontend.port }}
+          - path: /feedback
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-frontend
+                port:
+                  number: {{ $.Values.frontend.port }}
+          - path: /at/
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-frontend
+                port:
+                  number: {{ $.Values.frontend.port }}
+          - path: /campaign/
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-frontend
+                port:
+                  number: {{ $.Values.frontend.port }}
+          - path: /dashboards/images/screenshots/
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-frontend
+                port:
+                  number: {{ $.Values.frontend.port }}
+          # Default: frontend
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "countly.fullname" $ }}-frontend
+                port:
+                  number: {{ $.Values.frontend.port }}
+    {{- end }}
+{{- end }}

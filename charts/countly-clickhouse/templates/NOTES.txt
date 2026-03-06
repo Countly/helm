@@ -1,0 +1,13 @@
+ClickHouse has been deployed!
+
+Cluster: {{ include "countly-clickhouse.fullname" . }}
+Shards: {{ .Values.shards }}
+Replicas: {{ .Values.replicas }}
+Version: {{ .Values.version }}
+
+Verify readiness:
+  kubectl get clickhousecluster {{ include "countly-clickhouse.fullname" . }} -n {{ .Release.Namespace }}
+
+ClickHouse endpoints:
+  HTTP:   {{ include "countly-clickhouse.fullname" . }}.{{ .Release.Namespace }}.svc:8123
+  Native: {{ include "countly-clickhouse.fullname" . }}.{{ .Release.Namespace }}.svc:9000

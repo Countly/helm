@@ -1,0 +1,29 @@
+# Example customer overlay
+# Usage: helm install countly ./charts/countly -f values-common.yaml -f environments/tier2/values.yaml -f overlay-customer.yaml
+
+global:
+  storageClass: gp3
+
+image:
+  repository: myregistry.example.com/countly-unified
+  tag: "24.11.1"
+  pullPolicy: IfNotPresent
+
+ingress:
+  hosts:
+    - host: analytics.example.com
+  tls:
+    - hosts:
+        - analytics.example.com
+      secretName: analytics-tls
+
+api:
+  hpa:
+    maxReplicas: 10
+  scheduling:
+    nodeSelector:
+      workload: countly
+    tolerations:
+      - key: workload
+        value: countly
+        effect: NoSchedule

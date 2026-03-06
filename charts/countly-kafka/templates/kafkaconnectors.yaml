@@ -1,0 +1,38 @@
+{{- if .Values.kafkaConnect.enabled }}
+{{- range $connector := .Values.kafkaConnect.connectors }}
+{{- if $connector.enabled }}
+---
+apiVersion: {{ $.Values.strimzi.apiVersion }}
+kind: KafkaConnector
+metadata:
+  name: {{ $connector.name }}
+  labels:
+    strimzi.io/cluster: {{ include "countly-kafka.connectName" $ }}
+    {{- include "countly-kafka.labels" $ | nindent 4 }}
+spec:
+  class: {{ $connector.class }}
+  tasksMax: {{ $connector.tasksMax }}
+  {{- if $connector.state }}
+  state: {{ $connector.state }}
+  {{- end }}
+  {{- if and $connector.autoRestart $connector.autoRestart.enabled }}
+  autoRestart:
+    enabled: true
+    {{- if $connector.autoRestart.maxRestarts }}
+    maxRestarts: {{ $connector.autoRestart.maxRestarts }}
+    {{- end }}
+  {{- end }}
+  config:
+    {{- range $key, $value := $connector.config }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    {{- if $connector.dlq }}
+    {{- if $connector.dlq.topicName }}
+    errors.deadletterqueue.topic.name: {{ $connector.dlq.topicName | quote }}
+    errors.deadletterqueue.topic.replication.factor: {{ $connector.dlq.topicReplicationFactor | default 2 | quote }}
+    errors.deadletterqueue.context.headers.enable: {{ $connector.dlq.headerEnabled | default true | quote }}
+    {{- end }}
+    {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

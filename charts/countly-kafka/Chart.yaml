@@ -1,0 +1,18 @@
+apiVersion: v2
+name: countly-kafka
+description: Strimzi Kafka operator CRs for Countly
+type: application
+version: 0.1.0
+appVersion: "4.0.0"
+home: https://countly.com
+icon: https://count.ly/images/logos/countly-logo.svg
+sources:
+  - https://github.com/Countly/countly-server
+keywords:
+  - kafka
+  - strimzi
+  - countly
+  - streaming
+maintainers:
+  - name: Countly
+    url: https://countly.com
