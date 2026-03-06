@@ -2,6 +2,8 @@ apiVersion: {{ .Values.clickhouseOperator.apiVersion }}
 kind: ClickHouseCluster
 metadata:
   name: {{ include "countly-clickhouse.fullname" . }}
+  annotations:
+    "helm.sh/resource-policy": keep
   labels:
     {{- include "countly-clickhouse.labels" . | nindent 4 }}
 spec:
