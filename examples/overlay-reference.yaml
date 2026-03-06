@@ -44,8 +44,8 @@ global:
 #     clickhouse chart → image: { server, keeper }
 #
 #   version:
-#     clickhouse chart → version: "24.8.3"  (ClickHouse server version)
-#     kafka chart      → version: "4.0.0"   (Kafka version)
+#     clickhouse chart → version: "26.2"    (ClickHouse server version)
+#     kafka chart      → version: "4.1.1"   (Kafka version)
 #
 #   secrets:
 #     countly chart    → secrets: { keep, rotationId, common, clickhouse, kafka, mongodb }
@@ -585,7 +585,7 @@ exporter:
 # NOTE: The following keys conflict with other charts and use the clickhouse
 # chart's structure here. See [CHART-SPECIFIC] note above.
 #
-#   version: "24.8.3"           ← clickhouse version (kafka uses version: "4.0.0")
+#   version: "26.2"             ← clickhouse version (kafka uses version: "4.1.1")
 #   image:                      ← already defined above with countly structure
 #     server: clickhouse/clickhouse-server
 #     keeper: clickhouse/clickhouse-keeper
@@ -593,7 +593,7 @@ exporter:
 clickhouseOperator:
   apiVersion: clickhouse.com/v1alpha1
 
-# version: "24.8.3"            # ← Would conflict with kafka's version key
+# version: "26.2"              # ← Would conflict with kafka's version key
 
 shards: 1                                        # Number of shards
 replicas: 2                                      # Replicas per shard
@@ -665,13 +665,13 @@ podDisruptionBudget:
 # =============================================================================
 # NOTE: The following keys conflict with other charts:
 #
-#   version: "4.0.0"            ← kafka version (clickhouse uses version: "24.8.3")
+#   version: "4.1.1"            ← kafka version (clickhouse uses version: "26.2")
 #   clickhouseNamespace:        ← already defined above
 
 strimzi:
   apiVersion: kafka.strimzi.io/v1beta2
 
-# version: "4.0.0"             # ← Would conflict with clickhouse's version key
+# version: "4.1.1"             # ← Would conflict with clickhouse's version key
 
 brokers:
   replicas: 3

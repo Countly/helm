@@ -275,7 +275,7 @@ exporter:
 clickhouseOperator:
   apiVersion: clickhouse.com/v1alpha1
 
-version: "25.8"                                  # ClickHouse server + keeper version
+version: "26.2"                                  # ClickHouse server + keeper version
 shards: 1                                        # Number of shards
 replicas: 2                                      # Replicas per shard
 
@@ -371,7 +371,7 @@ serviceMonitor:
 #  KAFKA CHART  (charts/countly-kafka)
 # =============================================================================
 
-# version: "4.0.0"
+# version: "4.1.1"
 
 brokers:
   replicas: 3
