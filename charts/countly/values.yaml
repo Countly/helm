@@ -405,27 +405,50 @@ ingress:
   enabled: true
   className: nginx
   annotations:
-    nginx.ingress.kubernetes.io/client-max-body-size: "50m"
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    nginx.ingress.kubernetes.io/proxy-buffering: "on"
-    nginx.ingress.kubernetes.io/proxy-request-buffering: "on"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
-    nginx.ingress.kubernetes.io/proxy-buffers-number: "16"
-    nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "512k"
-    nginx.ingress.kubernetes.io/proxy-temp-file-write-size: "1m"
-    nginx.ingress.kubernetes.io/client-body-buffer-size: "2m"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
-    nginx.ingress.kubernetes.io/upstream-keepalive-connections: "256"
-    nginx.ingress.kubernetes.io/upstream-keepalive-requests: "100000"
-    nginx.ingress.kubernetes.io/upstream-keepalive-timeout: "60"
-    nginx.ingress.kubernetes.io/proxy-next-upstream: "error timeout http_502 http_503 http_504"
-    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "30"
-    nginx.ingress.kubernetes.io/proxy-next-upstream-tries: "3"
+    # F5 NGINX Ingress Controller (OSS) annotations
+    nginx.org/client-max-body-size: "50m"
+    nginx.org/proxy-buffering: "True"
+    nginx.org/proxy-buffer-size: "256k"
+    nginx.org/proxy-buffers: "16 256k"
+    nginx.org/proxy-busy-buffers-size: "512k"
+    nginx.org/proxy-max-temp-file-size: "2048m"
+    nginx.org/client-body-buffer-size: "2m"
+    nginx.org/proxy-connect-timeout: "60s"
+    nginx.org/proxy-read-timeout: "120s"
+    nginx.org/proxy-send-timeout: "120s"
+    nginx.org/keepalive: "256"
+    nginx.org/server-snippets: |
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Port $server_port;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Scheme $scheme;
+      proxy_set_header Connection "";
+      proxy_set_header X-Request-ID $request_id;
+      proxy_set_header X-Request-Start $msec;
+      proxy_set_header traceparent $http_traceparent;
+      proxy_set_header tracestate $http_tracestate;
+      client_header_timeout 30s;
+    nginx.org/location-snippets: |
+      proxy_request_buffering on;
+      proxy_next_upstream error timeout http_502 http_503 http_504;
+      proxy_next_upstream_timeout 30s;
+      proxy_next_upstream_tries 3;
+      proxy_temp_file_write_size 1m;
+      client_body_timeout 120s;
   tls:
     - hosts:
         - countly.example.com
       secretName: countly-tls
+  # Generate a self-signed TLS certificate via Helm (for dev/test only).
+  # Set to true to auto-create the TLS secret referenced in tls[].secretName.
+  # For production, use cert-manager or provide your own secret and set this to false.
+  selfSignedCert:
+    enabled: false
+    # secretName must match tls[].secretName above
+    secretName: countly-tls
+    # Common name / SAN for the generated certificate
+    cn: countly.example.com
+    # Validity in days
+    daysValid: 365
   hosts:
     - host: countly.example.com
