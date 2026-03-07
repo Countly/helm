@@ -4,11 +4,21 @@
 # This file documents ALL knobs available for environment tiers.
 # Copy to a new tier directory and uncomment/adjust what you need.
 #
-# Values here override chart defaults (values.yaml) and values-common.yaml.
+# Values here are PRODUCTION defaults (matching tier2 profile).
+# They override chart defaults (values.yaml) and values-common.yaml.
 # Customer overlays applied after this will override these values.
 #
 # See also: examples/overlay-reference.yaml for the full set including
 # config, secrets, ingress, and chart-specific settings.
+#
+# NOTE: Tier files MAY also override config values (e.g., tier1 overrides
+# config.kafka.COUNTLY_CONFIG__KAFKA_REPLICATIONFACTOR). The full config
+# reference is in overlay-reference.yaml — copy specific keys as needed.
+#
+# YAML key conflicts: Some top-level keys (networkPolicy, podDisruptionBudget,
+# version, image) exist in multiple charts with different structures. Only
+# one definition per key can exist in this file. The countly chart version
+# is active YAML; other charts' versions are shown as comments.
 # =============================================================================
 
 global:
@@ -22,9 +32,25 @@ global:
 #  COUNTLY CHART  (charts/countly)
 # =============================================================================
 
+# --- Network Policy (countly chart) ---
+networkPolicy:
+  enabled: true                                    # Restrict pod ingress traffic
+  ingressNamespaceSelector:
+    kubernetes.io/metadata.name: ingress-nginx
+  additionalIngress: []
+
 # --- api ---
 api:
+  enabled: true
   replicaCount: 2
+  command: ["npm", "run", "start:api"]
+  port: 3001
+  healthCheck:
+    path: /o/ping
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 120
+  terminationGracePeriodSeconds: 120
   resources:
     requests: { cpu: "1", memory: "3.5Gi" }
     limits: { cpu: "1", memory: "4Gi" }
@@ -53,20 +79,31 @@ api:
   pdb:
     enabled: true
     minAvailable: 1
-  terminationGracePeriodSeconds: 120
   scheduling:
     nodeSelector: {}
     tolerations: []
+    affinity: {}
     topologySpreadConstraints: []
     antiAffinity:
       enabled: true
       type: preferred                            # preferred | required
       topologyKey: kubernetes.io/hostname
       weight: 100
+  extraEnv: []
+  extraEnvFrom: []
 
 # --- frontend ---
 frontend:
+  enabled: true
   replicaCount: 2
+  command: ["npm", "run", "start:frontend"]
+  port: 6001
+  healthCheck:
+    path: /ping
+    initialDelaySeconds: 120
+    periodSeconds: 30
+    timeoutSeconds: 5
+  terminationGracePeriodSeconds: 30
   resources:
     requests: { cpu: "1", memory: "2.5Gi" }
     limits: { cpu: "1", memory: "3Gi" }
@@ -82,20 +119,31 @@ frontend:
   pdb:
     enabled: true
     minAvailable: 1
-  terminationGracePeriodSeconds: 30
   scheduling:
     nodeSelector: {}
     tolerations: []
+    affinity: {}
     topologySpreadConstraints: []
     antiAffinity:
       enabled: true
       type: preferred
       topologyKey: kubernetes.io/hostname
       weight: 100
+  extraEnv: []
+  extraEnvFrom: []
 
 # --- ingestor ---
 ingestor:
+  enabled: true
   replicaCount: 2
+  command: ["npm", "run", "start:ingestor"]
+  port: 3010
+  healthCheck:
+    path: /o/ping
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 120
+  terminationGracePeriodSeconds: 120
   resources:
     requests: { cpu: "1", memory: "3Gi" }
     limits: { cpu: "1", memory: "3Gi" }
@@ -112,20 +160,27 @@ ingestor:
   pdb:
     enabled: true
     minAvailable: 1
-  terminationGracePeriodSeconds: 120
   scheduling:
     nodeSelector: {}
     tolerations: []
+    affinity: {}
     topologySpreadConstraints: []
     antiAffinity:
       enabled: true
       type: preferred
       topologyKey: kubernetes.io/hostname
       weight: 100
+  extraEnv: []
+  extraEnvFrom: []
 
 # --- aggregator ---
 aggregator:
+  enabled: true
   replicaCount: 4
+  command: ["npm", "run", "start:aggregator"]
+  port: 0                                        # No HTTP port
+  healthCheck: {}                                # No HTTP health checks
+  terminationGracePeriodSeconds: 60
   resources:
     requests: { cpu: "1", memory: "3.5Gi" }
     limits: { cpu: "2", memory: "4Gi" }
@@ -154,20 +209,31 @@ aggregator:
   pdb:
     enabled: true
     minAvailable: 1
-  terminationGracePeriodSeconds: 60
   scheduling:
     nodeSelector: {}
     tolerations: []
+    affinity: {}
     topologySpreadConstraints: []
     antiAffinity:
       enabled: true
       type: preferred
       topologyKey: kubernetes.io/hostname
       weight: 100
+  extraEnv: []
+  extraEnvFrom: []
 
 # --- jobserver ---
 jobserver:
+  enabled: true
   replicaCount: 1
+  command: ["npm", "run", "start:jobserver"]
+  port: 3020
+  healthCheck:
+    path: /o/ping
+    initialDelaySeconds: 120
+    periodSeconds: 30
+    timeoutSeconds: 5
+  terminationGracePeriodSeconds: 30
   resources:
     requests: { cpu: "1", memory: "3Gi" }
     limits: { cpu: "1", memory: "3Gi" }
@@ -183,13 +249,15 @@ jobserver:
     behavior: {}
   pdb:
     enabled: false
-  terminationGracePeriodSeconds: 30
   scheduling:
     nodeSelector: {}
     tolerations: []
+    affinity: {}
     topologySpreadConstraints: []
     antiAffinity:
       enabled: false
+  extraEnv: []
+  extraEnvFrom: []
 
 # Node.js heap tuning per component
 nodeOptions:
@@ -259,6 +327,8 @@ exporter:
   resources:
     requests: { cpu: "50m", memory: "64Mi" }
     limits: { cpu: "200m", memory: "256Mi" }
+  service:
+    enabled: true
   args:
     - --collect-all
     - --collector.diagnosticdata
@@ -268,6 +338,27 @@ exporter:
     - --collector.indexstats
     - --collector.collstats
 
+# MongoDB PDB (top-level key — does NOT conflict with ClickHouse podDisruptionBudget
+# because only one chart consumes each key based on its own values schema)
+# NOTE: This key IS shared with the ClickHouse chart's podDisruptionBudget.
+# The ClickHouse version (with server/keeper sub-keys) takes precedence here.
+# For the MongoDB chart, set PDB via a per-chart overlay if needed.
+# MongoDB chart structure:
+#   podDisruptionBudget:
+#     enabled: true
+#     maxUnavailable: 1
+
+# MongoDB networkPolicy (conflicts with countly chart's networkPolicy key above).
+# For the MongoDB chart, set networkPolicy via a per-chart overlay.
+# MongoDB chart structure:
+#   networkPolicy:
+#     enabled: false
+#     allowedNamespaces: [countly]
+#     allowMonitoring: false
+#     monitoringNamespaceSelector:
+#       kubernetes.io/metadata.name: monitoring
+#     additionalIngress: []
+
 # =============================================================================
 #  CLICKHOUSE CHART  (charts/countly-clickhouse)
 # =============================================================================
@@ -275,13 +366,9 @@ exporter:
 clickhouseOperator:
   apiVersion: clickhouse.com/v1alpha1
 
-version: "26.2"                                  # ClickHouse server + keeper version
+# version: "26.2"                                # ClickHouse version (conflicts with kafka chart's version key)
 shards: 1                                        # Number of shards
 replicas: 2                                      # Replicas per shard
-
-image:
-  server: clickhouse/clickhouse-server
-  keeper: clickhouse/clickhouse-keeper
 
 database: countly_drill
 
@@ -292,8 +379,8 @@ auth:
     key: password
     password: ""
   adminUser:
-    enabled: false                               # Enable for admin user with access_management
-    passwordSha256Hex: ""                        # Supply via overlay, NOT in VCS
+    enabled: false
+    passwordSha256Hex: ""
 
 server:
   securityContext:
@@ -310,7 +397,7 @@ server:
   settings:
     maxConnections: 4096
     extraConfig: ""                              # Raw config.xml XML snippet
-    extraUsersConfig: ""                         # Raw users.xml XML snippet (inner XML only)
+    extraUsersConfig: ""                         # Raw users.xml XML snippet
     prometheus:
       enabled: true
       port: 9363
@@ -354,6 +441,7 @@ keeper:
       topologyKey: kubernetes.io/hostname
       weight: 100
 
+# ClickHouse PDB (this key is shared with MongoDB chart — ClickHouse structure wins here)
 podDisruptionBudget:
   server:
     enabled: true
@@ -365,13 +453,24 @@ podDisruptionBudget:
 serviceMonitor:
   enabled: true
   interval: "15s"
-  serviceType: headless
+  serviceType: headless                          # "headless" for per-pod, "clusterIP" for any-pod
+
+# ClickHouse networkPolicy (conflicts with countly chart's networkPolicy key above).
+# For the ClickHouse chart, set networkPolicy via a per-chart overlay.
+# ClickHouse chart structure:
+#   networkPolicy:
+#     enabled: false
+#     allowedNamespaces: [countly, kafka]
+#     allowMonitoring: false
+#     monitoringNamespaceSelector:
+#       kubernetes.io/metadata.name: monitoring
+#     additionalIngress: []
 
 # =============================================================================
 #  KAFKA CHART  (charts/countly-kafka)
 # =============================================================================
 
-# version: "4.2.0"
+# version: "4.2.0"                               # Kafka version (conflicts with clickhouse version key)
 
 brokers:
   replicas: 3
@@ -389,15 +488,18 @@ brokers:
     deleteClaim: false
   config:
     default.replication.factor: 2
-    min.insync.replicas: 1
+    min.insync.replicas: 2
     log.retention.hours: 168                     # 7 days
     log.segment.bytes: "1073741824"              # 1 GB
     compression.type: lz4
-    auto.create.topics.enable: true
+    auto.create.topics.enable: false             # Production: false
     offsets.topic.replication.factor: 2
     num.partitions: 24
     transaction.state.log.replication.factor: 2
   scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
     topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: kubernetes.io/hostname
@@ -412,6 +514,9 @@ controllers:
     size: 20Gi
     storageClass: ""
   scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
     topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: kubernetes.io/hostname
@@ -437,10 +542,7 @@ cruiseControl:
 
 kafkaConnect:
   enabled: true
-  name: connect-ch
-  image: "countly/kafka-connect-clickhouse:1.3.5"
   replicas: 2
-  bootstrapServers: ""
   resources:
     requests: { cpu: "2", memory: "8Gi" }
     limits: { cpu: "2", memory: "8Gi" }
@@ -448,49 +550,39 @@ kafkaConnect:
     xms: "5g"
     xmx: "5g"
   workerConfig:
-    group.id: connect-ch
-    config.storage.topic: connect_ch_configs
-    offset.storage.topic: connect_ch_offsets
-    status.storage.topic: connect_ch_status
     config.storage.replication.factor: 2
     offset.storage.replication.factor: 2
     status.storage.replication.factor: 2
-    offset.storage.partitions: 25
-    status.storage.partitions: 5
-    key.converter: org.apache.kafka.connect.storage.StringConverter
-    value.converter: org.apache.kafka.connect.json.JsonConverter
-    value.converter.schemas.enable: "false"
-    connector.client.config.override.policy: All
-    config.providers: env
-    config.providers.env.class: org.apache.kafka.common.config.provider.EnvVarConfigProvider
-  clickhouse:
-    existingSecret: ""
-    secretName: clickhouse-auth
-    host: ""
-    port: "8123"
-    ssl: "false"
-    database: "countly_drill"
-    username: "default"
-    password: ""
-  env:
-    EXACTLY_ONCE: "false"
-    ERRORS_RETRY_TIMEOUT: "300"
-    ERRORS_TOLERANCE: "none"
-    CLICKHOUSE_SETTINGS: "input_format_binary_read_json_as_string=1,allow_experimental_json_type=1,enable_json_type=1,async_insert=1,wait_for_async_insert=1,async_insert_use_adaptive_busy_timeout=1,async_insert_busy_timeout_ms=10000,async_insert_max_data_size=268435456,async_insert_max_query_number=64,min_insert_block_size_rows=250000,min_insert_block_size_bytes=268435456,max_partitions_per_insert_block=500"
-    BYPASS_ROW_BINARY: "false"
-    TABLE_REFRESH_INTERVAL: "300"
-    KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
-    VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-    VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
-    KAFKA_CONSUMER_FETCH_MIN_BYTES: "33554432"
-    KAFKA_CONSUMER_FETCH_MAX_WAIT_MS: "60000"
-    KAFKA_CONSUMER_MAX_POLL_RECORDS: "250000"
-    KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES: "134217728"
-    KAFKA_CONSUMER_FETCH_MAX_BYTES: "536870912"
-    KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS: "900000"
-    KAFKA_CONSUMER_SESSION_TIMEOUT_MS: "45000"
-    KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS: "15000"
-    KAFKA_CONSUMER_REQUEST_TIMEOUT_MS: "120000"
+  hpa:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    metrics:
+      cpu:
+        averageUtilization: 70
+      memory:
+        averageUtilization: 80
+    behavior:
+      scaleUp:
+        stabilizationWindowSeconds: 120
+        policies:
+          - type: Percent
+            value: 50
+            periodSeconds: 120
+          - type: Pods
+            value: 2
+            periodSeconds: 120
+        selectPolicy: Min
+      scaleDown:
+        stabilizationWindowSeconds: 600
+        policies:
+          - type: Percent
+            value: 25
+            periodSeconds: 300
+          - type: Pods
+            value: 1
+            periodSeconds: 300
+        selectPolicy: Min
   scheduling:
     nodeSelector: {}
     tolerations: []
@@ -500,48 +592,15 @@ kafkaConnect:
       type: preferred
       topologyKey: kubernetes.io/hostname
       weight: 100
-  connectors:
-    - name: ch-sink-drill-events
-      enabled: true
-      state: running
-      class: com.clickhouse.kafka.connect.ClickHouseSinkConnector
-      tasksMax: 1
-      autoRestart:
-        enabled: true
-        maxRestarts: 10
-      config:
-        topics: drill-events
-        topic2TableMap: "drill-events=drill_events"
-        hostname: "${env:CLICKHOUSE_HOST}"
-        port: "${env:CLICKHOUSE_PORT}"
-        ssl: "${env:CLICKHOUSE_SSL}"
-        database: "${env:CLICKHOUSE_DB}"
-        username: "${env:CLICKHOUSE_USER}"
-        password: "${env:CLICKHOUSE_PASSWORD}"
-        exactlyOnce: "${env:EXACTLY_ONCE}"
-        errors.retry.timeout: "${env:ERRORS_RETRY_TIMEOUT}"
-        errors.tolerance: "${env:ERRORS_TOLERANCE}"
-        clickhouseSettings: "${env:CLICKHOUSE_SETTINGS}"
-        bypassRowBinary: "${env:BYPASS_ROW_BINARY}"
-        tableRefreshInterval: "${env:TABLE_REFRESH_INTERVAL}"
-        key.converter: "${env:KEY_CONVERTER}"
-        value.converter: "${env:VALUE_CONVERTER}"
-        value.converter.schemas.enable: "${env:VALUE_CONVERTER_SCHEMAS_ENABLE}"
-        consumer.override.fetch.min.bytes: "${env:KAFKA_CONSUMER_FETCH_MIN_BYTES}"
-        consumer.override.fetch.max.wait.ms: "${env:KAFKA_CONSUMER_FETCH_MAX_WAIT_MS}"
-        consumer.override.max.poll.records: "${env:KAFKA_CONSUMER_MAX_POLL_RECORDS}"
-        consumer.override.max.partition.fetch.bytes: "${env:KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES}"
-        consumer.override.fetch.max.bytes: "${env:KAFKA_CONSUMER_FETCH_MAX_BYTES}"
-        consumer.override.request.timeout.ms: "${env:KAFKA_CONSUMER_REQUEST_TIMEOUT_MS}"
-        consumer.override.max.poll.interval.ms: "${env:KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS}"
-        consumer.override.session.timeout.ms: "${env:KAFKA_CONSUMER_SESSION_TIMEOUT_MS}"
-        consumer.override.heartbeat.interval.ms: "${env:KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS}"
-        connection.timeout: "60"
-        socket.timeout: "30000"
-        retry.count: "3"
-        connection.pool.size: "10"
-        healthcheck.enabled: "true"
-        healthcheck.interval: "10000"
-      dlq: {}
+
+# Kafka networkPolicy (conflicts with countly chart's networkPolicy key above).
+# For the Kafka chart, set networkPolicy via a per-chart overlay.
+# Kafka chart structure:
+#   networkPolicy:
+#     enabled: false
+#     allowedNamespaces: [countly]
+#     allowMonitoring: false
+#     monitoringNamespaceSelector:
+#       kubernetes.io/metadata.name: monitoring
 
 clickhouseNamespace: clickhouse
