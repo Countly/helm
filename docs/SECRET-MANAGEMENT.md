@@ -16,6 +16,7 @@ Each chart manages secrets in its own namespace. Secrets use a **lookup-or-creat
 | `metrics-user-password` | countly-mongodb | mongodb | MongoDB metrics user password (operator) |
 | `clickhouse-default-password` | countly-clickhouse | clickhouse | ClickHouse default user password |
 | `clickhouse-auth` | countly-kafka | kafka | ClickHouse creds for Kafka Connect |
+| `countly-tls` | countly | countly | TLS certificate for ingress (self-signed or external) |
 
 ## Using External Secrets
 
@@ -45,6 +46,20 @@ By default, `secrets.keep: true` adds `helm.sh/resource-policy: keep` so secrets
 3. Verify: `kubectl exec -n countly <pod> -- curl -s localhost:3001/o/ping`
 
 The `rotationId` change triggers pod rollouts via annotation checksum.
+
+## TLS Certificates
+
+The ingress TLS secret can be managed in three ways:
+
+1. **Self-signed (dev/test):** Set `ingress.selfSignedCert.enabled: true`. Helm generates a certificate using `genSignedCert` and preserves it across upgrades via lookup.
+2. **cert-manager (production):** Add cert-manager annotations to the ingress. cert-manager provisions and renews the certificate automatically.
+3. **Pre-existing secret:** Create a `kubernetes.io/tls` secret externally and reference it in `ingress.tls[].secretName`.
+
+The self-signed certificate uses `helm.sh/resource-policy: keep` to survive uninstall. Delete manually if needed:
+
+```bash
+kubectl delete secret countly-tls -n countly
+```
 
 ## Cross-Chart Credential Sharing
 

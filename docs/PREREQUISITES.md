@@ -51,15 +51,18 @@ helm upgrade --install mongodb-kubernetes-operator mongodb/mongodb-kubernetes \
   --create-namespace -n mongodb
 ```
 
-## 4. Ingress Controller
-
-An NGINX Ingress Controller is expected. Install if not already present:
+## 4. F5 NGINX Ingress Controller (OSS)
 
 ```bash
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm install ingress-nginx ingress-nginx/ingress-nginx \
+helm repo add nginx-stable https://helm.nginx.com/stable
+helm repo update
+helm upgrade --install nginx-ingress nginx-stable/nginx-ingress \
+  --version 2.1.0 \
+  -f k8s/ingress/f5-nginx-values.yaml \
   --create-namespace -n ingress-nginx
 ```
+
+Configuration is in `k8s/ingress/f5-nginx-values.yaml` — includes global ConfigMap (worker tuning, buffers, timeouts, OTEL), HPA, resources, and Prometheus metrics.
 
 ## Verification
 
@@ -70,4 +73,5 @@ kubectl get pods -n cert-manager
 kubectl get pods -n clickhouse-operator-system
 kubectl get pods -n kafka
 kubectl get pods -n mongodb
+kubectl get pods -n ingress-nginx
 ```

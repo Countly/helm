@@ -70,11 +70,14 @@ helm upgrade --install mongodb-kubernetes-operator mongodb/mongodb-kubernetes \
   --create-namespace -n mongodb
 ```
 
-**NGINX Ingress Controller** (if not already present):
+**F5 NGINX Ingress Controller (OSS):**
 
 ```bash
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm install ingress-nginx ingress-nginx/ingress-nginx \
+helm repo add nginx-stable https://helm.nginx.com/stable
+helm repo update
+helm upgrade --install nginx-ingress nginx-stable/nginx-ingress \
+  --version 2.1.0 \
+  -f k8s/ingress/f5-nginx-values.yaml \
   --create-namespace -n ingress-nginx
 ```
 
@@ -85,6 +88,7 @@ kubectl get pods -n cert-manager
 kubectl get pods -n clickhouse-operator-system
 kubectl get pods -n kafka
 kubectl get pods -n mongodb
+kubectl get pods -n ingress-nginx
 ```
 
 ---
@@ -196,7 +200,81 @@ helm install countly ./charts/countly \
 
 ---
 
-## 5. Customer Overlays
+## 5. TLS Certificates
+
+The Countly ingress requires a TLS secret for HTTPS. Three options are available:
+
+### Option A: Self-signed certificate (dev/test)
+
+The chart can auto-generate a self-signed certificate via Helm's `genSignedCert`:
+
+```yaml
+ingress:
+  selfSignedCert:
+    enabled: true
+    secretName: countly-tls     # Must match tls[].secretName
+    cn: countly.example.com     # Common name / SAN
+    daysValid: 365
+```
+
+Or via `--set`:
+
+```bash
+helm install countly ./charts/countly \
+  --set ingress.selfSignedCert.enabled=true \
+  --set ingress.selfSignedCert.cn=my-countly.example.com \
+  ...
+```
+
+The certificate is preserved across upgrades (lookup-or-create pattern). To regenerate, delete the secret first:
+
+```bash
+kubectl delete secret countly-tls -n countly
+helm upgrade countly ./charts/countly ...
+```
+
+### Option B: cert-manager (production recommended)
+
+If cert-manager is installed (already required for ClickHouse Operator), add a `Certificate` CR or use cert-manager annotations:
+
+```yaml
+ingress:
+  selfSignedCert:
+    enabled: false
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    - hosts:
+        - analytics.example.com
+      secretName: countly-tls
+```
+
+cert-manager will automatically provision and renew the certificate.
+
+### Option C: Pre-existing secret
+
+Create the TLS secret externally and reference it:
+
+```bash
+kubectl create secret tls countly-tls \
+  --cert=path/to/tls.crt \
+  --key=path/to/tls.key \
+  -n countly
+```
+
+```yaml
+ingress:
+  selfSignedCert:
+    enabled: false
+  tls:
+    - hosts:
+        - analytics.example.com
+      secretName: countly-tls
+```
+
+---
+
+## 6. Customer Overlays
 
 Create a YAML file with customer-specific overrides and layer it on top of a tier:
 
@@ -253,7 +331,7 @@ Repeat for each chart that needs the overlay. See `examples/` for more overlay e
 
 ---
 
-## 6. Upgrade
+## 7. Upgrade
 
 ```bash
 # Helmfile
@@ -268,7 +346,7 @@ helm upgrade countly ./charts/countly \
 
 ---
 
-## 7. Uninstall
+## 8. Uninstall
 
 ```bash
 # Helmfile

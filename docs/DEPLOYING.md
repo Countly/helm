@@ -65,6 +65,18 @@ helm install countly ./charts/countly \
 | `tier1` | Development / small deployments | ~8 CPU req / ~20Gi RAM req |
 | `tier2` | Production | Full resources, HA replicas, PDBs |
 
+## TLS Certificates
+
+For dev/test, enable self-signed cert generation:
+
+```bash
+helm install countly ./charts/countly \
+  --set ingress.selfSignedCert.enabled=true \
+  ...
+```
+
+For production, use cert-manager or provide your own TLS secret. See the [TLS Certificates](../README.md#5-tls-certificates) section in the main README.
+
 ## Custom Overlays
 
 Create a custom values file for your environment:

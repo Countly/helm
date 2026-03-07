@@ -108,6 +108,45 @@ kafkaConnect:
 
 ---
 
+## F5 NGINX Ingress Controller
+
+### Ingress rejected — invalid annotations
+
+**Symptom:** `kubectl describe ingress countly -n countly` shows `AddedOrUpdatedWithError` events.
+
+**Cause:** F5 NIC validates annotations strictly and rejects invalid ones. Common mistakes:
+- Using `"on"`/`"off"` instead of `"True"`/`"False"` for `nginx.org/proxy-buffering`
+- Missing `s` suffix on timeouts (e.g., `"60"` instead of `"60s"`)
+- Using old `nginx.ingress.kubernetes.io/*` annotations (community ingress-nginx)
+
+**Fix:** Check the events section of `kubectl describe ingress` — F5 NIC logs the reason for rejection. Update annotations to use `nginx.org/*` format.
+
+### Duplicate `proxy_http_version` directive
+
+**Error:** `nginx reload failed: "proxy_http_version" directive is duplicate`
+
+**Cause:** F5 NIC auto-injects `proxy_http_version 1.1` when `nginx.org/keepalive` > 0. If your `location-snippets` also include `proxy_http_version 1.1`, it duplicates.
+
+**Fix:** Remove `proxy_http_version 1.1` from `nginx.org/location-snippets`. The chart defaults already exclude it.
+
+### OTEL export failures
+
+**Error:** `OTel export failure: DNS resolution failed for alloy.observability.svc.cluster.local:4317`
+
+**Cause:** The OTEL exporter endpoint is configured in `f5-nginx-values.yaml` but the Alloy collector is not deployed.
+
+**Fix:** Either deploy the observability stack (`kubectl apply -k observability/`) or remove the `otel-exporter-endpoint` from `f5-nginx-values.yaml`. This error is benign and does not affect traffic.
+
+### TLS secret missing
+
+**Error:** `TLS secret countly-tls is invalid: secret doesn't exist or of an unsupported type`
+
+**Cause:** The ingress references a TLS secret that doesn't exist.
+
+**Fix:** Enable self-signed cert generation (`ingress.selfSignedCert.enabled: true`), use cert-manager, or create the secret manually. See the [TLS Certificates](../README.md#5-tls-certificates) section.
+
+---
+
 ## General
 
 ### cert-manager must be installed before ClickHouse Operator
