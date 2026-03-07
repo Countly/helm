@@ -100,7 +100,7 @@ frontend:
   port: 6001
   healthCheck:
     path: /ping
-    initialDelaySeconds: 120
+    initialDelaySeconds: 30
     periodSeconds: 30
     timeoutSeconds: 5
   terminationGracePeriodSeconds: 30
@@ -230,7 +230,7 @@ jobserver:
   port: 3020
   healthCheck:
     path: /o/ping
-    initialDelaySeconds: 120
+    initialDelaySeconds: 30
     periodSeconds: 30
     timeoutSeconds: 5
   terminationGracePeriodSeconds: 30
