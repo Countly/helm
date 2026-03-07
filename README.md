@@ -202,58 +202,35 @@ helm install countly ./charts/countly \
 
 ## 5. TLS Certificates
 
-The Countly ingress requires a TLS secret for HTTPS. Three options are available:
+The Countly ingress defaults to **no TLS** (`tls: []`). Choose a TLS strategy by layering one of the provided overlay files.
 
-### Option A: Self-signed certificate (dev/test)
+### Option A: Let's Encrypt via cert-manager (recommended)
 
-The chart can auto-generate a self-signed certificate via Helm's `genSignedCert`:
+cert-manager is already installed (prerequisite for ClickHouse Operator).
 
-```yaml
-ingress:
-  selfSignedCert:
-    enabled: true
-    secretName: countly-tls     # Must match tls[].secretName
-    cn: countly.example.com     # Common name / SAN
-    daysValid: 365
+1. Create the ClusterIssuer (one-time, edit the email first):
+
+```bash
+kubectl apply -f k8s/cert-manager/letsencrypt-clusterissuer.yaml
 ```
 
-Or via `--set`:
+2. Deploy with the Let's Encrypt overlay:
 
 ```bash
 helm install countly ./charts/countly \
-  --set ingress.selfSignedCert.enabled=true \
-  --set ingress.selfSignedCert.cn=my-countly.example.com \
-  ...
+  -f values-common.yaml \
+  -f environments/tier1/values.yaml \
+  -f examples/overlay-tls-letsencrypt.yaml \
+  --set ingress.hosts[0].host=my-countly.example.com \
+  --set ingress.tls[0].hosts[0]=my-countly.example.com \
+  -n countly --create-namespace
 ```
 
-The certificate is preserved across upgrades (lookup-or-create pattern). To regenerate, delete the secret first:
+cert-manager provisions and auto-renews the certificate.
 
-```bash
-kubectl delete secret countly-tls -n countly
-helm upgrade countly ./charts/countly ...
-```
+### Option B: Bring your own certificate
 
-### Option B: cert-manager (production recommended)
-
-If cert-manager is installed (already required for ClickHouse Operator), add a `Certificate` CR or use cert-manager annotations:
-
-```yaml
-ingress:
-  selfSignedCert:
-    enabled: false
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-  tls:
-    - hosts:
-        - analytics.example.com
-      secretName: countly-tls
-```
-
-cert-manager will automatically provision and renew the certificate.
-
-### Option C: Pre-existing secret
-
-Create the TLS secret externally and reference it:
+1. Create the TLS secret:
 
 ```bash
 kubectl create secret tls countly-tls \
@@ -262,14 +239,34 @@ kubectl create secret tls countly-tls \
   -n countly
 ```
 
-```yaml
-ingress:
-  selfSignedCert:
-    enabled: false
-  tls:
-    - hosts:
-        - analytics.example.com
-      secretName: countly-tls
+2. Deploy with the custom cert overlay:
+
+```bash
+helm install countly ./charts/countly \
+  -f values-common.yaml \
+  -f environments/tier1/values.yaml \
+  -f examples/overlay-tls-custom.yaml \
+  -n countly
+```
+
+To renew, update the secret:
+
+```bash
+kubectl create secret tls countly-tls \
+  --cert=new-tls.crt --key=new-tls.key \
+  -n countly --dry-run=client -o yaml | kubectl apply -f -
+```
+
+### No TLS (development only)
+
+For local or air-gapped environments behind a separate TLS terminator:
+
+```bash
+helm install countly ./charts/countly \
+  -f values-common.yaml \
+  -f environments/tier1/values.yaml \
+  -f examples/overlay-tls-none.yaml \
+  -n countly --create-namespace
 ```
 
 ---

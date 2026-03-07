@@ -1,0 +1,20 @@
+# =============================================================================
+# TLS Overlay -- No TLS (HTTP only)
+# =============================================================================
+# WARNING: Traffic between clients and the ingress controller will be
+# unencrypted. This is NOT recommended for production. Use only for:
+#   - Local development
+#   - Environments behind a TLS-terminating load balancer
+#
+# USAGE:
+#   helm install countly ./charts/countly \
+#     -f values-common.yaml \
+#     -f environments/tier1/values.yaml \
+#     -f examples/overlay-tls-none.yaml \
+#     -n countly --create-namespace
+# =============================================================================
+
+ingress:
+  tls: []
+  hosts:
+    - host: countly.example.com            # CHANGEME: your hostname

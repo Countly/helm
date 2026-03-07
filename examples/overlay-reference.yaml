@@ -76,6 +76,7 @@ fullnameOverride: ""
 createNamespace: false
 clickhouseNamespace: clickhouse
 kafkaNamespace: kafka
+mongodbNamespace: mongodb
 
 # =============================================================================
 #  COUNTLY CHART  (charts/countly)
@@ -372,6 +373,7 @@ config:
   jobserver:
     COUNTLY_CONTAINER: jobserver
     COUNTLY_CONFIG__JOBSERVER_PORT: "3020"
+    COUNTLY_CONFIG__JOBSERVER_HOST: "0.0.0.0"
 
   clickhouse:
     COUNTLY_CONFIG__CLICKHOUSE_QUERYOPTIONS_MAX_EXECUTION_TIME: "600"
@@ -421,6 +423,8 @@ config:
     COUNTLY_CONFIG__KAFKA_CONSUMER_AUTOOFFSETRESET: earliest
     COUNTLY_CONFIG__KAFKA_CONSUMER_ENABLEAUTOCOMMIT: "false"
     COUNTLY_CONFIG__KAFKA_CONSUMER_MAXPOLLINTERVALMS: "600000"
+    COUNTLY_CONFIG__KAFKA_CONNECTAPIURL: "http://connect-ch-connect-api.kafka.svc.cluster.local:8083"
+    COUNTLY_CONFIG__KAFKA_CONNECTCONSUMERGROUPID: "connect-ch"
 
   otel:
     OTEL_ENABLED: "true"
@@ -453,6 +457,7 @@ secrets:
     existingSecret: ""                           # Use pre-existing K8s Secret name
     host: "ch.clickhouse.svc"
     port: "8123"
+    tls: "false"                                 # "true" to use HTTPS for ClickHouse
     username: "default"
     password: "clickhouse-password-here"
     database: "countly_drill"
@@ -469,12 +474,27 @@ secrets:
     existingSecret: "countly-mongodb-app-mongodb-conn"  # Created by MongoDB operator
     key: "connectionString.standard"
     connectionString: ""                         # Or provide directly
+    host: ""                                     # Auto-resolved from mongodbNamespace
+    port: "27017"
+    username: "app"
+    password: ""                                 # REQUIRED on first install
+    database: "admin"
+    replicaSet: ""                               # Auto-detected from operator
 
 # NOTE: mongodb, clickhouse, and kafka charts also have:
 #   secrets:
 #     keep: true
 # This is merged from the same file. The sub-keys (common, clickhouse, etc.)
 # are ignored by those charts since they don't define them in their schema.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NETWORK POLICY (countly chart)
+# ─────────────────────────────────────────────────────────────────────────────
+networkPolicy:
+  enabled: false                                   # true to restrict pod ingress traffic
+  ingressNamespaceSelector:
+    kubernetes.io/metadata.name: ingress-nginx      # Allow traffic from ingress namespace
+  additionalIngress: []                            # Extra ingress rules
 
 # ─────────────────────────────────────────────────────────────────────────────
 # INGRESS (countly chart)
@@ -513,17 +533,23 @@ ingress:
       proxy_next_upstream_tries 3;
       proxy_temp_file_write_size 1m;
       client_body_timeout 120s;
-  tls:
-    - hosts:
-        - analytics.example.com
-      secretName: analytics-tls
-  # TLS certificate generation (dev/test only)
-  # For production, use cert-manager or provide your own secret.
-  selfSignedCert:
-    enabled: true                                   # false for production
-    secretName: analytics-tls                       # Must match tls[].secretName
-    cn: analytics.example.com                       # Common name / SAN
-    daysValid: 365
+  # TLS strategy -- choose ONE overlay or uncomment inline:
+  #
+  # Option A: Let's Encrypt (recommended) -- overlay-tls-letsencrypt.yaml
+  #   annotations:
+  #     cert-manager.io/cluster-issuer: letsencrypt-prod
+  #   tls:
+  #     - hosts: [analytics.example.com]
+  #       secretName: analytics-tls
+  #
+  # Option B: Custom cert -- overlay-tls-custom.yaml
+  #   tls:
+  #     - hosts: [analytics.example.com]
+  #       secretName: analytics-tls          # pre-created kubectl secret
+  #
+  # Option C: No TLS -- overlay-tls-none.yaml
+  #   tls: []
+  tls: []
   hosts:
     - host: analytics.example.com
 
@@ -645,8 +671,16 @@ auth:
     secretName: clickhouse-default-password
     key: password
     password: ""                                 # Required if no existingSecret
+  adminUser:
+    enabled: false                               # Enable for admin user with access_management
+    passwordSha256Hex: ""                        # Supply via overlay, NOT in VCS
 
 server:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
+    fsGroup: 101
   resources:
     requests: { cpu: "4", memory: "12Gi" }
     limits: { cpu: "4", memory: "16Gi" }
@@ -657,6 +691,10 @@ server:
     maxConnections: 4096
     extraConfig: ""                              # Raw config.xml XML snippet
     extraUsersConfig: ""                          # Raw users.xml XML snippet
+    prometheus:
+      enabled: true
+      port: 9363
+      endpoint: /metrics
   scheduling:
     nodeSelector:
       workload: clickhouse
@@ -674,12 +712,22 @@ server:
 
 keeper:
   replicas: 3
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
+    fsGroup: 101
   resources:
     requests: { cpu: "500m", memory: "1Gi" }
     limits: { cpu: "1", memory: "2Gi" }
   persistence:
     storageClass: "gp3"
     size: 50Gi
+  settings:
+    prometheus:
+      enabled: true
+      port: 9363
+      endpoint: /metrics
   scheduling:
     nodeSelector: {}
     tolerations: []
@@ -697,6 +745,11 @@ podDisruptionBudget:
   keeper:
     enabled: true
     maxUnavailable: 1
+
+serviceMonitor:
+  enabled: true
+  interval: "15s"
+  serviceType: headless
 
 
 # =============================================================================

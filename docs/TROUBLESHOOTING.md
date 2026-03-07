@@ -141,9 +141,9 @@ kafkaConnect:
 
 **Error:** `TLS secret countly-tls is invalid: secret doesn't exist or of an unsupported type`
 
-**Cause:** The ingress references a TLS secret that doesn't exist.
+**Cause:** The ingress references a TLS secret that doesn't exist. By default, TLS is disabled (`tls: []`). If you added a TLS overlay but the secret hasn't been created yet, this error appears.
 
-**Fix:** Enable self-signed cert generation (`ingress.selfSignedCert.enabled: true`), use cert-manager, or create the secret manually. See the [TLS Certificates](../README.md#5-tls-certificates) section.
+**Fix:** Use cert-manager (`overlay-tls-letsencrypt.yaml`) which creates the secret automatically, create the secret manually (`overlay-tls-custom.yaml`), or disable TLS entirely (`overlay-tls-none.yaml`). See the [TLS Certificates](../README.md#5-tls-certificates) section.
 
 ---
 

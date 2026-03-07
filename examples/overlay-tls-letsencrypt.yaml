@@ -1,0 +1,30 @@
+# =============================================================================
+# TLS Overlay -- Let's Encrypt via cert-manager
+# =============================================================================
+# Provisions and auto-renews a TLS certificate using cert-manager + ACME.
+#
+# PREREQUISITES:
+#   1. cert-manager is installed (already required for ClickHouse Operator)
+#   2. A ClusterIssuer named "letsencrypt-prod" exists. Create it first:
+#        kubectl apply -f k8s/cert-manager/letsencrypt-clusterissuer.yaml
+#   3. Your domain DNS points to the ingress controller's external IP
+#
+# USAGE:
+#   helm install countly ./charts/countly \
+#     -f values-common.yaml \
+#     -f environments/tier1/values.yaml \
+#     -f examples/overlay-tls-letsencrypt.yaml \
+#     --set ingress.hosts[0].host=analytics.example.com \
+#     --set ingress.tls[0].hosts[0]=analytics.example.com \
+#     -n countly --create-namespace
+# =============================================================================
+
+ingress:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    - hosts:
+        - analytics.example.com            # CHANGEME: your real domain
+      secretName: countly-tls              # cert-manager creates this automatically
+  hosts:
+    - host: analytics.example.com          # CHANGEME: must match tls[].hosts

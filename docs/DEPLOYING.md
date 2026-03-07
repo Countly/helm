@@ -67,15 +67,17 @@ helm install countly ./charts/countly \
 
 ## TLS Certificates
 
-For dev/test, enable self-signed cert generation:
+For production, use the Let's Encrypt overlay:
 
 ```bash
+kubectl apply -f k8s/cert-manager/letsencrypt-clusterissuer.yaml
 helm install countly ./charts/countly \
-  --set ingress.selfSignedCert.enabled=true \
+  -f examples/overlay-tls-letsencrypt.yaml \
+  --set ingress.tls[0].hosts[0]=my-countly.example.com \
   ...
 ```
 
-For production, use cert-manager or provide your own TLS secret. See the [TLS Certificates](../README.md#5-tls-certificates) section in the main README.
+For custom certificates or no TLS, see the [TLS Certificates](../README.md#5-tls-certificates) section in the main README.
 
 ## Custom Overlays
 

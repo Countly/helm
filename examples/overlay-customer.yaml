@@ -12,6 +12,8 @@ image:
 ingress:
   hosts:
     - host: analytics.example.com
+  # TLS: layer a TLS overlay on top of this file. Example:
+  #   -f examples/overlay-customer.yaml -f examples/overlay-tls-letsencrypt.yaml
   tls:
     - hosts:
         - analytics.example.com
