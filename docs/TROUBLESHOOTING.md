@@ -131,11 +131,11 @@ kafkaConnect:
 
 ### OTEL export failures
 
-**Error:** `OTel export failure: DNS resolution failed for alloy.observability.svc.cluster.local:4317`
+**Error:** `OTel export failure: DNS resolution failed for alloy-otlp.observability.svc.cluster.local:4317`
 
-**Cause:** The OTEL exporter endpoint is configured in `f5-nginx-values.yaml` but the Alloy collector is not deployed.
+**Cause:** The OTEL exporter endpoint is configured in `f5-nginx-values.yaml` but the Alloy-OTLP collector is not deployed.
 
-**Fix:** Either deploy the observability stack (`kubectl apply -k observability/`) or remove the `otel-exporter-endpoint` from `f5-nginx-values.yaml`. This error is benign and does not affect traffic.
+**Fix:** Either deploy the observability stack (`helm install countly-observability ...`) or remove the `otel-exporter-endpoint` from `f5-nginx-values.yaml`. This error is benign and does not affect traffic.
 
 ### TLS secret missing
 
@@ -181,7 +181,7 @@ kubectl get pods -n observability -l app.kubernetes.io/component=alloy -o yaml |
 
 **Cause:** Both Alloy DaemonSet and Alloy-Metrics scraping the same targets.
 
-**Fix:** By design, the chart enforces a clean split — Alloy DaemonSet handles logs/traces/profiles only, Alloy-Metrics handles ALL Prometheus scraping. If you see duplicates, check for custom scrape configs.
+**Fix:** By design, the chart enforces a clean split — Alloy DaemonSet handles logs only, Alloy-OTLP handles traces/profiles, and Alloy-Metrics handles ALL Prometheus scraping. If you see duplicates, check for custom scrape configs.
 
 ### Dashboard ConfigMaps not loading
 

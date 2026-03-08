@@ -154,6 +154,8 @@ kafkaConnect:
 
 # --- countly-observability overrides ---
 prometheus:
+  retention:
+    time: "90d"
   storage:
     size: 100Gi
   resources:
@@ -161,6 +163,7 @@ prometheus:
     limits: { cpu: "2", memory: "4Gi" }
 
 loki:
+  retention: "90d"
   storage:
     size: 100Gi
   resources:
@@ -168,6 +171,7 @@ loki:
     limits: { cpu: "1", memory: "2Gi" }
 
 tempo:
+  retention: "14d"
   storage:
     size: 150Gi
   resources:
@@ -175,6 +179,7 @@ tempo:
     limits: { cpu: "4", memory: "10Gi" }
 
 pyroscope:
+  retention: "336h"
   storage:
     size: 20Gi
   resources:
@@ -187,6 +192,11 @@ grafana:
     limits: { cpu: "2", memory: "2Gi" }
 
 alloy:
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "2", memory: "2Gi" }
+
+alloyOtlp:
   resources:
     requests: { cpu: "500m", memory: "1Gi" }
     limits: { cpu: "2", memory: "2Gi" }

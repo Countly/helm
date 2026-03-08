@@ -97,10 +97,10 @@ ingress:
 config:
   otel:
     OTEL_ENABLED: "true"
-    OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy.observability.svc.cluster.local:4318"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4318"
     OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
     PYROSCOPE_ENABLED: "true"
-    PYROSCOPE_ENDPOINT: "http://countly-observability-alloy.observability.svc.cluster.local:9999"
+    PYROSCOPE_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:9999"
   kafka:
     COUNTLY_CONFIG__KAFKA_REPLICATIONFACTOR: "1"
 
@@ -211,6 +211,10 @@ grafana:
     requests: { cpu: "250m", memory: "512Mi" }
     limits: { cpu: "500m", memory: "1Gi" }
 alloy:
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+alloyOtlp:
   resources:
     requests: { cpu: "250m", memory: "768Mi" }
     limits: { cpu: "500m", memory: "1536Mi" }

@@ -14,7 +14,7 @@ Known-good operator and image version combinations.
 | Grafana | `grafana/grafana` | `12.4.0` | **Current** |
 | Loki | `grafana/loki` | `3.6.7` | **Current** |
 | Tempo | `grafana/tempo` | `2.10.1` | **Current** |
-| Pyroscope | `grafana/pyroscope` | `1.2.0` | **Current** |
+| Pyroscope | `grafana/pyroscope` | `1.18.1` | **Current** |
 | Alloy | `grafana/alloy` | `v1.13.2` | **Current** |
 | kube-state-metrics | `registry.k8s.io/kube-state-metrics/kube-state-metrics` | `v2.18.0` | **Current** |
 | node-exporter | `prom/node-exporter` | `v1.10.2` | **Current** |

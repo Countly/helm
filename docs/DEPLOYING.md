@@ -98,9 +98,9 @@ To connect Countly to the observability stack, add to your Countly chart values:
 config:
   otel:
     OTEL_ENABLED: "true"
-    OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy.observability.svc.cluster.local:4318"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4318"
     PYROSCOPE_ENABLED: "true"
-    PYROSCOPE_ENDPOINT: "http://countly-observability-alloy.observability.svc.cluster.local:9999"
+    PYROSCOPE_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:9999"
 ```
 
 ## Tier Profiles

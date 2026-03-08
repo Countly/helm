@@ -681,8 +681,19 @@ loki:
     tag: "3.6.7"
   retention: "30d"
   storage:
+    backend: "filesystem"                            # filesystem | s3 | gcs | azure
     size: 100Gi
     storageClass: ""
+    bucket: ""                                       # Bucket/container name (required for object backends)
+    endpoint: ""                                     # Custom endpoint (e.g. MinIO)
+    region: ""                                       # Cloud region (S3)
+    insecure: false                                  # Use HTTP instead of HTTPS
+    forcePathStyle: false                            # S3 path-style access (MinIO)
+    existingSecret: ""                               # K8s Secret name to mount (credential file)
+    secretKey: "key.json"                            # Key within the Secret
+    secretMountPath: "/var/secrets/storage"
+    envFromSecret: ""                                # K8s Secret name to inject as env vars
+    config: {}                                       # Provider-specific passthrough
   resources:
     requests: { cpu: "500m", memory: "1Gi" }
     limits: { cpu: "1", memory: "2Gi" }
@@ -710,8 +721,19 @@ tempo:
     tag: "2.10.1"
   retention: "12h"
   storage:
+    backend: "local"                                 # local | s3 | gcs | azure
     size: 150Gi
     storageClass: ""
+    bucket: ""
+    endpoint: ""
+    region: ""
+    insecure: false
+    forcePathStyle: false
+    existingSecret: ""
+    secretKey: "key.json"
+    secretMountPath: "/var/secrets/storage"
+    envFromSecret: ""
+    config: {}
   resources:
     requests: { cpu: "3", memory: "6Gi" }
     limits: { cpu: "4", memory: "10Gi" }
@@ -737,10 +759,22 @@ tempo:
 pyroscope:
   image:
     repository: grafana/pyroscope
-    tag: "1.2.0"
+    tag: "1.18.1"
+  retention: "72h"                                   # Go duration (h, m, s only — no 'd')
   storage:
+    backend: "filesystem"                            # filesystem | s3 | gcs | azure | swift
     size: 20Gi
     storageClass: ""
+    bucket: ""
+    endpoint: ""
+    region: ""
+    insecure: false
+    forcePathStyle: false
+    existingSecret: ""
+    secretKey: "key.json"
+    secretMountPath: "/var/secrets/storage"
+    envFromSecret: ""
+    config: {}
   resources:
     requests: { cpu: "500m", memory: "1Gi" }
     limits: { cpu: "1", memory: "2Gi" }
@@ -791,7 +825,7 @@ grafana:
   external:
     url: ""                                          # External Grafana URL (NOTES.txt only)
 
-# --- Alloy (DaemonSet — logs, OTLP receive, profiling receive) ---
+# --- Alloy (DaemonSet — logs only) ---
 alloy:
   image:
     repository: grafana/alloy
@@ -802,6 +836,22 @@ alloy:
   scheduling:
     nodeSelector:
       kubernetes.io/os: linux
+    tolerations: []
+
+# --- Alloy-OTLP (Deployment — OTLP traces + profiling receive) ---
+alloyOtlp:
+  image:
+    repository: grafana/alloy
+    tag: "v1.13.2"
+  replicas: 1
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "2", memory: "2Gi" }
+  memoryLimiter:
+    limit: "1600MiB"
+    spikeLimit: "400MiB"
+  scheduling:
+    nodeSelector: {}
     tolerations: []
 
 # --- Alloy-Metrics (Deployment — ALL Prometheus scraping) ---

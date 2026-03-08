@@ -137,6 +137,7 @@ prometheus:
       cpu: "1"
       memory: "2Gi"
 loki:
+  retention: "30d"
   storage:
     size: 20Gi
   resources:
@@ -147,6 +148,7 @@ loki:
       cpu: "500m"
       memory: "1Gi"
 tempo:
+  retention: "7d"
   storage:
     size: 20Gi
   resources:
@@ -157,6 +159,7 @@ tempo:
       cpu: "1"
       memory: "2Gi"
 pyroscope:
+  retention: "168h"
   storage:
     size: 5Gi
   resources:
@@ -182,6 +185,17 @@ alloy:
     limits:
       cpu: "500m"
       memory: "1Gi"
+alloyOtlp:
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+  memoryLimiter:
+    limit: "800MiB"
+    spikeLimit: "200MiB"
 alloyMetrics:
   resources:
     requests:

@@ -428,7 +428,7 @@ config:
 
   otel:
     OTEL_ENABLED: "true"
-    OTEL_EXPORTER_OTLP_ENDPOINT: "http://alloy.observability.svc.cluster.local:4318"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4318"
     OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
     PYROSCOPE_ENABLED: "false"
 
@@ -569,7 +569,7 @@ ingress:
 #
 # OpenTelemetry tracing (disabled by default):
 #   controller.config.entries:
-#     otel-exporter-endpoint: "http://alloy.observability.svc.cluster.local:4317"
+#     otel-exporter-endpoint: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4317"
 #     otel-service-name: "nginx-ingress"
 #     otel-trace-in-http: "true"
 
@@ -980,8 +980,15 @@ metrics:
 traces:
   enabled: true
   sampling:
-    strategy: "TraceIdRatio"                         # AlwaysOn | TraceIdRatio | ParentBased
+    strategy: "TraceIdRatio"                         # AlwaysOn | TraceIdRatio | ParentBased | TailBased
     ratio: 0.1                                       # 10% sampling in production
+    tailSampling:                                    # Only used when strategy == TailBased
+      waitDuration: "10s"
+      numTraces: 50000
+      policies:
+        keepErrors: true
+        latencyThresholdMs: 2000
+        baselineRatio: 0.1
 
 logs:
   enabled: true
@@ -1035,8 +1042,19 @@ loki:
     tag: "3.6.7"
   retention: "30d"
   storage:
+    backend: "filesystem"                            # filesystem | s3 | gcs | azure
     size: 100Gi
     storageClass: "gp3"
+    bucket: ""                                       # Bucket/container name (required for object backends)
+    endpoint: ""                                     # Custom endpoint (e.g. MinIO: http://minio:9000)
+    region: ""                                       # Cloud region (S3)
+    insecure: false                                  # Use HTTP instead of HTTPS
+    forcePathStyle: false                            # S3 path-style access (required for MinIO)
+    existingSecret: ""                               # K8s Secret name to mount (credential file)
+    secretKey: "key.json"                            # Key within the Secret
+    secretMountPath: "/var/secrets/storage"
+    envFromSecret: ""                                # K8s Secret name to inject as env vars
+    config: {}                                       # Provider-specific passthrough
   resources:
     requests: { cpu: "500m", memory: "1Gi" }
     limits: { cpu: "1", memory: "2Gi" }
@@ -1066,8 +1084,19 @@ tempo:
     tag: "2.10.1"
   retention: "12h"
   storage:
+    backend: "local"                                 # local | s3 | gcs | azure
     size: 150Gi
     storageClass: "gp3"
+    bucket: ""
+    endpoint: ""
+    region: ""
+    insecure: false
+    forcePathStyle: false
+    existingSecret: ""
+    secretKey: "key.json"
+    secretMountPath: "/var/secrets/storage"
+    envFromSecret: ""
+    config: {}
   resources:
     requests: { cpu: "3", memory: "6Gi" }
     limits: { cpu: "4", memory: "10Gi" }
@@ -1095,10 +1124,22 @@ tempo:
 pyroscope:
   image:
     repository: grafana/pyroscope
-    tag: "1.2.0"
+    tag: "1.18.1"
+  retention: "72h"                                   # compactor_blocks_retention_period
   storage:
+    backend: "filesystem"                            # filesystem | s3 | gcs | azure | swift
     size: 20Gi
     storageClass: "gp3"
+    bucket: ""
+    endpoint: ""
+    region: ""
+    insecure: false
+    forcePathStyle: false
+    existingSecret: ""
+    secretKey: "key.json"
+    secretMountPath: "/var/secrets/storage"
+    envFromSecret: ""
+    config: {}
   resources:
     requests: { cpu: "500m", memory: "1Gi" }
     limits: { cpu: "1", memory: "2Gi" }
@@ -1152,7 +1193,7 @@ grafana:
     url: ""                                          # External Grafana URL (NOTES.txt only)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# COMPONENT: Alloy (DaemonSet — logs, OTLP receive, profiling receive)
+# COMPONENT: Alloy (DaemonSet — logs only)
 # ─────────────────────────────────────────────────────────────────────────────
 alloy:
   image:
@@ -1164,6 +1205,24 @@ alloy:
   scheduling:
     nodeSelector:
       kubernetes.io/os: linux                        # Alloy only runs on Linux nodes
+    tolerations: []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPONENT: Alloy-OTLP (Deployment — OTLP traces + profiling receive)
+# ─────────────────────────────────────────────────────────────────────────────
+alloyOtlp:
+  image:
+    repository: grafana/alloy
+    tag: "v1.13.2"
+  replicas: 1                                        # Hard-set to 1 when TailBased sampling
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "2", memory: "2Gi" }
+  memoryLimiter:
+    limit: "1600MiB"                                 # Must be < resources.limits.memory
+    spikeLimit: "400MiB"
+  scheduling:
+    nodeSelector: {}
     tolerations: []
 
 # ─────────────────────────────────────────────────────────────────────────────
