@@ -1,0 +1,37 @@
+{{- if (include "obs.deployAlloyOtlp" .) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "obs.fullname" . }}-alloy-otlp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: alloy-otlp
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ include "obs.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: alloy-otlp
+  ports:
+  - name: http-metrics
+    port: 12345
+    targetPort: 12345
+    protocol: TCP
+  {{- if .Values.traces.enabled }}
+  - name: otlp-grpc
+    port: 4317
+    targetPort: 4317
+    protocol: TCP
+  - name: otlp-http
+    port: 4318
+    targetPort: 4318
+    protocol: TCP
+  {{- end }}
+  {{- if .Values.profiling.enabled }}
+  - name: pyroscope-http
+    port: 9999
+    targetPort: 9999
+    protocol: TCP
+  {{- end }}
+{{- end }}

@@ -339,7 +339,7 @@ config:
     COUNTLY_CONFIG__KAFKA_CONNECTCONSUMERGROUPID: "connect-ch"
   otel:
     OTEL_ENABLED: "false"
-    OTEL_EXPORTER_OTLP_ENDPOINT: "http://alloy.observability.svc.cluster.local:4318"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4318"
     OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
     PYROSCOPE_ENABLED: "false"
 

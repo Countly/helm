@@ -37,11 +37,19 @@ spec:
         image: {{ include "obs.image" (dict "global" .Values.global "image" .Values.tempo.image) }}
         args:
           - '-config.file=/etc/tempo/tempo.yaml'
+          {{- if .Values.tempo.storage.envFromSecret }}
+          - '-config.expand-env=true'
+          {{- end }}
         volumeMounts:
         - name: config
           mountPath: /etc/tempo
         - name: data
           mountPath: /var/tempo
+        {{- if (include "obs.shouldMountCredentialSecret" (dict "storage" .Values.tempo.storage "default" "local")) }}
+        - name: credential-secret
+          mountPath: {{ .Values.tempo.storage.secretMountPath | default "/var/secrets/storage" }}
+          readOnly: true
+        {{- end }}
         ports:
         - containerPort: 3200
           name: http
@@ -55,6 +63,20 @@ spec:
         - containerPort: 4318
           name: otlp-http
           protocol: TCP
+        {{- $storage := .Values.tempo.storage }}
+        {{- $backend := $storage.backend | default "local" }}
+        {{- if or (and (include "obs.shouldMountCredentialSecret" (dict "storage" $storage "default" "local")) (eq $backend "gcs")) $storage.envFromSecret }}
+        env:
+        {{- if and (include "obs.shouldMountCredentialSecret" (dict "storage" $storage "default" "local")) (eq $backend "gcs") }}
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: {{ $storage.secretMountPath | default "/var/secrets/storage" }}/{{ $storage.secretKey | default "key.json" }}
+        {{- end }}
+        {{- end }}
+        {{- if $storage.envFromSecret }}
+        envFrom:
+        - secretRef:
+            name: {{ $storage.envFromSecret }}
+        {{- end }}
         {{- with .Values.tempo.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
@@ -79,6 +101,11 @@ spec:
       - name: config
         configMap:
           name: {{ include "obs.fullname" . }}-tempo
+      {{- if (include "obs.shouldMountCredentialSecret" (dict "storage" .Values.tempo.storage "default" "local")) }}
+      - name: credential-secret
+        secret:
+          secretName: {{ .Values.tempo.storage.existingSecret }}
+      {{- end }}
       {{- include "obs.scheduling" (dict "values" .Values.tempo "global" .Values.global "component" "tempo" "fullname" (include "obs.fullname" .)) | nindent 6 }}
   volumeClaimTemplates:
   - metadata:

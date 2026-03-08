@@ -45,10 +45,18 @@ metrics:
 traces:
   enabled: true
   sampling:
-    # -- AlwaysOn | TraceIdRatio | ParentBased
+    # -- AlwaysOn | TraceIdRatio | ParentBased | TailBased
     strategy: "AlwaysOn"
-    # -- 0.0 - 1.0, used when strategy != AlwaysOn
+    # -- 0.0 - 1.0, used when strategy is TraceIdRatio or ParentBased
     ratio: 1.0
+    # -- Tail sampling config (only used when strategy == TailBased)
+    tailSampling:
+      waitDuration: "10s"
+      numTraces: 50000
+      policies:
+        keepErrors: true
+        latencyThresholdMs: 2000
+        baselineRatio: 0.1
 
 logs:
   enabled: true
@@ -108,8 +116,23 @@ loki:
     tag: "3.6.7"
   retention: "30d"
   storage:
+    backend: "filesystem"   # filesystem | s3 | gcs | azure
     size: 100Gi
     storageClass: ""
+    # Object storage settings (only used when backend != filesystem)
+    bucket: ""                  # Bucket/container name (REQUIRED for object backends)
+    endpoint: ""                # Custom endpoint (e.g. MinIO: http://minio:9000)
+    region: ""                  # Cloud region (S3)
+    insecure: false             # Use HTTP instead of HTTPS
+    forcePathStyle: false       # S3 path-style access (required for MinIO)
+    # Credential file secret (for GCS JSON key files)
+    existingSecret: ""          # K8s Secret name to mount
+    secretKey: "key.json"       # Key within the Secret
+    secretMountPath: "/var/secrets/storage"
+    # Env-based credentials (for AWS access keys, Azure account keys)
+    envFromSecret: ""           # K8s Secret name to inject as env vars
+    # Provider-specific passthrough (rendered directly into provider block)
+    config: {}
   resources:
     requests:
       cpu: "500m"
@@ -144,8 +167,19 @@ tempo:
     tag: "2.10.1"
   retention: "12h"
   storage:
+    backend: "local"            # local | s3 | gcs | azure
     size: 150Gi
     storageClass: ""
+    bucket: ""
+    endpoint: ""
+    region: ""
+    insecure: false
+    forcePathStyle: false
+    existingSecret: ""
+    secretKey: "key.json"
+    secretMountPath: "/var/secrets/storage"
+    envFromSecret: ""
+    config: {}
   resources:
     requests:
       cpu: "3"
@@ -179,10 +213,22 @@ tempo:
 pyroscope:
   image:
     repository: grafana/pyroscope
-    tag: "1.2.0"
+    tag: "1.18.1"
+  retention: "72h"
   storage:
+    backend: "filesystem"       # filesystem | s3 | gcs | azure | swift
     size: 20Gi
     storageClass: ""
+    bucket: ""
+    endpoint: ""
+    region: ""
+    insecure: false
+    forcePathStyle: false
+    existingSecret: ""
+    secretKey: "key.json"
+    secretMountPath: "/var/secrets/storage"
+    envFromSecret: ""
+    config: {}
   resources:
     requests:
       cpu: "500m"
@@ -249,7 +295,7 @@ grafana:
     url: ""
 
 # ============================================================
-# Alloy (DaemonSet — logs, OTLP, profiling receive)
+# Alloy (DaemonSet — logs only)
 # ============================================================
 alloy:
   image:
@@ -262,13 +308,32 @@ alloy:
     limits:
       cpu: "2"
       memory: "2Gi"
+  scheduling:
+    nodeSelector:
+      kubernetes.io/os: linux
+    tolerations: []
+
+# ============================================================
+# Alloy-OTLP (Deployment — OTLP traces + profiling receive)
+# ============================================================
+alloyOtlp:
+  image:
+    repository: grafana/alloy
+    tag: "v1.13.2"
+  replicas: 1
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
   # -- OTEL pipeline memory limiter (must be < resources.limits.memory)
   memoryLimiter:
     limit: "1600MiB"
     spikeLimit: "400MiB"
   scheduling:
-    nodeSelector:
-      kubernetes.io/os: linux
+    nodeSelector: {}
     tolerations: []
 
 # ============================================================

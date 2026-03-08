@@ -89,7 +89,11 @@ app.kubernetes.io/component: {{ .component }}
 {{- end }}
 
 {{- define "obs.deployAlloy" -}}
-{{- if or .Values.logs.enabled .Values.traces.enabled .Values.profiling.enabled }}true{{- end }}
+{{- if .Values.logs.enabled }}true{{- end }}
+{{- end }}
+
+{{- define "obs.deployAlloyOtlp" -}}
+{{- if or .Values.traces.enabled .Values.profiling.enabled }}true{{- end }}
 {{- end }}
 
 {{- define "obs.deployAlloyMetrics" -}}
@@ -163,6 +167,13 @@ http://{{ include "obs.fullname" . }}-tempo.{{ .Release.Namespace }}.svc.cluster
 {{- end }}
 
 {{/*
+Tempo gRPC URL (in-cluster only, for streaming search)
+*/}}
+{{- define "obs.tempo.grpcUrl" -}}
+{{ include "obs.fullname" . }}-tempo.{{ .Release.Namespace }}.svc.cluster.local:9095
+{{- end }}
+
+{{/*
 Pyroscope URL
 */}}
 {{- define "obs.pyroscope.url" -}}
@@ -174,17 +185,17 @@ http://{{ include "obs.fullname" . }}-pyroscope.{{ .Release.Namespace }}.svc.clu
 {{- end }}
 
 {{/*
-Alloy OTLP endpoint (always in-cluster)
+Alloy OTLP endpoint (points to alloy-otlp Deployment)
 */}}
 {{- define "obs.alloy.otlpEndpoint" -}}
-http://{{ include "obs.fullname" . }}-alloy.{{ .Release.Namespace }}.svc.cluster.local:4318
+http://{{ include "obs.fullname" . }}-alloy-otlp.{{ .Release.Namespace }}.svc.cluster.local:4318
 {{- end }}
 
 {{/*
-Alloy Pyroscope push endpoint (always in-cluster)
+Alloy Pyroscope push endpoint (points to alloy-otlp Deployment)
 */}}
 {{- define "obs.alloy.pyroscopeEndpoint" -}}
-http://{{ include "obs.fullname" . }}-alloy.{{ .Release.Namespace }}.svc.cluster.local:9999
+http://{{ include "obs.fullname" . }}-alloy-otlp.{{ .Release.Namespace }}.svc.cluster.local:9999
 {{- end }}
 
 {{/*
@@ -207,4 +218,43 @@ Storage class helper — component > global fallback
 {{- if $sc }}
 storageClassName: {{ $sc }}
 {{- end }}
+{{- end }}
+
+{{/* ============================================================
+    OBJECT STORAGE HELPERS
+    ============================================================ */}}
+
+{{/*
+Returns "true" if backend is an object storage provider (not filesystem/local).
+Args: dict "backend" <value> "default" <default>
+*/}}
+{{- define "obs.usesObjectStorage" -}}
+{{- $b := .backend | default .default -}}
+{{- if and (ne $b "filesystem") (ne $b "local") }}true{{- end }}
+{{- end }}
+
+{{/*
+Returns "true" when backend is object storage AND existingSecret is set.
+Args: dict "storage" <storage-values> "default" <default>
+*/}}
+{{- define "obs.shouldMountCredentialSecret" -}}
+{{- $b := .storage.backend | default .default -}}
+{{- if and (include "obs.usesObjectStorage" (dict "backend" $b "default" .default)) .storage.existingSecret }}true{{- end }}
+{{- end }}
+
+{{/*
+Validation helper — calls fail() on invalid storage config.
+Args: dict "component" <name> "storage" <storage-values> "default" <default> "allowed" <list>
+*/}}
+{{- define "obs.storageValidation" -}}
+{{- $b := .storage.backend | default .default -}}
+{{- if not (has $b .allowed) -}}
+{{- fail (printf "%s.storage.backend must be one of: %s (got: %s)" .component (join ", " .allowed) $b) -}}
+{{- end -}}
+{{- if and (include "obs.usesObjectStorage" (dict "backend" $b "default" .default)) (not .storage.bucket) -}}
+{{- fail (printf "%s.storage.bucket is required when using object storage (backend: %s)" .component $b) -}}
+{{- end -}}
+{{- if and (eq $b "s3") .storage.forcePathStyle (not .storage.endpoint) -}}
+{{- fail (printf "%s.storage.forcePathStyle requires storage.endpoint (used for S3-compatible endpoints like MinIO)" .component) -}}
+{{- end -}}
 {{- end }}

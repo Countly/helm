@@ -1,0 +1,94 @@
+{{- if and .Values.metrics.enabled (ne .Values.mode "external") }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "obs.fullname" . }}-test-prometheus
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+  - name: test
+    image: busybox:1.35
+    command: ['sh', '-c', 'wget -qO- --timeout=10 http://{{ include "obs.fullname" . }}-prometheus:9090/-/ready']
+---
+{{- end }}
+{{- if and .Values.logs.enabled (ne .Values.mode "external") }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "obs.fullname" . }}-test-loki
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+  - name: test
+    image: busybox:1.35
+    command: ['sh', '-c', 'wget -qO- --timeout=10 http://{{ include "obs.fullname" . }}-loki:3100/ready']
+---
+{{- end }}
+{{- if and .Values.traces.enabled (ne .Values.mode "external") }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "obs.fullname" . }}-test-tempo
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+  - name: test
+    image: busybox:1.35
+    command: ['sh', '-c', 'wget -qO- --timeout=10 http://{{ include "obs.fullname" . }}-tempo:3200/ready']
+---
+{{- end }}
+{{- if (include "obs.deployGrafana" .) }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "obs.fullname" . }}-test-grafana
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+  - name: test
+    image: busybox:1.35
+    command: ['sh', '-c', 'wget -qO- --timeout=10 http://{{ include "obs.fullname" . }}-grafana:3000/api/health']
+---
+{{- end }}
+{{- if (include "obs.deployAlloyOtlp" .) }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "obs.fullname" . }}-test-alloy-otlp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+  - name: test
+    image: busybox:1.35
+    command: ['sh', '-c', 'wget -qO- --timeout=10 http://{{ include "obs.fullname" . }}-alloy-otlp:12345/-/ready']
+{{- end }}

@@ -14,6 +14,7 @@ Signals enabled:
 --------------------------------------------------------
   Integration Endpoints
 --------------------------------------------------------
+{{- if (include "obs.deployAlloyOtlp" .) }}
 
 To send telemetry from the Countly application, add the
 following overrides to your countly chart values:
@@ -24,6 +25,29 @@ following overrides to your countly chart values:
       OTEL_EXPORTER_OTLP_ENDPOINT: "{{ include "obs.alloy.otlpEndpoint" . }}"
       PYROSCOPE_ENABLED: "true"
       PYROSCOPE_ENDPOINT: "{{ include "obs.alloy.pyroscopeEndpoint" . }}"
+{{- else }}
+
+No OTLP or profiling collectors are deployed (traces and
+profiling are both disabled).
+{{- end }}
+
+{{- if eq ((.Values.traces.sampling).strategy | default "AlwaysOn") "TailBased" }}
+
+--------------------------------------------------------
+  Tail Sampling Active
+--------------------------------------------------------
+
+Tail sampling is enabled. The alloy-otlp Deployment is
+pinned to 1 replica because tail sampling requires all
+spans for a trace to hit the same collector instance.
+{{- if gt (int (.Values.alloyOtlp.replicas | default 1)) 1 }}
+
+WARNING: alloyOtlp.replicas was set to {{ .Values.alloyOtlp.replicas }}
+but has been overridden to 1 for tail sampling correctness.
+To scale tail sampling, add otelcol.exporter.loadbalancing
+with routing_key=traceID as a frontend layer.
+{{- end }}
+{{- end }}
 
 {{- if eq .Values.mode "full" }}
 

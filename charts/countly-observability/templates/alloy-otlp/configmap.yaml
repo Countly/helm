@@ -1,0 +1,259 @@
+{{- if (include "obs.deployAlloyOtlp" .) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "obs.fullname" . }}-alloy-otlp-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: alloy-otlp
+data:
+  config.alloy: |
+{{- if .Values.traces.enabled }}
+    // ===== OTLP TRACE PIPELINE =====
+    // Execution order: receiver → memory_limiter → k8sattributes → [sampler] → batch → exporter
+    // (River resolves by reference, so declaration order below is reversed)
+
+    // Exporter (final destination)
+    otelcol.exporter.otlp "tempo" {
+      client {
+        endpoint = "{{ include "obs.tempo.otlpGrpcEndpoint" . }}"
+        tls {
+          insecure = true
+        }
+      }
+    }
+
+    // Batch Processor (last before export)
+    otelcol.processor.batch "default" {
+      timeout             = "15s"
+      send_batch_size     = 1024
+      send_batch_max_size = 2048
+
+      output {
+        traces = [otelcol.exporter.otlp.tempo.input]
+      }
+    }
+
+  {{- if eq ((.Values.traces.sampling).strategy | default "AlwaysOn") "TailBased" }}
+    // Tail Sampling Processor
+    otelcol.processor.tail_sampling "default" {
+      decision_wait = "{{ (.Values.traces.sampling.tailSampling).waitDuration | default "10s" }}"
+      num_traces    = {{ (.Values.traces.sampling.tailSampling).numTraces | default 50000 }}
+
+    {{- if (.Values.traces.sampling.tailSampling).policies }}
+      {{- if .Values.traces.sampling.tailSampling.policies.keepErrors }}
+      // Keep all ERROR traces
+      policy {
+        name = "keep-errors"
+        type = "status_code"
+        status_code {
+          status_codes = ["ERROR"]
+        }
+      }
+      {{- end }}
+
+      {{- if .Values.traces.sampling.tailSampling.policies.latencyThresholdMs }}
+      // Keep traces above latency threshold
+      policy {
+        name = "keep-slow"
+        type = "latency"
+        latency {
+          threshold_ms = {{ .Values.traces.sampling.tailSampling.policies.latencyThresholdMs }}
+        }
+      }
+      {{- end }}
+
+      // Baseline probabilistic sampling for the rest
+      policy {
+        name = "baseline"
+        type = "probabilistic"
+        probabilistic {
+          sampling_percentage = {{ printf "%.0f" (mulf ((.Values.traces.sampling.tailSampling).policies.baselineRatio | default 0.1) 100.0) }}
+        }
+      }
+    {{- else }}
+      // Default: keep all
+      policy {
+        name = "keep-all"
+        type = "always_sample"
+      }
+    {{- end }}
+
+      output {
+        traces = [otelcol.processor.batch.default.input]
+      }
+    }
+  {{- else if ne ((.Values.traces.sampling).strategy | default "AlwaysOn") "AlwaysOn" }}
+    // Probabilistic Sampler
+    otelcol.processor.probabilistic_sampler "default" {
+      sampling_percentage = {{ printf "%.0f" (mulf .Values.traces.sampling.ratio 100.0) }}
+
+      output {
+        traces = [otelcol.processor.batch.default.input]
+      }
+    }
+  {{- end }}
+
+    // K8s Attributes Processor
+    otelcol.processor.k8sattributes "default" {
+      extract {
+        metadata = [
+          "k8s.pod.name",
+          "k8s.pod.uid",
+          "k8s.deployment.name",
+          "k8s.namespace.name",
+          "k8s.node.name",
+          "k8s.pod.start_time",
+          "k8s.replicaset.name",
+          "k8s.replicaset.uid",
+          "k8s.daemonset.name",
+          "k8s.daemonset.uid",
+          "k8s.job.name",
+          "k8s.job.uid",
+          "k8s.statefulset.name",
+          "k8s.statefulset.uid",
+          "k8s.container.name",
+          "k8s.cronjob.name",
+        ]
+
+        annotation {
+          tag_name = "component"
+          key      = "app.kubernetes.io/component"
+          from     = "pod"
+        }
+
+        label {
+          tag_name = "app_name"
+          key      = "app"
+          from     = "pod"
+        }
+
+        label {
+          tag_name = "component"
+          key      = "component"
+          from     = "pod"
+        }
+      }
+
+      pod_association {
+        source {
+          from = "resource_attribute"
+          name = "k8s.pod.ip"
+        }
+      }
+
+      pod_association {
+        source {
+          from = "resource_attribute"
+          name = "k8s.pod.uid"
+        }
+      }
+
+      pod_association {
+        source {
+          from = "connection"
+        }
+      }
+
+      output {
+  {{- if eq ((.Values.traces.sampling).strategy | default "AlwaysOn") "TailBased" }}
+        traces = [otelcol.processor.tail_sampling.default.input]
+  {{- else if ne ((.Values.traces.sampling).strategy | default "AlwaysOn") "AlwaysOn" }}
+        traces = [otelcol.processor.probabilistic_sampler.default.input]
+  {{- else }}
+        traces = [otelcol.processor.batch.default.input]
+  {{- end }}
+      }
+    }
+
+    // Memory Limiter (first processor after receiver — backpressure first)
+    otelcol.processor.memory_limiter "default" {
+      check_interval = "5s"
+      limit          = "{{ .Values.alloyOtlp.memoryLimiter.limit }}"
+      spike_limit    = "{{ .Values.alloyOtlp.memoryLimiter.spikeLimit }}"
+
+      output {
+        traces = [otelcol.processor.k8sattributes.default.input]
+      }
+    }
+
+    // OTLP Receiver (entry point)
+    otelcol.receiver.otlp "default" {
+      grpc {
+        endpoint = "0.0.0.0:4317"
+      }
+
+      http {
+        endpoint = "0.0.0.0:4318"
+      }
+
+      output {
+        traces = [otelcol.processor.memory_limiter.default.input]
+      }
+    }
+{{- end }}
+
+{{- if .Values.metrics.enabled }}
+    // ===== METRICS (self-monitoring + remote write target) =====
+    prometheus.remote_write "default" {
+      endpoint {
+        url = "{{ include "obs.prometheus.remoteWriteUrl" . }}"
+
+        queue_config {
+          capacity              = 15000
+          max_shards            = 1
+          min_shards            = 1
+          max_samples_per_send  = 300
+          batch_send_deadline   = "45s"
+          min_backoff           = "1s"
+          max_backoff           = "60s"
+        }
+
+        metadata_config {
+          send = false
+        }
+
+        send_exemplars         = false
+        send_native_histograms = false
+      }
+
+      wal {
+        truncate_frequency = "2h"
+        min_keepalive_time = "5m"
+        max_keepalive_time = "8h"
+      }
+    }
+
+    prometheus.exporter.self "alloy" {
+    }
+
+    prometheus.scrape "alloy_self" {
+      targets         = prometheus.exporter.self.alloy.targets
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "alloy-otlp-internal"
+      scrape_interval = "30s"
+    }
+{{- end }}
+
+{{- if .Values.profiling.enabled }}
+    // ===== PROFILING RECEIVE =====
+    pyroscope.receive_http "apps" {
+      http {
+        listen_address = "0.0.0.0"
+        listen_port    = 9999
+      }
+
+      forward_to = [pyroscope.write.default.receiver]
+    }
+
+    pyroscope.write "default" {
+      endpoint {
+        url = "{{ include "obs.pyroscope.url" . }}"
+      }
+      external_labels = {
+        cluster = "{{ .Values.clusterName }}",
+      }
+    }
+{{- end }}
+{{- end }}

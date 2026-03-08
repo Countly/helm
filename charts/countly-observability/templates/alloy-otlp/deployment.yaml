@@ -1,0 +1,96 @@
+{{- if (include "obs.deployAlloyOtlp" .) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "obs.fullname" . }}-alloy-otlp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: alloy-otlp
+spec:
+  {{/*
+    Tail sampling requires all spans for a given trace to hit the same collector.
+    When TailBased strategy is active, force replicas=1 to prevent correctness violations.
+    For multi-replica tail sampling, otelcol.exporter.loadbalancing with routing_key=traceID
+    must be added as a frontend layer.
+  */}}
+  {{- if eq ((.Values.traces.sampling).strategy | default "AlwaysOn") "TailBased" }}
+  replicas: 1
+  {{- else }}
+  replicas: {{ .Values.alloyOtlp.replicas | default 1 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "obs.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: alloy-otlp
+  template:
+    metadata:
+      labels:
+        {{- include "obs.labels" . | nindent 8 }}
+        app.kubernetes.io/component: alloy-otlp
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/alloy-otlp/configmap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "obs.fullname" . }}-alloy
+      {{- include "obs.scheduling" (dict "values" .Values.alloyOtlp "global" .Values.global "component" "alloy-otlp" "fullname" (include "obs.fullname" .)) | nindent 6 }}
+      containers:
+      - name: alloy
+        image: {{ include "obs.image" (dict "global" .Values.global "image" .Values.alloyOtlp.image) }}
+        args:
+          - run
+          - /etc/alloy/config.alloy
+          - --storage.path=/tmp/alloy
+          - --server.http.listen-addr=0.0.0.0:12345
+        ports:
+        - containerPort: 12345
+          name: http-metrics
+          protocol: TCP
+        {{- if .Values.traces.enabled }}
+        - containerPort: 4317
+          name: otlp-grpc
+          protocol: TCP
+        - containerPort: 4318
+          name: otlp-http
+          protocol: TCP
+        {{- end }}
+        {{- if .Values.profiling.enabled }}
+        - containerPort: 9999
+          name: pyroscope-http
+          protocol: TCP
+        {{- end }}
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: ALLOY_DEPLOY_MODE
+          value: "helm"
+        volumeMounts:
+        - name: config
+          mountPath: /etc/alloy
+        - name: alloy-storage
+          mountPath: /tmp/alloy
+        {{- with .Values.alloyOtlp.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 12345
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 12345
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "obs.fullname" . }}-alloy-otlp-config
+      - name: alloy-storage
+        emptyDir: {}
+{{- end }}

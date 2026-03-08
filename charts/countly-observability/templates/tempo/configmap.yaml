@@ -1,4 +1,5 @@
 {{- if (include "obs.deployTempo" .) }}
+{{- include "obs.storageValidation" (dict "component" "tempo" "storage" .Values.tempo.storage "default" "local" "allowed" (list "local" "s3" "gcs" "azure")) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -69,11 +70,46 @@ data:
 
     storage:
       trace:
+        {{- $backend := (.Values.tempo.storage).backend | default "local" }}
+        {{- if eq $backend "s3" }}
+        backend: s3
+        s3:
+          bucket: {{ .Values.tempo.storage.bucket }}
+          {{- if .Values.tempo.storage.endpoint }}
+          endpoint: {{ .Values.tempo.storage.endpoint }}
+          {{- end }}
+          {{- if .Values.tempo.storage.region }}
+          region: {{ .Values.tempo.storage.region }}
+          {{- end }}
+          {{- if .Values.tempo.storage.insecure }}
+          insecure: {{ .Values.tempo.storage.insecure }}
+          {{- end }}
+          forcepathstyle: {{ .Values.tempo.storage.forcePathStyle | default false }}
+          {{- with .Values.tempo.storage.config }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- else if eq $backend "gcs" }}
+        backend: gcs
+        gcs:
+          bucket_name: {{ .Values.tempo.storage.bucket }}
+          {{- with .Values.tempo.storage.config }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- else if eq $backend "azure" }}
+        backend: azure
+        azure:
+          container_name: {{ .Values.tempo.storage.bucket }}
+          {{- with .Values.tempo.storage.config }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- else }}
         backend: local
         local:
           path: /var/tempo/traces
+        {{- end }}
         wal:
           path: /var/tempo/wal
+        blocklist_poll_fallback: true
         pool:
           max_workers: 50
           queue_depth: 5000

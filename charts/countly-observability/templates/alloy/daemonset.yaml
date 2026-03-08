@@ -35,19 +35,6 @@ spec:
         - containerPort: 12345
           name: http-metrics
           protocol: TCP
-        {{- if .Values.traces.enabled }}
-        - containerPort: 4317
-          name: otlp-grpc
-          protocol: TCP
-        - containerPort: 4318
-          name: otlp-http
-          protocol: TCP
-        {{- end }}
-        {{- if .Values.profiling.enabled }}
-        - containerPort: 9999
-          name: pyroscope-http
-          protocol: TCP
-        {{- end }}
         env:
         - name: HOSTNAME
           valueFrom:

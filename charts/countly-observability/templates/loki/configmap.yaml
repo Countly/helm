@@ -1,4 +1,5 @@
 {{- if (include "obs.deployLoki" .) }}
+{{- include "obs.storageValidation" (dict "component" "loki" "storage" .Values.loki.storage "default" "filesystem" "allowed" (list "filesystem" "s3" "gcs" "azure")) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -18,9 +19,43 @@ data:
     common:
       path_prefix: /loki
       storage:
+        {{- $backend := (.Values.loki.storage).backend | default "filesystem" }}
+        {{- if eq $backend "s3" }}
+        s3:
+          bucketnames: {{ .Values.loki.storage.bucket }}
+          {{- if .Values.loki.storage.endpoint }}
+          endpoint: {{ .Values.loki.storage.endpoint }}
+          {{- end }}
+          {{- if .Values.loki.storage.region }}
+          region: {{ .Values.loki.storage.region }}
+          {{- end }}
+          {{- if .Values.loki.storage.insecure }}
+          insecure: {{ .Values.loki.storage.insecure }}
+          {{- end }}
+          s3forcepathstyle: {{ .Values.loki.storage.forcePathStyle | default false }}
+          {{- with .Values.loki.storage.config }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- else if eq $backend "gcs" }}
+        gcs:
+          bucket_name: {{ .Values.loki.storage.bucket }}
+          {{- with .Values.loki.storage.config }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- else if eq $backend "azure" }}
+        azure:
+          container_name: {{ .Values.loki.storage.bucket }}
+          {{- if .Values.loki.storage.endpoint }}
+          endpoint_suffix: {{ .Values.loki.storage.endpoint }}
+          {{- end }}
+          {{- with .Values.loki.storage.config }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- else }}
         filesystem:
           chunks_directory: /loki/chunks
           rules_directory: /loki/rules
+        {{- end }}
       replication_factor: 1
       ring:
         instance_addr: 127.0.0.1
@@ -38,7 +73,7 @@ data:
       configs:
         - from: 2020-10-24
           store: tsdb
-          object_store: filesystem
+          object_store: {{ (.Values.loki.storage).backend | default "filesystem" }}
           schema: v13
           index:
             prefix: index_
@@ -59,5 +94,5 @@ data:
     compactor:
       working_directory: /loki/compactor
       retention_enabled: true
-      delete_request_store: filesystem
+      delete_request_store: {{ (.Values.loki.storage).backend | default "filesystem" }}
 {{- end }}

@@ -1,4 +1,5 @@
 {{- if (include "obs.deployPyroscope" .) }}
+{{- include "obs.storageValidation" (dict "component" "pyroscope" "storage" .Values.pyroscope.storage "default" "filesystem" "allowed" (list "filesystem" "s3" "gcs" "azure" "swift")) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -14,4 +15,50 @@ data:
 
     server:
       http_listen_port: 4040
+
+    storage:
+      {{- $backend := (.Values.pyroscope.storage).backend | default "filesystem" }}
+      {{- if eq $backend "s3" }}
+      backend: s3
+      s3:
+        bucket_name: {{ .Values.pyroscope.storage.bucket }}
+        {{- if .Values.pyroscope.storage.endpoint }}
+        endpoint: {{ .Values.pyroscope.storage.endpoint }}
+        {{- end }}
+        {{- if .Values.pyroscope.storage.region }}
+        region: {{ .Values.pyroscope.storage.region }}
+        {{- end }}
+        {{- if .Values.pyroscope.storage.insecure }}
+        insecure: {{ .Values.pyroscope.storage.insecure }}
+        {{- end }}
+        {{- with .Values.pyroscope.storage.config }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- else if eq $backend "gcs" }}
+      backend: gcs
+      gcs:
+        bucket_name: {{ .Values.pyroscope.storage.bucket }}
+        {{- with .Values.pyroscope.storage.config }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- else if eq $backend "azure" }}
+      backend: azure
+      azure:
+        container_name: {{ .Values.pyroscope.storage.bucket }}
+        {{- if .Values.pyroscope.storage.endpoint }}
+        endpoint_suffix: {{ .Values.pyroscope.storage.endpoint }}
+        {{- end }}
+        {{- with .Values.pyroscope.storage.config }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- else if eq $backend "swift" }}
+      backend: swift
+      swift:
+        container_name: {{ .Values.pyroscope.storage.bucket }}
+        {{- with .Values.pyroscope.storage.config }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- else }}
+      backend: filesystem
+      {{- end }}
 {{- end }}

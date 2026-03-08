@@ -411,9 +411,8 @@ data:
       targets           = discovery.relabel.kube_state_metrics.output
       forward_to        = [prometheus.remote_write.default.receiver]
       job_name          = "kube-state-metrics"
-      scrape_interval   = "{{ .Values.metrics.sampling.interval }}"
-      scrape_timeout    = "10s"
-      honor_timestamps  = false
+      scrape_interval   = "30s"
+      scrape_timeout    = "15s"
     }
 
     // ===== node-exporter (all nodes) =====
@@ -455,8 +454,8 @@ data:
       targets         = discovery.relabel.node_exporter.output
       forward_to      = [prometheus.relabel.node_exporter_relabel.receiver]
       job_name        = "node-exporter"
-      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
-      scrape_timeout  = "14s"
+      scrape_interval = "30s"
+      scrape_timeout  = "25s"
     }
 
     prometheus.relabel "node_exporter_relabel" {

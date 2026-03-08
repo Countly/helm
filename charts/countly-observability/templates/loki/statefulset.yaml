@@ -42,6 +42,11 @@ spec:
           mountPath: /etc/loki
         - name: data
           mountPath: /loki
+        {{- if (include "obs.shouldMountCredentialSecret" (dict "storage" .Values.loki.storage "default" "filesystem")) }}
+        - name: credential-secret
+          mountPath: {{ .Values.loki.storage.secretMountPath | default "/var/secrets/storage" }}
+          readOnly: true
+        {{- end }}
         ports:
         - containerPort: 3100
           name: http
@@ -49,6 +54,20 @@ spec:
         - containerPort: 9096
           name: grpc
           protocol: TCP
+        {{- $storage := .Values.loki.storage }}
+        {{- $backend := $storage.backend | default "filesystem" }}
+        {{- if or (and (include "obs.shouldMountCredentialSecret" (dict "storage" $storage "default" "filesystem")) (eq $backend "gcs")) $storage.envFromSecret }}
+        env:
+        {{- if and (include "obs.shouldMountCredentialSecret" (dict "storage" $storage "default" "filesystem")) (eq $backend "gcs") }}
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: {{ $storage.secretMountPath | default "/var/secrets/storage" }}/{{ $storage.secretKey | default "key.json" }}
+        {{- end }}
+        {{- end }}
+        {{- if $storage.envFromSecret }}
+        envFrom:
+        - secretRef:
+            name: {{ $storage.envFromSecret }}
+        {{- end }}
         {{- with .Values.loki.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
@@ -74,6 +93,11 @@ spec:
       - name: config
         configMap:
           name: {{ include "obs.fullname" . }}-loki
+      {{- if (include "obs.shouldMountCredentialSecret" (dict "storage" .Values.loki.storage "default" "filesystem")) }}
+      - name: credential-secret
+        secret:
+          secretName: {{ .Values.loki.storage.existingSecret }}
+      {{- end }}
       {{- include "obs.scheduling" (dict "values" .Values.loki "global" .Values.global "component" "loki" "fullname" (include "obs.fullname" .)) | nindent 6 }}
   volumeClaimTemplates:
   - metadata:

@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "obs.fullname" . }}-grafana-datasources
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "obs.labels" . | nindent 4 }}
     app.kubernetes.io/component: grafana
@@ -11,7 +12,7 @@ data:
     apiVersion: 1
     datasources:
     {{- if .Values.metrics.enabled }}
-    # Prometheus – metrics datasource
+    # Prometheus -- metrics datasource
     - name: Prometheus
       uid: prometheus
       type: prometheus
@@ -20,23 +21,27 @@ data:
       isDefault: true
     {{- end }}
     {{- if .Values.logs.enabled }}
-    # Loki – logs datasource
+    # Loki -- logs datasource
     - name: Loki
       uid: loki
       type: loki
       access: proxy
       url: {{ include "obs.loki.url" . }}
-      {{- if .Values.traces.enabled }}
       jsonData:
         derivedFields:
           - name: traceID
             matcherRegex: 'traceId=([A-Fa-f0-9]{32})'
             url: ${__value.raw}
             datasourceUid: tempo
-      {{- end }}
+            urlDisplayLabel: View Trace
+          - name: traceID_json
+            matcherRegex: '"traceId":"([A-Fa-f0-9]{32})"'
+            url: ${__value.raw}
+            datasourceUid: tempo
+            urlDisplayLabel: View Trace
     {{- end }}
     {{- if .Values.traces.enabled }}
-    # Tempo – traces datasource
+    # Tempo -- traces datasource
     - name: Tempo
       uid: tempo
       type: tempo
@@ -44,9 +49,45 @@ data:
       url: {{ include "obs.tempo.httpUrl" . }}
       jsonData:
         httpMethod: GET
+        grpcUrl: {{ include "obs.tempo.grpcUrl" . }}
+        {{- if .Values.metrics.enabled }}
+        serviceMap:
+          datasourceUid: prometheus
+        tracesToMetrics:
+          datasourceUid: prometheus
+          spanStartTimeShift: '-1h'
+          spanEndTimeShift: '1h'
+          tags:
+            - key: service.name
+              value: service
+            - key: job
+          queries:
+            - name: 'Request rate'
+              query: 'sum(rate(traces_spanmetrics_calls_total{$$__tags}[5m]))'
+            - name: 'Latency (p95)'
+              query: 'histogram_quantile(0.95, sum(rate(traces_spanmetrics_latency_bucket{$$__tags}[5m])) by (le))'
+        {{- end }}
+        {{- if .Values.logs.enabled }}
+        tracesToLogsV2:
+          datasourceUid: loki
+          spanStartTimeShift: '-1h'
+          spanEndTimeShift: '1h'
+          filterByTraceID: false
+          filterBySpanID: false
+          customQuery: true
+          query: '{namespace="${__span.tags["k8s.namespace.name"]}"} |= `${__trace.traceId}`'
+        {{- end }}
+        {{- if .Values.profiling.enabled }}
+        tracesToProfiles:
+          datasourceUid: pyroscope
+          profileTypeId: 'process_cpu:cpu:nanoseconds:cpu:nanoseconds'
+          tags:
+            - service.name
+            - namespace
+        {{- end }}
     {{- end }}
     {{- if .Values.profiling.enabled }}
-    # Pyroscope – profiling datasource
+    # Pyroscope -- profiling datasource
     - name: Pyroscope
       uid: pyroscope
       type: grafana-pyroscope-datasource

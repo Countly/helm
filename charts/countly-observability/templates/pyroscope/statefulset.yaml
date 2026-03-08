@@ -37,11 +37,22 @@ spec:
         image: {{ include "obs.image" (dict "global" .Values.global "image" .Values.pyroscope.image) }}
         args:
           - '-config.file=/etc/pyroscope/pyroscope.yaml'
+          - '-compactor.blocks-retention-period={{ .Values.pyroscope.retention | default "72h" }}'
+          {{- if .Values.pyroscope.storage.envFromSecret }}
+          - '-config.expand-env=true'
+          {{- end }}
         volumeMounts:
         - name: config
           mountPath: /etc/pyroscope
         - name: data
           mountPath: /data
+        - name: data-shared
+          mountPath: /data-shared
+        {{- if (include "obs.shouldMountCredentialSecret" (dict "storage" .Values.pyroscope.storage "default" "filesystem")) }}
+        - name: credential-secret
+          mountPath: {{ .Values.pyroscope.storage.secretMountPath | default "/var/secrets/storage" }}
+          readOnly: true
+        {{- end }}
         ports:
         - containerPort: 4040
           name: http
@@ -55,6 +66,20 @@ spec:
         - containerPort: 4318
           name: otlp-http
           protocol: TCP
+        {{- $storage := .Values.pyroscope.storage }}
+        {{- $backend := $storage.backend | default "filesystem" }}
+        {{- if or (and (include "obs.shouldMountCredentialSecret" (dict "storage" $storage "default" "filesystem")) (eq $backend "gcs")) $storage.envFromSecret }}
+        env:
+        {{- if and (include "obs.shouldMountCredentialSecret" (dict "storage" $storage "default" "filesystem")) (eq $backend "gcs") }}
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: {{ $storage.secretMountPath | default "/var/secrets/storage" }}/{{ $storage.secretKey | default "key.json" }}
+        {{- end }}
+        {{- end }}
+        {{- if $storage.envFromSecret }}
+        envFrom:
+        - secretRef:
+            name: {{ $storage.envFromSecret }}
+        {{- end }}
         {{- with .Values.pyroscope.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
@@ -81,6 +106,13 @@ spec:
       - name: config
         configMap:
           name: {{ include "obs.fullname" . }}-pyroscope
+      - name: data-shared
+        emptyDir: {}
+      {{- if (include "obs.shouldMountCredentialSecret" (dict "storage" .Values.pyroscope.storage "default" "filesystem")) }}
+      - name: credential-secret
+        secret:
+          secretName: {{ .Values.pyroscope.storage.existingSecret }}
+      {{- end }}
       {{- include "obs.scheduling" (dict "values" .Values.pyroscope "global" .Values.global "component" "pyroscope" "fullname" (include "obs.fullname" .)) | nindent 6 }}
   volumeClaimTemplates:
   - metadata:

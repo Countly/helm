@@ -16,7 +16,8 @@ Deploys a four-pillar observability stack (metrics, logs, traces, profiling) pur
 | Loki | StatefulSet | Log aggregation and querying | 3100, 9096 |
 | Tempo | StatefulSet | Distributed trace storage | 3200, 4317 (gRPC), 4318 (HTTP), 9095 |
 | Pyroscope | StatefulSet | Continuous profiling backend | 4040, 4041, 4317, 4318 |
-| Alloy | DaemonSet | Log collection, OTLP receive, profile forwarding | 4317 (gRPC), 4318 (HTTP), 9999 (Pyroscope), 12345 (UI) |
+| Alloy | DaemonSet | Log collection only | 12345 (UI) |
+| Alloy-OTLP | Deployment | OTLP trace receive, profile forwarding | 4317 (gRPC), 4318 (HTTP), 9999 (Pyroscope), 12345 (UI) |
 | Alloy-Metrics | Deployment | Prometheus scraping and remote write | 12345 (UI) |
 | kube-state-metrics | Deployment | Kubernetes object metrics | 8080, 8081 |
 | node-exporter | DaemonSet | Host-level hardware/OS metrics | 9100 |
@@ -76,7 +77,7 @@ grafana:
 
 ### external
 
-Only Alloy collectors are deployed. All telemetry is forwarded to external endpoints. You must configure the external URLs for each enabled signal.
+Only Alloy collectors (Alloy DaemonSet for logs, Alloy-OTLP Deployment for traces/profiling, Alloy-Metrics for scraping) are deployed. All telemetry is forwarded to external endpoints. You must configure the external URLs for each enabled signal.
 
 ```yaml
 mode: external
@@ -120,19 +121,21 @@ Each observability signal can be enabled or disabled independently:
 metrics:
   enabled: true    # Prometheus, kube-state-metrics, node-exporter, Alloy-Metrics
 traces:
-  enabled: true    # Tempo, OTLP pipelines in Alloy
+  enabled: true    # Tempo, OTLP pipeline in Alloy-OTLP
 logs:
-  enabled: true    # Loki, log collection pipeline in Alloy
+  enabled: true    # Loki, log collection pipeline in Alloy DaemonSet
 profiling:
-  enabled: true    # Pyroscope, profile forwarding in Alloy
+  enabled: true    # Pyroscope, profile forwarding in Alloy-OTLP
 ```
 
 | Signal | Components affected when disabled |
 |---|---|
 | `metrics.enabled: false` | Prometheus, kube-state-metrics, node-exporter, Alloy-Metrics not deployed |
-| `traces.enabled: false` | Tempo not deployed, OTLP forwarding removed from Alloy |
-| `logs.enabled: false` | Loki not deployed, log collection removed from Alloy |
-| `profiling.enabled: false` | Pyroscope not deployed, profile forwarding removed from Alloy |
+| `traces.enabled: false` | Tempo not deployed, OTLP pipeline removed from Alloy-OTLP |
+| `logs.enabled: false` | Loki not deployed, Alloy DaemonSet not deployed |
+| `profiling.enabled: false` | Pyroscope not deployed, profiling pipeline removed from Alloy-OTLP |
+
+Alloy-OTLP is deployed when either `traces.enabled` or `profiling.enabled` is true. The Alloy DaemonSet is deployed only when `logs.enabled` is true.
 
 Example -- traces and profiling only:
 
@@ -164,9 +167,18 @@ metrics:
 ```yaml
 traces:
   sampling:
-    strategy: "AlwaysOn"    # AlwaysOn | TraceIdRatio | ParentBased
-    ratio: 1.0              # 0.0 - 1.0, used when strategy != AlwaysOn
+    strategy: "AlwaysOn"    # AlwaysOn | TraceIdRatio | ParentBased | TailBased
+    ratio: 1.0              # 0.0 - 1.0, used when strategy is TraceIdRatio or ParentBased
+    tailSampling:           # Only used when strategy == TailBased
+      waitDuration: "10s"
+      numTraces: 50000
+      policies:
+        keepErrors: true          # Keep 100% of ERROR traces
+        latencyThresholdMs: 2000  # Keep traces above this latency
+        baselineRatio: 0.1        # Sample 10% of remaining traces
 ```
+
+When `TailBased` is active, the Alloy-OTLP Deployment is forced to 1 replica because tail sampling requires all spans for a trace to hit the same collector instance.
 
 ### Logs
 
@@ -195,9 +207,9 @@ To send telemetry from the Countly application chart, add the following override
 config:
   otel:
     OTEL_ENABLED: "true"
-    OTEL_EXPORTER_OTLP_ENDPOINT: "http://<release>-countly-observability-alloy.observability.svc.cluster.local:4318"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://<release>-countly-observability-alloy-otlp.observability.svc.cluster.local:4318"
     PYROSCOPE_ENABLED: "true"
-    PYROSCOPE_ENDPOINT: "http://<release>-countly-observability-alloy.observability.svc.cluster.local:9999"
+    PYROSCOPE_ENDPOINT: "http://<release>-countly-observability-alloy-otlp.observability.svc.cluster.local:9999"
 ```
 
 Replace `<release>` with the Helm release name used when installing the observability chart. If you installed into a different namespace, update the `.observability.` portion of the FQDN accordingly.
@@ -299,7 +311,7 @@ grafana:
 | Grafana | `grafana/grafana` | 12.4.0 |
 | Loki | `grafana/loki` | 3.6.7 |
 | Tempo | `grafana/tempo` | 2.10.1 |
-| Pyroscope | `grafana/pyroscope` | 1.2.0 |
+| Pyroscope | `grafana/pyroscope` | 1.18.1 |
 | Alloy | `grafana/alloy` | v1.13.2 |
 | kube-state-metrics | `registry.k8s.io/kube-state-metrics/kube-state-metrics` | v2.18.0 |
 | node-exporter | `prom/node-exporter` | v1.10.2 |
@@ -313,9 +325,9 @@ Data flows through the stack as follows:
 ```
 Applications (Countly, etc.)
     |
-    |--- OTLP (gRPC/HTTP :4317/:4318) ---> Alloy DaemonSet ---> Tempo (traces)
-    |--- Profiles (:9999) ----------------> Alloy DaemonSet ---> Pyroscope
-    |--- stdout/stderr (container logs) --> Alloy DaemonSet ---> Loki
+    |--- OTLP (gRPC/HTTP :4317/:4318) ---> Alloy-OTLP Deployment ---> Tempo (traces)
+    |--- Profiles (:9999) ----------------> Alloy-OTLP Deployment ---> Pyroscope
+    |--- stdout/stderr (container logs) --> Alloy DaemonSet ---------> Loki
     |
 Kubernetes cluster
     |
@@ -330,10 +342,11 @@ Grafana
     |--- queries Pyroscope (profiles)
 ```
 
-- **Alloy DaemonSet** runs on every node. It collects container logs (forwarded to Loki), receives OTLP data (forwarded to Tempo), and receives profiles (forwarded to Pyroscope).
+- **Alloy DaemonSet** runs on every node. It collects container logs and forwards them to Loki. It does not handle OTLP or profiling traffic.
+- **Alloy-OTLP Deployment** receives OTLP traces (forwarded to Tempo) and profiles (forwarded to Pyroscope). It runs as a centralized Deployment, enabling independent scaling and tail sampling support.
 - **Alloy-Metrics Deployment** scrapes all Prometheus targets (kube-state-metrics, node-exporter, kubelet, application metrics) and writes to Prometheus via remote write.
-- **Grafana** queries all four backends and serves the pre-built dashboards.
-- **Tempo** can optionally generate span metrics and write them to Prometheus when metrics are enabled.
+- **Grafana** queries all four backends and serves the pre-built dashboards. Cross-signal correlation (trace-to-log, trace-to-profile, trace-to-metrics, service map) is pre-wired.
+- **Tempo** generates span metrics and service graph metrics, writing them to Prometheus when metrics are enabled.
 
 ---
 
@@ -351,18 +364,31 @@ Below are the most important configuration knobs. See `values.yaml` for the full
 | `kafkaNamespace` | `kafka` | Namespace for Kafka scrape targets |
 | `global.storageClass` | `""` | Default StorageClass for all PVCs |
 | `global.scheduling.nodeSelector` | `{}` | Default nodeSelector for all workloads |
+| `traces.sampling.strategy` | `AlwaysOn` | Sampling strategy: `AlwaysOn`, `TraceIdRatio`, `ParentBased`, `TailBased` |
 | `prometheus.retention.time` | `30d` | How long to keep metrics |
 | `prometheus.retention.size` | `50GB` | Max TSDB size on disk |
 | `prometheus.storage.size` | `100Gi` | PVC size for Prometheus |
 | `loki.retention` | `30d` | Log retention period |
+| `loki.storage.backend` | `filesystem` | Storage backend: `filesystem`, `s3`, `gcs`, `azure` |
 | `loki.storage.size` | `100Gi` | PVC size for Loki |
+| `loki.storage.bucket` | `""` | Bucket/container name (required for object backends) |
+| `loki.storage.forcePathStyle` | `false` | S3 path-style access for MinIO |
+| `loki.storage.existingSecret` | `""` | Mount credential file from K8s Secret |
+| `loki.storage.envFromSecret` | `""` | Inject env vars from K8s Secret |
 | `loki.config.maxStreamsPerUser` | `10000` | Max active streams per tenant |
 | `tempo.retention` | `12h` | Trace retention period |
+| `tempo.storage.backend` | `local` | Storage backend: `local`, `s3`, `gcs`, `azure` |
 | `tempo.storage.size` | `150Gi` | PVC size for Tempo |
+| `tempo.storage.bucket` | `""` | Bucket/container name (required for object backends) |
 | `tempo.config.maxTracesPerUser` | `50000` | Max live traces per tenant |
+| `pyroscope.retention` | `72h` | Profile retention period (Go duration: `h`, `m`, `s`) |
+| `pyroscope.storage.backend` | `filesystem` | Storage backend: `filesystem`, `s3`, `gcs`, `azure`, `swift` |
 | `pyroscope.storage.size` | `20Gi` | PVC size for Pyroscope |
+| `pyroscope.storage.bucket` | `""` | Bucket/container name (required for object backends) |
 | `grafana.persistence.enabled` | `false` | Grafana PVC (ephemeral by default -- config is declarative) |
 | `grafana.plugins.install` | `grafana-pyroscope-datasource` | Plugins installed on startup |
+| `alloyOtlp.replicas` | `1` | Number of OTLP collector replicas (forced to 1 when TailBased) |
+| `alloyOtlp.memoryLimiter.limit` | `1600MiB` | OTEL pipeline memory limit (must be < resources.limits.memory) |
 | `alloyMetrics.replicas` | `1` | Number of metrics collector replicas |
 
 ---
@@ -382,10 +408,11 @@ Suitable for development, testing, and small-scale deployments. Uses the default
 | Tempo | 3 | 6Gi | 4 | 10Gi |
 | Pyroscope | 500m | 1Gi | 1 | 2Gi |
 | Grafana | 1 | 1Gi | 2 | 2Gi |
-| Alloy | 500m | 1Gi | 2 | 2Gi |
+| Alloy (logs) | 500m | 1Gi | 2 | 2Gi |
+| Alloy-OTLP (traces/profiling) | 500m | 1Gi | 2 | 2Gi |
 | Alloy-Metrics | 500m | 512Mi | 500m | 512Mi |
 | kube-state-metrics | 10m | 32Mi | 100m | 256Mi |
-| node-exporter | 102m | 180Mi | 250m | 300Mi |
+| node-exporter | 100m | 180Mi | 250m | 300Mi |
 
 ### tier2 (production)
 
@@ -438,6 +465,109 @@ alloyMetrics:
 
 ---
 
+## Object Storage
+
+By default, Loki, Tempo, and Pyroscope use filesystem/local storage on PVCs. For production deployments, multiple cloud object storage providers are supported.
+
+### S3 (AWS)
+
+```yaml
+loki:
+  storage:
+    backend: "s3"
+    bucket: "my-loki-bucket"
+    region: "us-east-1"
+    # Uses IRSA for auth (no credentials needed)
+```
+
+### S3-compatible (MinIO)
+
+```yaml
+tempo:
+  storage:
+    backend: "s3"
+    bucket: "tempo-traces"
+    endpoint: "http://minio:9000"
+    insecure: true
+    forcePathStyle: true
+    envFromSecret: "minio-credentials"  # contains ACCESS_KEY, SECRET_KEY
+```
+
+### GCS (with Workload Identity -- no credentials)
+
+```yaml
+pyroscope:
+  storage:
+    backend: "gcs"
+    bucket: "my-pyroscope-bucket"
+```
+
+### GCS (with service account JSON key file)
+
+```yaml
+loki:
+  storage:
+    backend: "gcs"
+    bucket: "my-loki-bucket"
+    existingSecret: "gcs-credentials"
+    secretKey: "key.json"
+```
+
+### Azure Blob Storage
+
+```yaml
+tempo:
+  storage:
+    backend: "azure"
+    bucket: "tempo-container"  # maps to container_name
+    envFromSecret: "azure-storage-creds"
+    # Secret should contain: AZURE_STORAGE_ACCOUNT, AZURE_STORAGE_KEY
+```
+
+### Credential Model
+
+Three authentication mechanisms are supported:
+
+1. **Credential file secret** (`existingSecret` + `secretKey` + `secretMountPath`) -- Mounts a K8s Secret as a file. Primary use: GCS service account JSON key. Sets `GOOGLE_APPLICATION_CREDENTIALS` automatically for GCS.
+
+2. **Env-based credentials** (`envFromSecret`) -- Injects all keys from a K8s Secret as env vars. Primary use: AWS (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`), Azure (`AZURE_STORAGE_ACCOUNT`, `AZURE_STORAGE_KEY`). Works with Tempo/Pyroscope's `-config.expand-env=true`.
+
+3. **No credentials** (default) -- Pod relies on platform-native auth: GKE Workload Identity, AWS IRSA, Azure Managed Identity. Recommended for production.
+
+### Provider-specific passthrough
+
+Use the `config` key to pass additional provider-specific settings directly into the storage config block:
+
+```yaml
+loki:
+  storage:
+    backend: "azure"
+    bucket: "my-container"
+    config:
+      use_managed_identity: true
+      user_assigned_id: "my-identity-id"
+```
+
+---
+
+## Helm Tests
+
+Run basic backend reachability tests after deploy:
+
+```bash
+helm test countly-observability -n observability
+```
+
+This validates readiness of Prometheus, Loki, Tempo, Grafana, and Alloy-OTLP (conditional on which signals/modes are enabled).
+
+For end-to-end validation (traces flowing through to Loki, Prometheus metrics generated), use the smoke test script:
+
+```bash
+./scripts/smoke-test.sh observability countly-observability
+```
+
+---
+
 ## Ingress
 
 Ingress is available for Grafana in `full` mode only.
@@ -472,8 +602,9 @@ networkPolicy:
 
 When enabled, the policy allows:
 
-- Alloy DaemonSet to receive OTLP (4317/4318) and profiles (9999) from application pods
-- Alloy to push to Loki, Tempo, and Pyroscope
+- Alloy-OTLP Deployment to receive OTLP traces (4317/4318) and profiles (9999) from application pods
+- Alloy DaemonSet to push logs to Loki
+- Alloy-OTLP to push traces to Tempo and profiles to Pyroscope
 - Alloy-Metrics to scrape targets and remote-write to Prometheus
 - Grafana to query all backends (Prometheus, Loki, Tempo, Pyroscope)
 - Prometheus to receive remote write from Alloy-Metrics
@@ -491,14 +622,15 @@ Use `additionalIngress` to add custom rules for other namespaces or external sys
    helm get values <release> -n observability | grep enabled
    ```
 
-2. Check that Alloy pods are running on all nodes:
+2. Check that collector pods are running:
    ```bash
    kubectl get pods -n observability -l app.kubernetes.io/component=alloy
+   kubectl get pods -n observability -l app.kubernetes.io/component=alloy-otlp
    ```
 
-3. Confirm the application is sending to the correct OTLP endpoint:
+3. Confirm the application is sending to the correct OTLP endpoint (alloy-otlp):
    ```bash
-   kubectl logs -n observability -l app.kubernetes.io/component=alloy --tail=50
+   kubectl logs -n observability -l app.kubernetes.io/component=alloy-otlp --tail=50
    ```
 
 4. Verify datasources in Grafana are reachable (Configuration > Data sources > Test).
