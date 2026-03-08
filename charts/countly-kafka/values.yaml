@@ -13,7 +13,7 @@ fullnameOverride: ""
 createNamespace: false
 
 strimzi:
-  apiVersion: kafka.strimzi.io/v1beta2
+  apiVersion: kafka.strimzi.io/v1
 
 version: "4.2.0"
 

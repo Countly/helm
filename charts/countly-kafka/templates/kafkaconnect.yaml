@@ -12,6 +12,10 @@ spec:
   replicas: {{ .Values.kafkaConnect.replicas }}
   bootstrapServers: {{ include "countly-kafka.bootstrapServers" . }}
   image: {{ .Values.kafkaConnect.image }}
+  groupId: {{ .Values.kafkaConnect.workerConfig | dig "group.id" "connect-cluster" }}
+  offsetStorageTopic: {{ .Values.kafkaConnect.workerConfig | dig "offset.storage.topic" "connect-offsets" }}
+  configStorageTopic: {{ .Values.kafkaConnect.workerConfig | dig "config.storage.topic" "connect-configs" }}
+  statusStorageTopic: {{ .Values.kafkaConnect.workerConfig | dig "status.storage.topic" "connect-status" }}
   resources:
     {{- toYaml .Values.kafkaConnect.resources | nindent 4 }}
   jvmOptions:
