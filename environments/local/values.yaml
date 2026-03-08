@@ -1,0 +1,223 @@
+global:
+  clusterProfile: small
+
+# --- Self-signed TLS via cert-manager ---
+tls:
+  selfSigned:
+    enabled: true
+    issuerName: countly-ca-issuer
+    caSecretName: countly-ca-keypair
+
+# --- countly chart overrides ---
+api:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1.5Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  hpa:
+    maxReplicas: 3
+
+frontend:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "500m", memory: "1.5Gi" }
+
+ingestor:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1.5Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  hpa:
+    maxReplicas: 4
+
+aggregator:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1.5Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  hpa:
+    minReplicas: 1
+    maxReplicas: 4
+  pdb:
+    enabled: false
+  scheduling:
+    antiAffinity:
+      enabled: false
+
+jobserver:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "500m", memory: "1.5Gi" }
+
+# Ingress with self-signed TLS
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: countly-ca-issuer
+    nginx.org/client-max-body-size: "50m"
+    nginx.org/proxy-buffering: "True"
+    nginx.org/proxy-buffer-size: "256k"
+    nginx.org/proxy-buffers: "16 256k"
+    nginx.org/proxy-busy-buffers-size: "512k"
+    nginx.org/proxy-max-temp-file-size: "2048m"
+    nginx.org/client-body-buffer-size: "2m"
+    nginx.org/proxy-connect-timeout: "60s"
+    nginx.org/proxy-read-timeout: "120s"
+    nginx.org/proxy-send-timeout: "120s"
+    nginx.org/keepalive: "256"
+    nginx.org/server-snippets: |
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Port $server_port;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Scheme $scheme;
+      proxy_set_header Connection "";
+      proxy_set_header X-Request-ID $request_id;
+      proxy_set_header X-Request-Start $msec;
+      proxy_set_header traceparent $http_traceparent;
+      proxy_set_header tracestate $http_tracestate;
+      client_header_timeout 30s;
+    nginx.org/location-snippets: |
+      proxy_request_buffering on;
+      proxy_next_upstream error timeout http_502 http_503 http_504;
+      proxy_next_upstream_timeout 30s;
+      proxy_next_upstream_tries 3;
+      proxy_temp_file_write_size 1m;
+      client_body_timeout 120s;
+  tls:
+    - hosts:
+        - countly.local
+      secretName: countly-tls
+  hosts:
+    - host: countly.local
+
+# Enable OTEL to connect to observability stack
+config:
+  otel:
+    OTEL_ENABLED: "true"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy.observability.svc.cluster.local:4318"
+    OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+    PYROSCOPE_ENABLED: "true"
+    PYROSCOPE_ENDPOINT: "http://countly-observability-alloy.observability.svc.cluster.local:9999"
+  kafka:
+    COUNTLY_CONFIG__KAFKA_REPLICATIONFACTOR: "1"
+
+# --- countly-mongodb overrides ---
+mongodb:
+  members: 1
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  persistence:
+    size: 50Gi
+  scheduling:
+    antiAffinity:
+      enabled: false
+
+# --- countly-clickhouse overrides ---
+shards: 1
+replicas: 1
+
+server:
+  resources:
+    requests: { cpu: "500m", memory: "2Gi" }
+    limits: { cpu: "1", memory: "4Gi" }
+  persistence:
+    size: 50Gi
+  scheduling:
+    antiAffinity:
+      enabled: false
+
+keeper:
+  replicas: 1
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+  persistence:
+    size: 5Gi
+
+# --- countly-kafka overrides ---
+brokers:
+  replicas: 1
+  resources:
+    requests: { cpu: "500m", memory: "2Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  jvmOptions:
+    xms: "1g"
+    xmx: "1g"
+  persistence:
+    volumes:
+      - id: 0
+        size: 50Gi
+  config:
+    default.replication.factor: 1
+    min.insync.replicas: 1
+    offsets.topic.replication.factor: 1
+    transaction.state.log.replication.factor: 1
+
+controllers:
+  replicas: 1
+  resources:
+    requests: { cpu: "250m", memory: "1Gi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+  persistence:
+    size: 10Gi
+
+cruiseControl:
+  enabled: false
+
+kafkaConnect:
+  replicas: 1
+  resources:
+    requests: { cpu: "500m", memory: "2Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  jvmOptions:
+    xms: "1g"
+    xmx: "1g"
+  workerConfig:
+    config.storage.replication.factor: 1
+    offset.storage.replication.factor: 1
+    status.storage.replication.factor: 1
+
+# --- countly-observability overrides ---
+prometheus:
+  storage:
+    size: 20Gi
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+loki:
+  storage:
+    size: 20Gi
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+tempo:
+  storage:
+    size: 20Gi
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+pyroscope:
+  storage:
+    size: 5Gi
+  resources:
+    requests: { cpu: "250m", memory: "256Mi" }
+    limits: { cpu: "500m", memory: "512Mi" }
+grafana:
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+alloy:
+  resources:
+    requests: { cpu: "250m", memory: "768Mi" }
+    limits: { cpu: "500m", memory: "1536Mi" }
+  memoryLimiter:
+    limit: "1200MiB"
+    spikeLimit: "256MiB"
+alloyMetrics:
+  resources:
+    requests: { cpu: "250m", memory: "256Mi" }
+    limits: { cpu: "250m", memory: "512Mi" }

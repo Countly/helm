@@ -1,0 +1,95 @@
+# F5 NGINX Ingress Controller -- Open Source
+# Chart: nginx-stable/nginx-ingress v2.1.0
+#
+# Install:
+#   helm repo add nginx-stable https://helm.nginx.com/stable
+#   helm upgrade --install nginx-ingress nginx-stable/nginx-ingress \
+#     --version 2.1.0 \
+#     -f nginx-ingress-values.yaml \
+#     --create-namespace -n ingress-nginx
+
+controller:
+  # --- Image (OSS) ---
+  nginxplus: false
+  image:
+    repository: nginx/nginx-ingress
+    tag: "5.3.4"
+
+  # --- IngressClass ---
+  ingressClass:
+    name: nginx
+    create: true
+    setAsDefaultIngress: true
+
+  # --- Replicas & HPA ---
+  replicaCount: 1
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 60
+    targetMemoryUtilizationPercentage: 70
+
+  # --- Resources ---
+  resources:
+    requests:
+      cpu: "1"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+
+  # --- Service ---
+  service:
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+
+  # --- Snippets (REQUIRED for proxy header annotations) ---
+  enableSnippets: true
+
+  # --- Buffer auto-adjust ---
+  directiveAutoAdjust: "true"
+
+  # --- Global ConfigMap entries ---
+  config:
+    entries:
+      worker-processes: "auto"
+      worker-connections: "65535"
+      worker-rlimit-nofile: "131072"
+      client-max-body-size: "50m"
+      client-body-buffer-size: "1m"
+      keepalive-timeout: "75s"
+      keepalive-requests: "10000"
+      keepalive: "100"
+      proxy-buffering: "True"
+      proxy-buffers: "16 256k"
+      proxy-buffer-size: "256k"
+      proxy-busy-buffers-size: "512k"
+      proxy-max-temp-file-size: "2048m"
+      proxy-connect-timeout: "60s"
+      proxy-read-timeout: "120s"
+      proxy-send-timeout: "120s"
+      server-names-hash-bucket-size: "256"
+      server-names-hash-max-size: "2048"
+      variables-hash-bucket-size: "512"
+      variables-hash-max-size: "4096"
+      map-hash-bucket-size: "512"
+      map-hash-max-size: "4096"
+      server-tokens: "False"
+      http2: "True"
+      log-format: >-
+        $remote_addr - $remote_user [$time_local] "$request"
+        $status $body_bytes_sent "$http_referer" "$http_user_agent"
+        $request_time $upstream_response_time
+        request_id=$request_id trace_context=$http_traceparent
+
+  telemetryReporting:
+    enable: false
+
+prometheus:
+  create: true
+  port: 9113
+  service:
+    create: true
+  serviceMonitor:
+    create: false

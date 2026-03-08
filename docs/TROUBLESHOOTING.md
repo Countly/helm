@@ -147,6 +147,80 @@ kafkaConnect:
 
 ---
 
+## Observability
+
+### Grafana shows "No data" for datasources
+
+**Cause:** Backend service not ready or datasource URL incorrect.
+
+**Fix:** Verify the backend pods are running:
+
+```bash
+kubectl get pods -n observability
+```
+
+Check Grafana datasource configuration:
+
+```bash
+kubectl get configmap -n observability -l app.kubernetes.io/component=grafana -o yaml | grep -A5 "url:"
+```
+
+### Alloy DaemonSet cannot read container logs
+
+**Error:** `permission denied` reading `/var/log/pods`
+
+**Cause:** The Alloy DaemonSet runs as root to read host log files. Some hardened clusters block this.
+
+**Fix:** Ensure the Alloy pods are running as root (default in the chart). Check pod security policies/standards:
+
+```bash
+kubectl get pods -n observability -l app.kubernetes.io/component=alloy -o yaml | grep -A3 securityContext
+```
+
+### Duplicate metrics in Prometheus
+
+**Cause:** Both Alloy DaemonSet and Alloy-Metrics scraping the same targets.
+
+**Fix:** By design, the chart enforces a clean split — Alloy DaemonSet handles logs/traces/profiles only, Alloy-Metrics handles ALL Prometheus scraping. If you see duplicates, check for custom scrape configs.
+
+### Dashboard ConfigMaps not loading
+
+**Error:** Grafana shows empty dashboard folder.
+
+**Cause:** Dashboard JSON files are loaded via `.Files.Get` in the chart. If the `dashboards/` directory is missing from the chart package, ConfigMaps will be empty.
+
+**Fix:** Ensure the chart was packaged with `helm package` (which includes the `dashboards/` directory) or deployed from the local chart directory.
+
+### External mode — no data flowing
+
+**Cause:** External endpoint URLs not configured or auth missing.
+
+**Fix:** Verify external URLs are set:
+
+```bash
+helm get values countly-observability -n observability | grep -E "(remoteWriteUrl|pushUrl|otlpGrpcEndpoint|ingestUrl)"
+```
+
+Check Alloy logs for connection errors:
+
+```bash
+kubectl logs -n observability daemonset/$(kubectl get ds -n observability -l app.kubernetes.io/component=alloy -o name) | grep -i error
+```
+
+### Tempo metrics_generator errors when metrics disabled
+
+**Cause:** This should not happen — the chart conditionally omits `metrics_generator` from Tempo config when `metrics.enabled=false`.
+
+**Fix:** If you see this error, verify your values:
+
+```bash
+helm get values countly-observability -n observability | grep -A2 metrics
+```
+
+Ensure `metrics.enabled` is explicitly set to `false`, not just that Prometheus is missing.
+
+---
+
 ## General
 
 ### cert-manager must be installed before ClickHouse Operator

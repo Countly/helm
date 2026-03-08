@@ -58,6 +58,51 @@ helm install countly ./charts/countly \
   -n countly --create-namespace
 ```
 
+### 4. Deploy observability (optional)
+
+```bash
+# Full mode (all in-cluster — Prometheus, Grafana, Loki, Tempo, Pyroscope)
+helm install countly-observability ./charts/countly-observability \
+  -f values-common.yaml \
+  -f environments/tier1/values.yaml \
+  -n observability --create-namespace
+```
+
+Three deployment modes are available:
+
+| Mode | What it does |
+|------|-------------|
+| `full` (default) | All backends + Grafana in-cluster |
+| `hybrid` | Local backends, external Grafana |
+| `external` | Only collectors, send to external endpoints |
+
+```bash
+# Hybrid mode (external Grafana)
+helm install countly-observability ./charts/countly-observability \
+  --set mode=hybrid \
+  -n observability --create-namespace
+
+# External mode
+helm install countly-observability ./charts/countly-observability \
+  --set mode=external \
+  --set prometheus.external.remoteWriteUrl=https://prom.example.com/api/v1/write \
+  --set loki.external.pushUrl=https://loki.example.com/loki/api/v1/push \
+  --set tempo.external.otlpGrpcEndpoint=tempo.example.com:4317 \
+  --set pyroscope.external.ingestUrl=https://pyroscope.example.com \
+  -n observability --create-namespace
+```
+
+To connect Countly to the observability stack, add to your Countly chart values:
+
+```yaml
+config:
+  otel:
+    OTEL_ENABLED: "true"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy.observability.svc.cluster.local:4318"
+    PYROSCOPE_ENABLED: "true"
+    PYROSCOPE_ENDPOINT: "http://countly-observability-alloy.observability.svc.cluster.local:9999"
+```
+
 ## Tier Profiles
 
 | Profile | Use Case | Approx Resources |
@@ -105,6 +150,7 @@ helm upgrade countly ./charts/countly -f values-common.yaml -f environments/tier
 helmfile -e tier1 destroy
 # or per-chart (reverse order):
 helm uninstall countly -n countly
+helm uninstall countly-observability -n observability
 helm uninstall countly-kafka -n kafka
 helm uninstall countly-clickhouse -n clickhouse
 helm uninstall countly-mongodb -n mongodb

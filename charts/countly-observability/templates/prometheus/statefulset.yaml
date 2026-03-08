@@ -1,0 +1,97 @@
+{{- if (include "obs.deployPrometheus" .) }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "obs.fullname" . }}-prometheus
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: prometheus
+spec:
+  serviceName: {{ include "obs.fullname" . }}-prometheus
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "obs.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: prometheus
+  template:
+    metadata:
+      labels:
+        {{- include "obs.labels" . | nindent 8 }}
+        app.kubernetes.io/component: prometheus
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/prometheus/configmap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "obs.fullname" . }}-prometheus
+      initContainers:
+      - name: init-data-dir
+        image: busybox:1.35
+        command: ['sh', '-c', 'mkdir -p /prometheus && chown -R 65534:65534 /prometheus && chmod -R 755 /prometheus']
+        volumeMounts:
+        - name: data
+          mountPath: /prometheus
+        securityContext:
+          runAsUser: 0
+      containers:
+      - name: prometheus
+        image: {{ include "obs.image" (dict "global" .Values.global "image" .Values.prometheus.image) }}
+        args:
+          - '--config.file=/etc/prometheus/prometheus.yml'
+          - '--storage.tsdb.path=/prometheus'
+          - '--storage.tsdb.retention.time={{ .Values.prometheus.retention.time }}'
+          - '--storage.tsdb.retention.size={{ .Values.prometheus.retention.size }}'
+          - '--web.enable-remote-write-receiver'
+          - '--web.enable-admin-api'
+          - '--web.enable-lifecycle'
+          {{- range .Values.prometheus.extraArgs }}
+          - '{{ . }}'
+          {{- end }}
+        volumeMounts:
+        - name: config
+          mountPath: /etc/prometheus
+        - name: data
+          mountPath: /prometheus
+        ports:
+        - containerPort: 9090
+          name: http
+          protocol: TCP
+        {{- with .Values.prometheus.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9090
+          initialDelaySeconds: 30
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9090
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          runAsUser: 65534
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "obs.fullname" . }}-prometheus
+      {{- include "obs.scheduling" (dict "values" .Values.prometheus "global" .Values.global "component" "prometheus" "fullname" (include "obs.fullname" .)) | nindent 6 }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      {{- include "obs.storageClass" (dict "componentSC" .Values.prometheus.storage.storageClass "globalSC" .Values.global.storageClass) | nindent 6 }}
+      resources:
+        requests:
+          storage: {{ .Values.prometheus.storage.size }}
+{{- end }}

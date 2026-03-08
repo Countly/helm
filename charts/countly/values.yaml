@@ -443,3 +443,11 @@ ingress:
   tls: []
   hosts:
     - host: countly.example.com
+
+# --- TLS ---
+
+tls:
+  selfSigned:
+    enabled: false
+    issuerName: countly-ca-issuer
+    caSecretName: countly-ca-keypair

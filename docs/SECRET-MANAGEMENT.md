@@ -17,6 +17,37 @@ Each chart manages secrets in its own namespace. Secrets use a **lookup-or-creat
 | `clickhouse-default-password` | countly-clickhouse | clickhouse | ClickHouse default user password |
 | `clickhouse-auth` | countly-kafka | kafka | ClickHouse creds for Kafka Connect |
 | `countly-tls` | countly | countly | TLS certificate for ingress (cert-manager or user-provided) |
+| `<release>-grafana` | countly-observability | observability | Grafana admin credentials (auto-generated or existing) |
+
+## Observability Secrets
+
+The `countly-observability` chart manages one secret:
+
+| Secret | Purpose |
+|--------|---------|
+| `<release>-grafana` | Grafana admin username and password |
+
+By default, the chart auto-generates a random 16-character password and preserves it across upgrades. To use your own:
+
+```yaml
+grafana:
+  admin:
+    existingSecret: my-grafana-secret  # Must contain admin-user and admin-password keys
+    userKey: admin-user
+    passwordKey: admin-password
+```
+
+For external endpoints (mode `external`), authentication is handled via `existingSecret` references:
+
+```yaml
+prometheus:
+  external:
+    auth:
+      existingSecret: prom-auth-secret
+      bearerTokenKey: token
+```
+
+The chart never stores plaintext credentials in ConfigMaps or values.
 
 ## Using External Secrets
 

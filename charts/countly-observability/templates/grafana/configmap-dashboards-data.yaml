@@ -1,0 +1,18 @@
+{{- if and (include "obs.deployGrafana" .) .Values.grafana.dashboards.enabled .Values.grafana.dashboards.data }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "obs.fullname" . }}-grafana-dashboards-data
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+data:
+  mongodb-comprehensive.json: |-
+    {{ .Files.Get "dashboards/mongodb-comprehensive.json" | nindent 4 }}
+  kafka-connect-comprehensive.json: |-
+    {{ .Files.Get "dashboards/kafka-connect-comprehensive.json" | nindent 4 }}
+  kafka-cluster-comprehensive.json: |-
+    {{ .Files.Get "dashboards/kafka-cluster-comprehensive.json" | nindent 4 }}
+  kafka-consumer-lag.json: |-
+    {{ .Files.Get "dashboards/kafka-consumer-lag.json" | nindent 4 }}
+{{- end }}

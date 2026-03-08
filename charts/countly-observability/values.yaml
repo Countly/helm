@@ -1,0 +1,352 @@
+# -- Deployment mode: "full" (all in-cluster), "hybrid" (no Grafana), "external" (no backends)
+mode: full
+
+# -- Cluster name injected into external_labels
+clusterName: countly-local
+
+# -- Cross-namespace references for scrape target discovery
+countlyNamespace: countly
+clickhouseNamespace: clickhouse
+mongodbNamespace: mongodb
+kafkaNamespace: kafka
+ingressNamespace: ingress-nginx
+
+# -- NGINX Ingress Controller scrape configuration
+nginxIngress:
+  # -- Pod label app.kubernetes.io/name value (F5 NGINX IC = "nginx-ingress", community = "ingress-nginx")
+  podLabelName: "nginx-ingress"
+  # -- Container port number for Prometheus metrics
+  metricsPort: "9113"
+
+# ============================================================
+# Global
+# ============================================================
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+# ============================================================
+# Per-Signal Configuration
+# ============================================================
+
+metrics:
+  enabled: true
+  sampling:
+    # -- Global Prometheus scrape_interval
+    interval: "15s"
+
+traces:
+  enabled: true
+  sampling:
+    # -- AlwaysOn | TraceIdRatio | ParentBased
+    strategy: "AlwaysOn"
+    # -- 0.0 - 1.0, used when strategy != AlwaysOn
+    ratio: 1.0
+
+logs:
+  enabled: true
+  sampling:
+    enabled: false
+    # -- 0.0 - 1.0, fraction of logs to drop
+    dropRate: 0
+
+profiling:
+  enabled: true
+  sampling:
+    # -- Advisory only — used in NOTES.txt for SDK config, not server-enforced
+    rate: "100"
+
+# ============================================================
+# Prometheus
+# ============================================================
+prometheus:
+  image:
+    repository: prom/prometheus
+    tag: "v3.10.0"
+  retention:
+    time: "30d"
+    size: "50GB"
+  storage:
+    size: 100Gi
+    storageClass: ""
+  resources:
+    requests:
+      cpu: "2"
+      memory: "3Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  extraArgs: []
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    # -- Full Prometheus remote write URL (e.g. https://prom.corp.com/api/v1/write)
+    remoteWriteUrl: ""
+    auth:
+      existingSecret: ""
+      bearerTokenKey: ""
+    tls:
+      insecureSkipVerify: false
+      caSecretName: ""
+      caKey: ""
+
+# ============================================================
+# Loki
+# ============================================================
+loki:
+  image:
+    repository: grafana/loki
+    tag: "3.6.7"
+  retention: "30d"
+  storage:
+    size: 100Gi
+    storageClass: ""
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  config:
+    maxStreamsPerUser: 10000
+    maxLineSize: 256000
+    ingestionRateMb: 64
+    ingestionBurstSizeMb: 128
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    # -- Full Loki push URL (e.g. https://loki.corp.com/loki/api/v1/push)
+    pushUrl: ""
+    auth:
+      existingSecret: ""
+      bearerTokenKey: ""
+    tls:
+      insecureSkipVerify: false
+
+# ============================================================
+# Tempo
+# ============================================================
+tempo:
+  image:
+    repository: grafana/tempo
+    tag: "2.10.1"
+  retention: "12h"
+  storage:
+    size: 150Gi
+    storageClass: ""
+  resources:
+    requests:
+      cpu: "3"
+      memory: "6Gi"
+    limits:
+      cpu: "4"
+      memory: "10Gi"
+  config:
+    ingestionRateLimitBytes: 100000000
+    ingestionBurstSizeBytes: 150000000
+    maxTracesPerUser: 50000
+    maxBytesPerTrace: 5000000
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    # -- Tempo OTLP gRPC host:port (e.g. tempo.corp.com:4317)
+    otlpGrpcEndpoint: ""
+    # -- Tempo OTLP HTTP URL (optional fallback)
+    otlpHttpEndpoint: ""
+    auth:
+      existingSecret: ""
+      headerKey: ""
+    tls:
+      insecureSkipVerify: true
+
+# ============================================================
+# Pyroscope
+# ============================================================
+pyroscope:
+  image:
+    repository: grafana/pyroscope
+    tag: "1.2.0"
+  storage:
+    size: 20Gi
+    storageClass: ""
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    # -- Pyroscope ingest URL (e.g. https://pyroscope.corp.com)
+    ingestUrl: ""
+    auth:
+      existingSecret: ""
+      headerKey: ""
+    tls:
+      insecureSkipVerify: false
+
+# ============================================================
+# Grafana
+# ============================================================
+grafana:
+  # -- Only deployed when mode == "full"
+  enabled: true
+  image:
+    repository: grafana/grafana
+    tag: "12.4.0"
+  admin:
+    # -- Use an existing Secret for admin credentials
+    existingSecret: ""
+    userKey: "admin-user"
+    passwordKey: "admin-password"
+  persistence:
+    # -- Ephemeral by default (declarative config, no state to lose)
+    enabled: false
+    size: 10Gi
+    storageClass: ""
+  resources:
+    requests:
+      cpu: "1"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+  plugins:
+    install: "grafana-pyroscope-datasource"
+  featureToggles: "tempoSearch,tempoBackendSearch,traceqlEditor"
+  dashboards:
+    enabled: true
+    core: true
+    data: true
+    clickhouse: true
+  pdb:
+    enabled: false
+    minAvailable: 1
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    # -- External Grafana URL (for NOTES.txt only)
+    url: ""
+
+# ============================================================
+# Alloy (DaemonSet — logs, OTLP, profiling receive)
+# ============================================================
+alloy:
+  image:
+    repository: grafana/alloy
+    tag: "v1.13.2"
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+  # -- OTEL pipeline memory limiter (must be < resources.limits.memory)
+  memoryLimiter:
+    limit: "1600MiB"
+    spikeLimit: "400MiB"
+  scheduling:
+    nodeSelector:
+      kubernetes.io/os: linux
+    tolerations: []
+
+# ============================================================
+# Alloy-Metrics (Deployment — ALL Prometheus scraping)
+# ============================================================
+alloyMetrics:
+  image:
+    repository: grafana/alloy
+    tag: "v1.13.2"
+  replicas: 1
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  pdb:
+    enabled: false
+    minAvailable: 1
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+# ============================================================
+# kube-state-metrics
+# ============================================================
+kubeStateMetrics:
+  enabled: true
+  image:
+    repository: registry.k8s.io/kube-state-metrics/kube-state-metrics
+    tag: "v2.18.0"
+  resources:
+    requests:
+      cpu: "10m"
+      memory: "32Mi"
+    limits:
+      cpu: "100m"
+      memory: "256Mi"
+  namespaces:
+    - countly
+    - observability
+    - ingress-nginx
+    - kube-system
+    - clickhouse
+    - mongodb
+    - kafka
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+# ============================================================
+# node-exporter
+# ============================================================
+nodeExporter:
+  enabled: true
+  image:
+    repository: prom/node-exporter
+    tag: "v1.10.2"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "180Mi"
+    limits:
+      cpu: "250m"
+      memory: "300Mi"
+
+# ============================================================
+# Networking
+# ============================================================
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: obs.example.com
+  tls: []
+
+networkPolicy:
+  enabled: false
+  additionalIngress: []

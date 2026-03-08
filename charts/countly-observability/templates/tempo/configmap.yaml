@@ -1,0 +1,87 @@
+{{- if (include "obs.deployTempo" .) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "obs.fullname" . }}-tempo
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: tempo
+data:
+  tempo.yaml: |
+    server:
+      http_listen_port: 3200
+      grpc_listen_port: 9095
+
+    distributor:
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317
+            http:
+              endpoint: 0.0.0.0:4318
+
+    overrides:
+      ingestion_rate_limit_bytes: {{ .Values.tempo.config.ingestionRateLimitBytes }}
+      ingestion_burst_size_bytes: {{ .Values.tempo.config.ingestionBurstSizeBytes }}
+      max_traces_per_user: {{ .Values.tempo.config.maxTracesPerUser }}
+      max_bytes_per_trace: {{ .Values.tempo.config.maxBytesPerTrace }}
+    {{- if .Values.metrics.enabled }}
+      metrics_generator_processors:
+        - service-graphs
+        - span-metrics
+        - local-blocks
+    {{- end }}
+
+    ingester:
+      max_block_duration: 5m
+      trace_idle_period: 10s
+      max_block_bytes: 1048576
+
+    {{- if .Values.metrics.enabled }}
+    metrics_generator:
+      processor:
+        local_blocks:
+          max_live_traces: 100000
+          flush_check_period: 10s
+          trace_idle_period: 30s
+          max_block_duration: 5m
+          max_block_bytes: 5242880
+          complete_block_timeout: 30m
+      registry:
+        external_labels:
+          source: tempo
+          cluster: {{ .Values.clusterName }}
+      storage:
+        path: /var/tempo/generator/wal
+        remote_write:
+          - url: {{ include "obs.prometheus.remoteWriteUrl" . }}
+            send_exemplars: true
+      traces_storage:
+        path: /var/tempo/generator/traces
+    {{- end }}
+
+    compactor:
+      compaction:
+        block_retention: {{ .Values.tempo.retention }}
+        compacted_block_retention: 1h
+
+    storage:
+      trace:
+        backend: local
+        local:
+          path: /var/tempo/traces
+        wal:
+          path: /var/tempo/wal
+        pool:
+          max_workers: 50
+          queue_depth: 5000
+
+    usage_report:
+      reporting_enabled: false
+
+    querier:
+      frontend_worker:
+        frontend_address: 127.0.0.1:9095
+{{- end }}

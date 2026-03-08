@@ -1,0 +1,844 @@
+{
+  "id": null,
+  "title": "Kafka Consumer Lag Deep-Dive",
+  "tags": [
+    "kafka",
+    "consumer",
+    "lag",
+    "strimzi",
+    "deep-dive"
+  ],
+  "style": "dark",
+  "timezone": "browser",
+  "editable": true,
+  "hideControls": false,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "type": "query",
+        "query": "label_values({__name__=~\"kafka_.*\"}, kafka_cluster)",
+        "current": {
+          "value": "All",
+          "text": "All"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "multi": false,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "sort": 1
+      },
+      {
+        "name": "cluster",
+        "type": "query",
+        "query": "label_values(kafka_brokertopic_messagesin, cluster)",
+        "current": {
+          "value": "All",
+          "text": "All"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "sort": 1
+      },
+      {
+        "name": "topic",
+        "type": "query",
+        "query": "label_values(kafka_brokertopic_messagesin{cluster=~\"$cluster\"}, topic)",
+        "current": {
+          "value": "All",
+          "text": "All"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "sort": 1
+      },
+      {
+        "name": "group",
+        "type": "query",
+        "query": "label_values(kafka_connect_connector_running_task_count__4, connector)",
+        "current": {
+          "value": "All",
+          "text": "All"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "sort": 1
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Consumer Lag Overview",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "title": "Total Message Production Rate",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_brokertopic_messagesin{topic=~\"$topic\"}[5m]))",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 100
+              },
+              {
+                "color": "red",
+                "value": 1000
+              }
+            ]
+          },
+          "unit": "msg/sec"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Active Kafka Connect Tasks",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "(kafka_connect_connector_running_task_count__0 or kafka_connect_connector_running_task_count__4 or kafka_connect_connector_running_task_count__1 or kafka_connect_connector_running_task_count__2 or kafka_connect_connector_running_task_count__3)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 4
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Failed Connect Tasks",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "(kafka_connect_connector_failed_task_count__0 or on() vector(0))",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Fetch Request Rate",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_brokertopic_totalfetchrequests{topic=~\"$topic\"}[5m]))",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 200
+              }
+            ]
+          },
+          "unit": "reqps"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Topic Production vs Consumption",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      }
+    },
+    {
+      "id": 7,
+      "title": "Message Production Rate by Topic",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_brokertopic_messagesin{topic=~\"$topic\"}[5m])) by (topic)",
+          "refId": "A",
+          "legendFormat": "Messages In - {{topic}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "messages/sec",
+          "show": true,
+          "unit": "msg/sec"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 8,
+      "title": "Fetch Request Rate by Topic",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_brokertopic_totalfetchrequests{topic=~\"$topic\"}[5m])) by (topic)",
+          "refId": "A",
+          "legendFormat": "Fetch Requests - {{topic}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "requests/sec",
+          "show": true,
+          "unit": "reqps"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 9,
+      "title": "Estimated Consumption Throughput",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_brokertopic_bytesout{topic=~\"$topic\"}[5m])) by (topic)",
+          "refId": "A",
+          "legendFormat": "Bytes Out - {{topic}}"
+        },
+        {
+          "expr": "sum(rate(kafka_brokertopic_bytesin{topic=~\"$topic\"}[5m])) by (topic)",
+          "refId": "B",
+          "legendFormat": "Bytes In - {{topic}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "bytes/sec",
+          "show": true,
+          "unit": "Bps"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 10,
+      "title": "Top 10 Topics by Message Volume",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "topk(10, sum(rate(kafka_brokertopic_messagesin[5m])) by (topic))",
+          "refId": "A",
+          "legendFormat": "{{topic}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "messages/sec",
+          "show": true,
+          "unit": "msg/sec"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 11,
+      "title": "Kafka Connect Consumer Groups",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      }
+    },
+    {
+      "id": 12,
+      "title": "Connect Task Status by Connector",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "kafka_connect_connector_running_task_count__4{connector=~\"$group\"}",
+          "refId": "A",
+          "legendFormat": "Running - {{connector}}"
+        },
+        {
+          "expr": "(kafka_connect_connector_failed_task_count__0{connector=~\"$group\"} or on() vector(0))",
+          "refId": "B",
+          "legendFormat": "Failed - {{connector}}"
+        },
+        {
+          "expr": "(kafka_connect_connector_paused_task_count__0{connector=~\"$group\"} or on() vector(0))",
+          "refId": "C",
+          "legendFormat": "Paused - {{connector}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "tasks",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": false,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 13,
+      "title": "Connect Rebalance Activity",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(kafka_connect_failed_rebalance_total__1_0[15m])",
+          "refId": "A",
+          "legendFormat": "Failed Rebalances/15min - {{instance}}"
+        },
+        {
+          "expr": "kafka_connect_failed_rebalance_rate_per_hour__0_0",
+          "refId": "B",
+          "legendFormat": "Failed Rate/hour - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "rebalances",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 14,
+      "title": "Catch-up Estimations & Health",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      }
+    },
+    {
+      "id": 15,
+      "title": "Message Production vs Processing Ratio",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_brokertopic_messagesin{topic=~\"$topic\"}[5m])) by (topic)",
+          "refId": "A",
+          "legendFormat": "Production Rate - {{topic}}"
+        },
+        {
+          "expr": "sum(rate(kafka_brokertopic_totalfetchrequests{topic=~\"$topic\"}[5m])) by (topic)",
+          "refId": "B",
+          "legendFormat": "Consumption Rate - {{topic}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 36
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "rate",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 16,
+      "title": "Connect Task Health Trend",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "kafka_connect_connector_total_task_count__4{connector=~\"$group\"}",
+          "refId": "A",
+          "legendFormat": "Total Tasks - {{connector}}"
+        },
+        {
+          "expr": "kafka_connect_assigned_tasks__4_0",
+          "refId": "B",
+          "legendFormat": "Assigned Tasks - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 36
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "tasks",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": false,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 17,
+      "title": "Network & Connection Health",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 44
+      }
+    },
+    {
+      "id": 18,
+      "title": "Connect Network Activity",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(kafka_connect_incoming_byte_total__1_0[5m])",
+          "refId": "A",
+          "legendFormat": "Incoming Bytes/sec - {{instance}}"
+        },
+        {
+          "expr": "kafka_connect_incoming_byte_rate__0_0",
+          "refId": "B",
+          "legendFormat": "Byte Rate - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 45
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "bytes/sec",
+          "show": true,
+          "unit": "Bps"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 19,
+      "title": "Connect Heartbeat & Health",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "kafka_connect_heartbeat_rate__0_3333333333333333",
+          "refId": "A",
+          "legendFormat": "Heartbeat Rate - {{instance}}"
+        },
+        {
+          "expr": "rate(kafka_connect_heartbeat_total__1_0[5m])",
+          "refId": "B",
+          "legendFormat": "Heartbeats/sec - {{instance}}"
+        },
+        {
+          "expr": "rate(kafka_connect_failed_authentication_total__0_0[5m])",
+          "refId": "C",
+          "legendFormat": "Auth Failures/sec - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 45
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "events/sec",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "refresh": "30s",
+  "schemaVersion": 27,
+  "version": 1
+}

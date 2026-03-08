@@ -1,0 +1,21 @@
+{{- if (include "obs.deployAlloyMetrics" .) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "obs.fullname" . }}-alloy-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: alloy-metrics
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ include "obs.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: alloy-metrics
+  ports:
+  - name: http-metrics
+    port: 12345
+    targetPort: 12345
+    protocol: TCP
+{{- end }}

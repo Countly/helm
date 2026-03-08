@@ -1,0 +1,43 @@
+{{- if .Values.tls.selfSigned.enabled }}
+---
+# Step 1: SelfSigned issuer (bootstraps the CA)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+  labels:
+    {{- include "countly.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+---
+# Step 2: CA Certificate (issued by selfsigned-issuer)
+# Must be in cert-manager namespace — ClusterIssuers read secrets from
+# --cluster-resource-namespace which defaults to cert-manager
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.tls.selfSigned.caSecretName }}
+  namespace: cert-manager
+  labels:
+    {{- include "countly.labels" . | nindent 4 }}
+spec:
+  isCA: true
+  commonName: countly-ca
+  secretName: {{ .Values.tls.selfSigned.caSecretName }}
+  duration: 87600h # 10 years
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+# Step 3: CA Issuer (signs actual TLS certificates for Ingress resources)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ .Values.tls.selfSigned.issuerName }}
+  labels:
+    {{- include "countly.labels" . | nindent 4 }}
+spec:
+  ca:
+    secretName: {{ .Values.tls.selfSigned.caSecretName }}
+{{- end }}

@@ -75,3 +75,9 @@ kubectl get pods -n kafka
 kubectl get pods -n mongodb
 kubectl get pods -n ingress-nginx
 ```
+
+## 5. Observability Stack (optional)
+
+The `countly-observability` chart does **not** require any operators — it deploys standard Kubernetes workloads (Deployments, StatefulSets, DaemonSets). No additional prerequisites are needed.
+
+See [charts/countly-observability/README.md](../charts/countly-observability/README.md) for configuration.

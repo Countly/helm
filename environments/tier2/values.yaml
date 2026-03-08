@@ -151,3 +151,47 @@ kafkaConnect:
   jvmOptions:
     xms: "5g"
     xmx: "5g"
+
+# --- countly-observability overrides ---
+prometheus:
+  storage:
+    size: 100Gi
+  resources:
+    requests: { cpu: "2", memory: "3Gi" }
+    limits: { cpu: "2", memory: "4Gi" }
+
+loki:
+  storage:
+    size: 100Gi
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+
+tempo:
+  storage:
+    size: 150Gi
+  resources:
+    requests: { cpu: "3", memory: "6Gi" }
+    limits: { cpu: "4", memory: "10Gi" }
+
+pyroscope:
+  storage:
+    size: 20Gi
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+
+grafana:
+  resources:
+    requests: { cpu: "1", memory: "1Gi" }
+    limits: { cpu: "2", memory: "2Gi" }
+
+alloy:
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "2", memory: "2Gi" }
+
+alloyMetrics:
+  resources:
+    requests: { cpu: "500m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "512Mi" }

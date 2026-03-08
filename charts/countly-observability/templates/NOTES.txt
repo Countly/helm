@@ -1,0 +1,100 @@
+========================================================
+  Countly Observability Stack
+========================================================
+
+Deployment mode : {{ .Values.mode }}
+Namespace       : {{ .Release.Namespace }}
+
+Signals enabled:
+  Metrics    : {{ if .Values.metrics.enabled }}YES{{ else }}NO{{ end }}
+  Traces     : {{ if .Values.traces.enabled }}YES{{ else }}NO{{ end }}
+  Logs       : {{ if .Values.logs.enabled }}YES{{ else }}NO{{ end }}
+  Profiling  : {{ if .Values.profiling.enabled }}YES{{ else }}NO{{ end }}
+
+--------------------------------------------------------
+  Integration Endpoints
+--------------------------------------------------------
+
+To send telemetry from the Countly application, add the
+following overrides to your countly chart values:
+
+  config:
+    otel:
+      OTEL_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "{{ include "obs.alloy.otlpEndpoint" . }}"
+      PYROSCOPE_ENABLED: "true"
+      PYROSCOPE_ENDPOINT: "{{ include "obs.alloy.pyroscopeEndpoint" . }}"
+
+{{- if eq .Values.mode "full" }}
+
+--------------------------------------------------------
+  Grafana (full mode)
+--------------------------------------------------------
+{{- if and .Values.ingress.enabled .Values.ingress.hosts }}
+Grafana is accessible at:
+{{- range .Values.ingress.hosts }}
+  https://{{ .host }}
+{{- end }}
+{{- else }}
+Access Grafana via port-forward:
+
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "obs.fullname" . }}-grafana 3000:3000
+
+Then open http://localhost:3000 in your browser.
+{{- end }}
+{{- end }}
+
+{{- if eq .Values.mode "hybrid" }}
+
+--------------------------------------------------------
+  External Grafana Setup (hybrid mode)
+--------------------------------------------------------
+
+No Grafana is deployed. Configure these datasource URLs
+in your external Grafana instance:
+
+{{- if .Values.metrics.enabled }}
+  Prometheus : {{ include "obs.prometheus.url" . }}
+{{- end }}
+{{- if .Values.logs.enabled }}
+  Loki       : {{ include "obs.loki.url" . }}
+{{- end }}
+{{- if .Values.traces.enabled }}
+  Tempo      : {{ include "obs.tempo.httpUrl" . }}
+{{- end }}
+{{- if .Values.profiling.enabled }}
+  Pyroscope  : {{ include "obs.pyroscope.url" . }}
+{{- end }}
+{{- end }}
+
+{{- if eq .Values.mode "external" }}
+
+--------------------------------------------------------
+  External Backends (external mode)
+--------------------------------------------------------
+
+All telemetry is forwarded to external endpoints:
+
+{{- if .Values.metrics.enabled }}
+  Prometheus remote write : {{ .Values.prometheus.external.remoteWriteUrl | default "(not configured)" }}
+{{- end }}
+{{- if .Values.logs.enabled }}
+  Loki push URL           : {{ .Values.loki.external.pushUrl | default "(not configured)" }}
+{{- end }}
+{{- if .Values.traces.enabled }}
+  Tempo OTLP gRPC         : {{ .Values.tempo.external.otlpGrpcEndpoint | default "(not configured)" }}
+{{- end }}
+{{- if .Values.profiling.enabled }}
+  Pyroscope ingest URL     : {{ .Values.pyroscope.external.ingestUrl | default "(not configured)" }}
+{{- end }}
+{{- end }}
+
+--------------------------------------------------------
+  Profiling Advisory
+--------------------------------------------------------
+
+Recommended SDK sampling rate: {{ .Values.profiling.sampling.rate }}
+This value is advisory only and not enforced server-side.
+Configure your application's profiling SDK accordingly.
+
+========================================================

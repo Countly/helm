@@ -1,0 +1,801 @@
+{
+  "id": null,
+  "title": "MongoDB Comprehensive Monitoring",
+  "tags": [
+    "mongodb",
+    "database",
+    "observability"
+  ],
+  "style": "dark",
+  "timezone": "browser",
+  "editable": true,
+  "hideControls": false,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "templating": {
+    "list": [
+      {
+        "name": "instance",
+        "type": "query",
+        "query": "label_values(mongodb_up, instance)",
+        "current": {
+          "value": "All",
+          "text": "All"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "sort": 1
+      },
+      {
+        "name": "pod",
+        "type": "query",
+        "query": "label_values(mongodb_up, pod)",
+        "current": {
+          "value": "All",
+          "text": "All"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "sort": 1
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "MongoDB Cluster Health Overview",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "title": "MongoDB Instances Up",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(mongodb_up)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 2
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Primary/Secondary Status",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "mongodb_mongod_replset_my_state",
+          "refId": "A",
+          "legendFormat": "State: {{instance}} (1=PRIMARY, 2=SECONDARY)"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 2
+              },
+              {
+                "color": "yellow",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "short",
+          "mappings": [
+            {
+              "options": {
+                "1": {
+                  "text": "PRIMARY",
+                  "color": "green"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "2": {
+                  "text": "SECONDARY",
+                  "color": "blue"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "3": {
+                  "text": "RECOVERING",
+                  "color": "yellow"
+                }
+              },
+              "type": "value"
+            }
+          ]
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Current Connections",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(mongodb_ss_connections_current)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 100
+              },
+              {
+                "color": "red",
+                "value": 500
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Available Connections",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(mongodb_ss_connections_available)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "green",
+                "value": 200
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Operations & Performance",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      }
+    },
+    {
+      "id": 7,
+      "title": "Operations Per Second",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(mongodb_ss_opcounters_insert[5m]))",
+          "refId": "A",
+          "legendFormat": "Inserts/sec"
+        },
+        {
+          "expr": "sum(rate(mongodb_ss_opcounters_query[5m]))",
+          "refId": "B",
+          "legendFormat": "Queries/sec"
+        },
+        {
+          "expr": "sum(rate(mongodb_ss_opcounters_update[5m]))",
+          "refId": "C",
+          "legendFormat": "Updates/sec"
+        },
+        {
+          "expr": "sum(rate(mongodb_ss_opcounters_delete[5m]))",
+          "refId": "D",
+          "legendFormat": "Deletes/sec"
+        },
+        {
+          "expr": "sum(rate(mongodb_ss_opcounters_command[5m]))",
+          "refId": "E",
+          "legendFormat": "Commands/sec"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "ops/sec",
+          "show": true
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 8,
+      "title": "WiredTiger Cache Usage",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "mongodb_ss_wt_cache_bytes_currently_in_the_cache",
+          "refId": "A",
+          "legendFormat": "Cache Used - {{instance}}"
+        },
+        {
+          "expr": "mongodb_ss_wt_cache_maximum_bytes_configured",
+          "refId": "B",
+          "legendFormat": "Cache Max - {{instance}}"
+        },
+        {
+          "expr": "mongodb_ss_wt_cache_tracked_dirty_bytes_in_the_cache",
+          "refId": "C",
+          "legendFormat": "Dirty Cache - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "bytes",
+          "show": true,
+          "unit": "bytes"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 9,
+      "title": "Query Performance & Latency",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "(rate(mongodb_collstats_latencyStats_reads_latency[5m]) / rate(mongodb_collstats_latencyStats_reads_ops[5m])) / 1000",
+          "refId": "A",
+          "legendFormat": "Avg Read Latency (ms)"
+        },
+        {
+          "expr": "(rate(mongodb_collstats_latencyStats_writes_latency[5m]) / rate(mongodb_collstats_latencyStats_writes_ops[5m])) / 1000",
+          "refId": "B",
+          "legendFormat": "Avg Write Latency (ms)"
+        },
+        {
+          "expr": "(rate(mongodb_collstats_latencyStats_commands_latency[5m]) / rate(mongodb_collstats_latencyStats_commands_ops[5m])) / 1000",
+          "refId": "C",
+          "legendFormat": "Avg Command Latency (ms)"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "milliseconds",
+          "show": true,
+          "unit": "ms"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 10,
+      "title": "Storage & Memory",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "mongodb_collstats_storageStats_size",
+          "refId": "A",
+          "legendFormat": "Data Size - {{database}}.{{collection}}"
+        },
+        {
+          "expr": "mongodb_collstats_storageStats_storageSize",
+          "refId": "B",
+          "legendFormat": "Storage Size - {{database}}.{{collection}}"
+        },
+        {
+          "expr": "mongodb_collstats_storageStats_totalIndexSize",
+          "refId": "C",
+          "legendFormat": "Index Size - {{database}}.{{collection}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "bytes",
+          "show": true,
+          "unit": "bytes"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 11,
+      "title": "Network & Queue Metrics",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      }
+    },
+    {
+      "id": 12,
+      "title": "Network Traffic",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(mongodb_ss_network_bytesIn[5m])",
+          "refId": "A",
+          "legendFormat": "Bytes In/sec - {{instance}}"
+        },
+        {
+          "expr": "rate(mongodb_ss_network_bytesOut[5m])",
+          "refId": "B",
+          "legendFormat": "Bytes Out/sec - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "bytes/sec",
+          "show": true,
+          "unit": "Bps"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 13,
+      "title": "Queue Operations",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "mongodb_ss_queues_ingress_normalPriority_queueLength",
+          "refId": "A",
+          "legendFormat": "Normal Priority Queue Length - {{instance}}"
+        },
+        {
+          "expr": "mongodb_ss_queues_ingress_exempt_queueLength",
+          "refId": "B",
+          "legendFormat": "Exempt Queue Length - {{instance}}"
+        },
+        {
+          "expr": "mongodb_ss_queues_ingress_normalPriority_processing",
+          "refId": "C",
+          "legendFormat": "Normal Priority Processing - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "operations",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 101,
+      "title": "MongoDB Write Queries Latency",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(mongodb_collstats_latencyStats_writes_latency[5m]) / rate(mongodb_collstats_latencyStats_writes_ops[5m]) / 1000",
+          "refId": "A",
+          "legendFormat": "Write Latency (ms) - {{database}}.{{collection}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 35
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "unit": "ms",
+          "min": 0
+        }
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 102,
+      "title": "MongoDB Collections Write Operations (Hot Collections)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "topk(10, rate(mongodb_collstats_latencyStats_writes_ops[5m]))",
+          "refId": "A",
+          "legendFormat": "Write Ops/sec - {{database}}.{{collection}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 35
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "unit": "ops",
+          "min": 0
+        }
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "refresh": "30s",
+  "schemaVersion": 27,
+  "version": 1
+}

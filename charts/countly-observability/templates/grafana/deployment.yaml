@@ -1,0 +1,150 @@
+{{- if (include "obs.deployGrafana" .) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "obs.fullname" . }}-grafana
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "obs.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: grafana
+  template:
+    metadata:
+      labels:
+        {{- include "obs.labels" . | nindent 8 }}
+        app.kubernetes.io/component: grafana
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsUser: 472
+        runAsGroup: 472
+        fsGroup: 472
+        runAsNonRoot: true
+      containers:
+        - name: grafana
+          image: {{ include "obs.image" (dict "global" .Values.global "image" .Values.grafana.image) }}
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.grafana.admin.existingSecret | default (printf "%s-grafana" (include "obs.fullname" .)) }}
+                  key: {{ .Values.grafana.admin.userKey }}
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.grafana.admin.existingSecret | default (printf "%s-grafana" (include "obs.fullname" .)) }}
+                  key: {{ .Values.grafana.admin.passwordKey }}
+            - name: GF_USERS_ALLOW_SIGN_UP
+              value: "false"
+            - name: GF_DATABASE_TYPE
+              value: "sqlite3"
+            {{- if .Values.grafana.featureToggles }}
+            - name: GF_FEATURE_TOGGLES_ENABLE
+              value: {{ .Values.grafana.featureToggles | quote }}
+            {{- end }}
+            {{- if .Values.grafana.plugins.install }}
+            - name: GF_INSTALL_PLUGINS
+              value: {{ .Values.grafana.plugins.install | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.grafana.resources | nindent 12 }}
+          volumeMounts:
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+              readOnly: true
+            {{- if .Values.grafana.dashboards.enabled }}
+            - name: dashboard-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+              readOnly: true
+            {{- if .Values.grafana.dashboards.core }}
+            - name: dashboards-core
+              mountPath: /var/lib/grafana/dashboards/core
+              readOnly: true
+            {{- end }}
+            {{- if .Values.grafana.dashboards.data }}
+            - name: dashboards-data
+              mountPath: /var/lib/grafana/dashboards/data
+              readOnly: true
+            {{- end }}
+            {{- if .Values.grafana.dashboards.clickhouse }}
+            - name: dashboards-clickhouse
+              mountPath: /var/lib/grafana/dashboards/clickhouse
+              readOnly: true
+            {{- end }}
+            {{- end }}
+            - name: storage
+              mountPath: /var/lib/grafana
+            - name: tmp
+              mountPath: /tmp
+      {{- include "obs.scheduling" (dict "values" .Values.grafana "global" .Values.global "component" "grafana" "fullname" (include "obs.fullname" .)) | nindent 6 }}
+      volumes:
+        - name: datasources
+          configMap:
+            name: {{ include "obs.fullname" . }}-grafana-datasources
+        {{- if .Values.grafana.dashboards.enabled }}
+        - name: dashboard-provider
+          configMap:
+            name: {{ include "obs.fullname" . }}-grafana-dashboards-provider
+        {{- if .Values.grafana.dashboards.core }}
+        - name: dashboards-core
+          configMap:
+            name: {{ include "obs.fullname" . }}-grafana-dashboards-core
+        {{- end }}
+        {{- if .Values.grafana.dashboards.data }}
+        - name: dashboards-data
+          configMap:
+            name: {{ include "obs.fullname" . }}-grafana-dashboards-data
+        {{- end }}
+        {{- if .Values.grafana.dashboards.clickhouse }}
+        - name: dashboards-clickhouse
+          configMap:
+            name: {{ include "obs.fullname" . }}-grafana-dashboards-clickhouse
+        {{- end }}
+        {{- end }}
+        - name: storage
+          {{- if .Values.grafana.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "obs.fullname" . }}-grafana
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: tmp
+          emptyDir: {}
+{{- end }}

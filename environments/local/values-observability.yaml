@@ -1,0 +1,14 @@
+# Observability-specific overrides for local environment
+# Applied ONLY to the countly-observability release via helmfile
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: countly-ca-issuer
+  hosts:
+    - host: grafana.local
+  tls:
+    - hosts:
+        - grafana.local
+      secretName: grafana-tls

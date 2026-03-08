@@ -1,0 +1,67 @@
+{{- if (include "obs.deployKSM" .) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "obs.fullname" . }}-kube-state-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: kube-state-metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "obs.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: kube-state-metrics
+  template:
+    metadata:
+      labels:
+        {{- include "obs.labels" . | nindent 8 }}
+        app.kubernetes.io/component: kube-state-metrics
+    spec:
+      serviceAccountName: {{ include "obs.fullname" . }}-kube-state-metrics
+      {{- include "obs.scheduling" (dict "values" .Values.kubeStateMetrics "global" .Values.global "component" "kube-state-metrics" "fullname" (include "obs.fullname" .)) | nindent 6 }}
+      containers:
+      - name: kube-state-metrics
+        image: {{ include "obs.image" (dict "global" .Values.global "image" .Values.kubeStateMetrics.image) }}
+        args:
+          - --port=8080
+          - --telemetry-port=8081
+          - --namespaces={{ join "," .Values.kubeStateMetrics.namespaces }}
+          - --resources=certificatesigningrequests,configmaps,cronjobs,daemonsets,deployments,endpointslices,horizontalpodautoscalers,ingresses,jobs,leases,limitranges,mutatingwebhookconfigurations,namespaces,networkpolicies,nodes,persistentvolumeclaims,persistentvolumes,poddisruptionbudgets,pods,replicasets,replicationcontrollers,resourcequotas,secrets,services,statefulsets,storageclasses,validatingwebhookconfigurations,volumeattachments
+        ports:
+        - containerPort: 8080
+          name: http-metrics
+          protocol: TCP
+        - containerPort: 8081
+          name: telemetry
+          protocol: TCP
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 65534
+          seccompProfile:
+            type: RuntimeDefault
+        {{- with .Values.kubeStateMetrics.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 30
+          timeoutSeconds: 10
+          periodSeconds: 30
+{{- end }}

@@ -1,5 +1,5 @@
 # =============================================================================
-# Reference Tier — every overridable value that tier files can set
+# Reference Tier — every overridable value that tier files can set across all 5 charts
 # =============================================================================
 # This file documents ALL knobs available for environment tiers.
 # Copy to a new tier directory and uncomment/adjust what you need.
@@ -604,3 +604,267 @@ kafkaConnect:
 #       kubernetes.io/metadata.name: monitoring
 
 clickhouseNamespace: clickhouse
+
+# =============================================================================
+#  OBSERVABILITY CHART  (charts/countly-observability)
+# =============================================================================
+
+# -- Deployment mode: "full" (all in-cluster), "hybrid" (no Grafana), "external" (no backends)
+mode: full
+
+# -- Cluster name injected into Prometheus external_labels
+clusterName: countly-local
+
+# -- Cross-namespace references for scrape target discovery
+countlyNamespace: countly
+# clickhouseNamespace: clickhouse                    # Already defined above (kafka chart)
+mongodbNamespace: mongodb
+kafkaNamespace: kafka
+ingressNamespace: ingress-nginx
+
+# --- Per-signal toggles + sampling ---
+metrics:
+  enabled: true
+  sampling:
+    interval: "15s"                                  # Global Prometheus scrape_interval
+
+traces:
+  enabled: true
+  sampling:
+    strategy: "AlwaysOn"                             # AlwaysOn | TraceIdRatio | ParentBased
+    ratio: 1.0                                       # 0.0-1.0, used when strategy != AlwaysOn
+
+logs:
+  enabled: true
+  sampling:
+    enabled: false
+    dropRate: 0                                      # 0.0-1.0, fraction of logs to drop
+
+profiling:
+  enabled: true
+  sampling:
+    rate: "100"                                      # Advisory only — SDK config, not server-enforced
+
+# --- Prometheus ---
+prometheus:
+  image:
+    repository: prom/prometheus
+    tag: "v3.10.0"
+  retention:
+    time: "30d"
+    size: "50GB"
+  storage:
+    size: 100Gi
+    storageClass: ""                                 # Falls back to global.storageClass
+  resources:
+    requests: { cpu: "2", memory: "3Gi" }
+    limits: { cpu: "2", memory: "4Gi" }
+  extraArgs: []
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    remoteWriteUrl: ""                               # Full Prometheus remote write URL
+    auth:
+      existingSecret: ""
+      bearerTokenKey: ""
+    tls:
+      insecureSkipVerify: false
+      caSecretName: ""
+      caKey: ""
+
+# --- Loki ---
+loki:
+  image:
+    repository: grafana/loki
+    tag: "3.6.7"
+  retention: "30d"
+  storage:
+    size: 100Gi
+    storageClass: ""
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  config:
+    maxStreamsPerUser: 10000
+    maxLineSize: 256000
+    ingestionRateMb: 64
+    ingestionBurstSizeMb: 128
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    pushUrl: ""                                      # Full Loki push URL
+    auth:
+      existingSecret: ""
+      bearerTokenKey: ""
+    tls:
+      insecureSkipVerify: false
+
+# --- Tempo ---
+tempo:
+  image:
+    repository: grafana/tempo
+    tag: "2.10.1"
+  retention: "12h"
+  storage:
+    size: 150Gi
+    storageClass: ""
+  resources:
+    requests: { cpu: "3", memory: "6Gi" }
+    limits: { cpu: "4", memory: "10Gi" }
+  config:
+    ingestionRateLimitBytes: 100000000
+    ingestionBurstSizeBytes: 150000000
+    maxTracesPerUser: 50000
+    maxBytesPerTrace: 5000000
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    otlpGrpcEndpoint: ""                             # Tempo OTLP gRPC host:port
+    otlpHttpEndpoint: ""                             # Tempo OTLP HTTP URL (optional)
+    auth:
+      existingSecret: ""
+      headerKey: ""
+    tls:
+      insecureSkipVerify: true
+
+# --- Pyroscope ---
+pyroscope:
+  image:
+    repository: grafana/pyroscope
+    tag: "1.2.0"
+  storage:
+    size: 20Gi
+    storageClass: ""
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    ingestUrl: ""                                    # Pyroscope ingest URL
+    auth:
+      existingSecret: ""
+      headerKey: ""
+    tls:
+      insecureSkipVerify: false
+
+# --- Grafana (only deployed when mode == "full") ---
+grafana:
+  enabled: true
+  image:
+    repository: grafana/grafana
+    tag: "12.4.0"
+  admin:
+    existingSecret: ""                               # Use pre-existing Secret for admin creds
+    userKey: "admin-user"
+    passwordKey: "admin-password"
+  persistence:
+    enabled: false                                   # Ephemeral by default (declarative config)
+    size: 10Gi
+    storageClass: ""
+  resources:
+    requests: { cpu: "1", memory: "1Gi" }
+    limits: { cpu: "2", memory: "2Gi" }
+  plugins:
+    install: "grafana-pyroscope-datasource"
+  featureToggles: "tempoSearch,tempoBackendSearch,traceqlEditor"
+  dashboards:
+    enabled: true
+    core: true
+    data: true
+    clickhouse: true
+  pdb:
+    enabled: false
+    minAvailable: 1
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    url: ""                                          # External Grafana URL (NOTES.txt only)
+
+# --- Alloy (DaemonSet — logs, OTLP receive, profiling receive) ---
+alloy:
+  image:
+    repository: grafana/alloy
+    tag: "v1.13.2"
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "2", memory: "2Gi" }
+  scheduling:
+    nodeSelector:
+      kubernetes.io/os: linux
+    tolerations: []
+
+# --- Alloy-Metrics (Deployment — ALL Prometheus scraping) ---
+alloyMetrics:
+  image:
+    repository: grafana/alloy
+    tag: "v1.13.2"
+  replicas: 1
+  resources:
+    requests: { cpu: "500m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "512Mi" }
+  pdb:
+    enabled: false
+    minAvailable: 1
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+# --- kube-state-metrics ---
+kubeStateMetrics:
+  enabled: true
+  image:
+    repository: registry.k8s.io/kube-state-metrics/kube-state-metrics
+    tag: "v2.18.0"
+  resources:
+    requests: { cpu: "10m", memory: "32Mi" }
+    limits: { cpu: "100m", memory: "256Mi" }
+  namespaces:
+    - countly
+    - observability
+    - ingress-nginx
+    - kube-system
+    - clickhouse
+    - mongodb
+    - kafka
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+# --- node-exporter ---
+nodeExporter:
+  enabled: true
+  image:
+    repository: prom/node-exporter
+    tag: "v1.10.2"
+  resources:
+    requests: { cpu: "100m", memory: "180Mi" }
+    limits: { cpu: "250m", memory: "300Mi" }
+
+# Observability ingress (conflicts with countly chart's ingress key above).
+# For the observability chart (Grafana), set ingress via a per-chart overlay.
+# Observability chart structure:
+#   ingress:
+#     enabled: false
+#     className: nginx
+#     annotations: {}
+#     hosts:
+#       - host: obs.example.com
+#     tls: []
+
+# Observability networkPolicy (conflicts with countly chart's networkPolicy key above).
+# For the observability chart, set networkPolicy via a per-chart overlay.
+# Observability chart structure:
+#   networkPolicy:
+#     enabled: false
+#     additionalIngress: []

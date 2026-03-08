@@ -64,7 +64,7 @@ spec:
             capabilities:
               drop:
                 - ALL
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: false
             seccompProfile:
               type: RuntimeDefault
           {{- if $values.command }}
@@ -144,6 +144,10 @@ spec:
                 secretKeyRef:
                   name: {{ include "countly.mongodb.secretName" $root }}
                   key: {{ $root.Values.secrets.mongodb.key }}
+            - name: OTEL_SERVICE_NAME
+              value: "countly-{{ $component }}"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "service.name=countly-{{ $component }},service.namespace={{ $root.Release.Namespace }},deployment.environment={{ $root.Values.global.clusterProfile | default "production" }}"
             {{- if $values.extraEnv }}
             {{- toYaml $values.extraEnv | nindent 12 }}
             {{- end }}

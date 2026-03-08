@@ -1,0 +1,1395 @@
+{
+  "id": null,
+  "title": "ClickHouse Comprehensive Monitoring",
+  "tags": [
+    "clickhouse",
+    "database",
+    "analytics",
+    "observability"
+  ],
+  "style": "dark",
+  "timezone": "browser",
+  "editable": true,
+  "hideControls": false,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "type": "query",
+        "query": "label_values(up{job=~\"clickhouse.*\"}, namespace)",
+        "current": {
+          "value": "clickhouse",
+          "text": "clickhouse"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "sort": 1
+      },
+      {
+        "name": "instance",
+        "type": "query",
+        "query": "label_values(up{job=~\"clickhouse.*\"}, instance)",
+        "current": {
+          "value": "All",
+          "text": "All"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "sort": 1
+      },
+      {
+        "name": "cluster",
+        "type": "query",
+        "query": "label_values(ClickHouseAsyncMetrics_Uptime, cluster)",
+        "current": {
+          "value": "All",
+          "text": "All"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "sort": 1
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "ClickHouse Cluster Health Overview",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "title": "Uptime",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "max(ClickHouseAsyncMetrics_OSUptime{instance=~\"$instance\"})",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 300
+              },
+              {
+                "color": "green",
+                "value": 3600
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value"
+      }
+    },
+    {
+      "id": 3,
+      "title": "HTTP Connections",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(ClickHouseMetrics_HTTPConnection{instance=~\"$instance\"})",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Memory Tracking",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(ClickHouseMetrics_MemoryTracking{instance=~\"$instance\"})",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1073741824
+              },
+              {
+                "color": "red",
+                "value": 2147483648
+              }
+            ]
+          },
+          "unit": "bytes"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Global Thread Activity",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(ClickHouseMetrics_GlobalThreadActive{instance=~\"$instance\"})",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Active Parts & Merges Status",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(ClickHouseMetrics_BackgroundCommonPoolTask{instance=~\"$instance\"})",
+          "refId": "A",
+          "legendFormat": "Active Tasks"
+        },
+        {
+          "expr": "sum(ClickHouseMetrics_BackgroundCommonPoolSize{instance=~\"$instance\"})",
+          "refId": "B",
+          "legendFormat": "Pool Size"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "short",
+          "displayName": "${__series.name}"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 6,
+      "title": "System Performance & Load",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      }
+    },
+    {
+      "id": 7,
+      "title": "Load Average",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "ClickHouseAsyncMetrics_LoadAverage1{instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "1min - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_LoadAverage5{instance=~\"$instance\"}",
+          "refId": "B",
+          "legendFormat": "5min - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_LoadAverage15{instance=~\"$instance\"}",
+          "refId": "C",
+          "legendFormat": "15min - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "load",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 8,
+      "title": "CPU Usage",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "100 - ClickHouseAsyncMetrics_OSIdleTimeCPU0{instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "CPU0 Usage % - {{instance}}"
+        },
+        {
+          "expr": "100 - ClickHouseAsyncMetrics_OSIdleTimeCPU1{instance=~\"$instance\"}",
+          "refId": "B",
+          "legendFormat": "CPU1 Usage % - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_OSCPUOverload{instance=~\"$instance\"}",
+          "refId": "C",
+          "legendFormat": "CPU Overload - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "percent",
+          "show": true,
+          "unit": "percent"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 9,
+      "title": "Memory Usage",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "ClickHouseAsyncMetrics_MemoryResident{instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "Resident Memory - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_MemoryVirtual{instance=~\"$instance\"}",
+          "refId": "B",
+          "legendFormat": "Virtual Memory - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_MemoryResidentMax{instance=~\"$instance\"}",
+          "refId": "C",
+          "legendFormat": "Max Resident - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseMetrics_MemoryTracking{instance=~\"$instance\"}",
+          "refId": "D",
+          "legendFormat": "Tracked Memory - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "bytes",
+          "show": true,
+          "unit": "bytes"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 10,
+      "title": "Network Traffic",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_NetworkReceiveBytes_eth0{instance=~\"$instance\"}[5m])",
+          "refId": "A",
+          "legendFormat": "RX eth0 - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_NetworkSendBytes_eth0{instance=~\"$instance\"}[5m])",
+          "refId": "B",
+          "legendFormat": "TX eth0 - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_NetworkReceivePackets_eth0{instance=~\"$instance\"}[5m])",
+          "refId": "C",
+          "legendFormat": "RX packets eth0 - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_NetworkSendPackets_eth0{instance=~\"$instance\"}[5m])",
+          "refId": "D",
+          "legendFormat": "TX packets eth0 - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "bytes/sec | packets/sec",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 11,
+      "title": "Storage & Disk I/O",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      }
+    },
+    {
+      "id": 12,
+      "title": "Block I/O Operations",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_BlockReadOps_vda{instance=~\"$instance\"}[5m])",
+          "refId": "A",
+          "legendFormat": "Read Ops vda - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_BlockWriteOps_vda{instance=~\"$instance\"}[5m])",
+          "refId": "B",
+          "legendFormat": "Write Ops vda - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_BlockReadOps_vdb{instance=~\"$instance\"}[5m])",
+          "refId": "C",
+          "legendFormat": "Read Ops vdb - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_BlockWriteOps_vdb{instance=~\"$instance\"}[5m])",
+          "refId": "D",
+          "legendFormat": "Write Ops vdb - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "ops/sec",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 13,
+      "title": "Block I/O Throughput",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_BlockReadBytes_vda{instance=~\"$instance\"}[5m])",
+          "refId": "A",
+          "legendFormat": "Read Bytes vda - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_BlockWriteBytes_vda{instance=~\"$instance\"}[5m])",
+          "refId": "B",
+          "legendFormat": "Write Bytes vda - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_BlockReadBytes_vdb{instance=~\"$instance\"}[5m])",
+          "refId": "C",
+          "legendFormat": "Read Bytes vdb - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_BlockWriteBytes_vdb{instance=~\"$instance\"}[5m])",
+          "refId": "D",
+          "legendFormat": "Write Bytes vdb - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "bytes/sec",
+          "show": true,
+          "unit": "Bps"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 14,
+      "title": "Disk I/O Timing",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "ClickHouseAsyncMetrics_BlockReadTime_vda{instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "Read Time vda - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_BlockWriteTime_vda{instance=~\"$instance\"}",
+          "refId": "B",
+          "legendFormat": "Write Time vda - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_BlockQueueTime_vda{instance=~\"$instance\"}",
+          "refId": "C",
+          "legendFormat": "Queue Time vda - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 35
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "milliseconds",
+          "show": true,
+          "unit": "ms"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 15,
+      "title": "In-Flight Operations",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "ClickHouseAsyncMetrics_BlockInFlightOps_vda{instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "In-Flight vda - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_BlockInFlightOps_vdb{instance=~\"$instance\"}",
+          "refId": "B",
+          "legendFormat": "In-Flight vdb - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseMetrics_IOThreadsActive{instance=~\"$instance\"}",
+          "refId": "C",
+          "legendFormat": "IO Threads Active - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 35
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "operations",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 16,
+      "title": "ClickHouse Keeper (ZooKeeper) Status",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 43
+      }
+    },
+    {
+      "id": 17,
+      "title": "Keeper Role & Status",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "ClickHouseAsyncMetrics_KeeperIsLeader{instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "Leader - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_KeeperIsFollower{instance=~\"$instance\"}",
+          "refId": "B",
+          "legendFormat": "Follower - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_KeeperIsObserver{instance=~\"$instance\"}",
+          "refId": "C",
+          "legendFormat": "Observer - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 44
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "grey",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short",
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "text": "NO",
+                  "color": "grey"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "1": {
+                  "text": "YES",
+                  "color": "green"
+                }
+              },
+              "type": "value"
+            }
+          ]
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value"
+      }
+    },
+    {
+      "id": 18,
+      "title": "Keeper Nodes & Connections",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "ClickHouseAsyncMetrics_KeeperZnodeCount{instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "Znode Count - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_KeeperAliveConnections{instance=~\"$instance\"}",
+          "refId": "B",
+          "legendFormat": "Alive Connections - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_KeeperFollowers{instance=~\"$instance\"}",
+          "refId": "C",
+          "legendFormat": "Followers - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 44
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "count",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 19,
+      "title": "Keeper Performance",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "ClickHouseAsyncMetrics_KeeperAvgLatency{instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "Avg Latency - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_KeeperMaxLatency{instance=~\"$instance\"}",
+          "refId": "B",
+          "legendFormat": "Max Latency - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_KeeperMinLatency{instance=~\"$instance\"}",
+          "refId": "C",
+          "legendFormat": "Min Latency - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_KeeperPacketsReceived{instance=~\"$instance\"}[5m])",
+          "refId": "D",
+          "legendFormat": "Packets RX/sec - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_KeeperPacketsSent{instance=~\"$instance\"}[5m])",
+          "refId": "E",
+          "legendFormat": "Packets TX/sec - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 44
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "latency (ms) | packets/sec",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 20,
+      "title": "MergeTree Background Operations",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 52
+      }
+    },
+    {
+      "id": 21,
+      "title": "Background Pool Activity",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "ClickHouseMetrics_BackgroundCommonPoolSize{instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "Pool Size - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseMetrics_BackgroundCommonPoolTask{instance=~\"$instance\"}",
+          "refId": "B",
+          "legendFormat": "Active Tasks - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 53
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "tasks",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 22,
+      "title": "Async Logging & Processing",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "ClickHouseAsyncMetrics_AsyncLoggingFileLogQueueSize{instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "File Log Queue - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_AsyncLoggingErrorFileLogQueueSize{instance=~\"$instance\"}",
+          "refId": "B",
+          "legendFormat": "Error Log Queue - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_AsyncLoggingConsoleQueueSize{instance=~\"$instance\"}",
+          "refId": "C",
+          "legendFormat": "Console Log Queue - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 53
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "queue size",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 23,
+      "title": "Asynchronous Metrics Performance",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "ClickHouseAsyncMetrics_AsynchronousMetricsCalculationTimeSpent{instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "Metrics Calc Time - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_AsynchronousMetricsUpdateInterval{instance=~\"$instance\"}",
+          "refId": "B",
+          "legendFormat": "Update Interval - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 61
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "time (seconds)",
+          "show": true,
+          "unit": "s"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 24,
+      "title": "Block-Level Merge Operations",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_BlockReadMerges_vda{instance=~\"$instance\"}[5m])",
+          "refId": "A",
+          "legendFormat": "Read Merges vda/sec - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_BlockWriteMerges_vda{instance=~\"$instance\"}[5m])",
+          "refId": "B",
+          "legendFormat": "Write Merges vda/sec - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_BlockReadMerges_vdb{instance=~\"$instance\"}[5m])",
+          "refId": "C",
+          "legendFormat": "Read Merges vdb/sec - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseAsyncMetrics_BlockWriteMerges_vdb{instance=~\"$instance\"}[5m])",
+          "refId": "D",
+          "legendFormat": "Write Merges vdb/sec - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 61
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "merges/sec",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 201,
+      "title": "ClickHouse Table Parts vs Max Parts",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "ClickHouseAsyncMetrics_TotalPartsOfMergeTreeTables{instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "Current Parts - {{instance}}"
+        },
+        {
+          "expr": "ClickHouseAsyncMetrics_MaxPartCountForPartition{instance=~\"$instance\"}",
+          "refId": "B",
+          "legendFormat": "Max Parts per Partition - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 69
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 202,
+      "title": "ClickHouse Active Background Merges",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "ClickHouseCurrentMetrics_BackgroundMergesAndMutationsPoolTask{instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "Active Merges - {{instance}}"
+        },
+        {
+          "expr": "rate(ClickHouseProfileEvents_MergedRows[5m])",
+          "refId": "B",
+          "legendFormat": "Merged Rows/sec - {{instance}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 69
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "refresh": "30s",
+  "schemaVersion": 27,
+  "version": 1
+}

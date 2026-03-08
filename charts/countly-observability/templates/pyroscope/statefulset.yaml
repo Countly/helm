@@ -1,0 +1,95 @@
+{{- if (include "obs.deployPyroscope" .) }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "obs.fullname" . }}-pyroscope
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pyroscope
+spec:
+  serviceName: {{ include "obs.fullname" . }}-pyroscope
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "obs.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: pyroscope
+  template:
+    metadata:
+      labels:
+        {{- include "obs.labels" . | nindent 8 }}
+        app.kubernetes.io/component: pyroscope
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/pyroscope/configmap.yaml") . | sha256sum }}
+    spec:
+      initContainers:
+      - name: init-data-dir
+        image: busybox:1.35
+        command: ['sh', '-c', 'mkdir -p /data && chown -R 10001:10001 /data && chmod -R 755 /data']
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        securityContext:
+          runAsUser: 0
+      containers:
+      - name: pyroscope
+        image: {{ include "obs.image" (dict "global" .Values.global "image" .Values.pyroscope.image) }}
+        args:
+          - '-config.file=/etc/pyroscope/pyroscope.yaml'
+        volumeMounts:
+        - name: config
+          mountPath: /etc/pyroscope
+        - name: data
+          mountPath: /data
+        ports:
+        - containerPort: 4040
+          name: http
+          protocol: TCP
+        - containerPort: 4041
+          name: grpc
+          protocol: TCP
+        - containerPort: 4317
+          name: otlp-grpc
+          protocol: TCP
+        - containerPort: 4318
+          name: otlp-http
+          protocol: TCP
+        {{- with .Values.pyroscope.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 4040
+          initialDelaySeconds: 45
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 4040
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        securityContext:
+          runAsUser: 10001
+          runAsGroup: 10001
+          runAsNonRoot: true
+      securityContext:
+        fsGroup: 10001
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "obs.fullname" . }}-pyroscope
+      {{- include "obs.scheduling" (dict "values" .Values.pyroscope "global" .Values.global "component" "pyroscope" "fullname" (include "obs.fullname" .)) | nindent 6 }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      {{- include "obs.storageClass" (dict "componentSC" .Values.pyroscope.storage.storageClass "globalSC" .Values.global.storageClass) | nindent 6 }}
+      resources:
+        requests:
+          storage: {{ .Values.pyroscope.storage.size }}
+{{- end }}

@@ -1,0 +1,93 @@
+{{- if (include "obs.deployTempo" .) }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "obs.fullname" . }}-tempo
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: tempo
+spec:
+  serviceName: {{ include "obs.fullname" . }}-tempo
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "obs.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: tempo
+  template:
+    metadata:
+      labels:
+        {{- include "obs.labels" . | nindent 8 }}
+        app.kubernetes.io/component: tempo
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/tempo/configmap.yaml") . | sha256sum }}
+    spec:
+      initContainers:
+      - name: init-data-dir
+        image: busybox:1.35
+        command: ['sh', '-c', 'mkdir -p /var/tempo/traces /var/tempo/wal /var/tempo/generator/wal /var/tempo/generator/traces && chown -R 10001:10001 /var/tempo && chmod -R 755 /var/tempo']
+        volumeMounts:
+        - name: data
+          mountPath: /var/tempo
+        securityContext:
+          runAsUser: 0
+      containers:
+      - name: tempo
+        image: {{ include "obs.image" (dict "global" .Values.global "image" .Values.tempo.image) }}
+        args:
+          - '-config.file=/etc/tempo/tempo.yaml'
+        volumeMounts:
+        - name: config
+          mountPath: /etc/tempo
+        - name: data
+          mountPath: /var/tempo
+        ports:
+        - containerPort: 3200
+          name: http
+          protocol: TCP
+        - containerPort: 9095
+          name: grpc
+          protocol: TCP
+        - containerPort: 4317
+          name: otlp-grpc
+          protocol: TCP
+        - containerPort: 4318
+          name: otlp-http
+          protocol: TCP
+        {{- with .Values.tempo.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 3200
+          initialDelaySeconds: 30
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3200
+          initialDelaySeconds: 15
+          periodSeconds: 5
+        securityContext:
+          runAsUser: 10001
+          runAsGroup: 10001
+          runAsNonRoot: true
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "obs.fullname" . }}-tempo
+      {{- include "obs.scheduling" (dict "values" .Values.tempo "global" .Values.global "component" "tempo" "fullname" (include "obs.fullname" .)) | nindent 6 }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      {{- include "obs.storageClass" (dict "componentSC" .Values.tempo.storage.storageClass "globalSC" .Values.global.storageClass) | nindent 6 }}
+      resources:
+        requests:
+          storage: {{ .Values.tempo.storage.size }}
+{{- end }}

@@ -1,0 +1,23 @@
+{{- if (include "obs.deployPrometheus" .) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "obs.fullname" . }}-prometheus
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: prometheus
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: {{ .Values.metrics.sampling.interval }}
+      external_labels:
+        cluster: '{{ .Values.clusterName }}'
+
+    storage:
+      tsdb:
+        out_of_order_time_window: 30m
+
+    # No scrape_configs - Prometheus receives all metrics via remote write from Alloy-Metrics
+    # Prometheus will still collect its own internal metrics by default
+{{- end }}

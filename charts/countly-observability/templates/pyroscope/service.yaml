@@ -1,0 +1,33 @@
+{{- if (include "obs.deployPyroscope" .) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "obs.fullname" . }}-pyroscope
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pyroscope
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ include "obs.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: pyroscope
+  ports:
+  - name: http
+    port: 4040
+    targetPort: 4040
+    protocol: TCP
+  - name: grpc
+    port: 4041
+    targetPort: 4041
+    protocol: TCP
+  - name: otlp-grpc
+    port: 4317
+    targetPort: 4317
+    protocol: TCP
+  - name: otlp-http
+    port: 4318
+    targetPort: 4318
+    protocol: TCP
+{{- end }}

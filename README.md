@@ -1,8 +1,8 @@
 # Countly Helm Charts
 
-Helm-based deployment for Countly across 4 namespaces, each managed by its own chart.
+Helm-based deployment for Countly across 5 namespaces, each managed by its own chart.
 
-> **Quick Start:** Install [operators](#1-prerequisites), [build the Kafka Connect image](#2-build-kafka-connect-image), then run `helmfile -e tier1 apply`. For production, use `tier2`. See [docs/DEPLOYING.md](docs/DEPLOYING.md) for the full guide.
+> **Quick Start:** Install [operators](#1-prerequisites), [build the Kafka Connect image](#2-build-kafka-connect-image), then run `helmfile -e tier1 apply`. The observability stack is included automatically. For production, use `tier2`. See [docs/DEPLOYING.md](docs/DEPLOYING.md) for the full guide.
 
 | Chart | Namespace | What it deploys |
 |-------|-----------|-----------------|
@@ -10,8 +10,10 @@ Helm-based deployment for Countly across 4 namespaces, each managed by its own c
 | `countly-mongodb` | mongodb | MongoDBCommunity ReplicaSet (operator CR) |
 | `countly-clickhouse` | clickhouse | ClickHouseCluster + KeeperCluster (operator CRs) |
 | `countly-kafka` | kafka | Kafka cluster (KRaft) + KafkaConnect + Connectors (Strimzi CRs) |
+| `countly-observability` | observability | Prometheus, Grafana, Loki, Tempo, Pyroscope, Alloy collectors |
 
 Charts render **operator Custom Resources** — they do not install the operators themselves.
+The observability chart deploys standard Kubernetes workloads (no operator required).
 
 ---
 
@@ -185,7 +187,13 @@ helm install countly-kafka ./charts/countly-kafka \
   --set kafkaConnect.clickhouse.password='<ch-password>' \
   -n kafka --create-namespace
 
-# 4. Countly (last — depends on all three)
+# 4. Observability (optional — no dependencies)
+helm install countly-observability ./charts/countly-observability \
+  -f values-common.yaml \
+  -f environments/tier1/values.yaml \
+  -n observability --create-namespace
+
+# 5. Countly (last — depends on all three)
 helm install countly ./charts/countly \
   -f values-common.yaml \
   -f environments/tier1/values.yaml \
@@ -351,6 +359,7 @@ helmfile -e tier1 destroy
 
 # Or per-chart (reverse order)
 helm uninstall countly -n countly
+helm uninstall countly-observability -n observability
 helm uninstall countly-kafka -n kafka
 helm uninstall countly-clickhouse -n clickhouse
 helm uninstall countly-mongodb -n mongodb
@@ -367,4 +376,5 @@ Secrets with `helm.sh/resource-policy: keep` survive uninstall. Delete manually 
 - [docs/SECRET-MANAGEMENT.md](docs/SECRET-MANAGEMENT.md) — Secret rotation, external secrets, cross-chart credentials
 - [docs/VERSION-MATRIX.md](docs/VERSION-MATRIX.md) — Pinned operator/image version combinations
 - [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — Common issues and fixes
+- [charts/countly-observability/README.md](charts/countly-observability/README.md) — Observability chart configuration and deployment modes
 - [examples/](examples/) — Customer overlay, secrets overlay, and Helmfile examples

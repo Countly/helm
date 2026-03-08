@@ -1,7 +1,7 @@
 # =============================================================================
-# Full Reference Overlay — every overridable value across all 4 Helm charts
+# Full Reference Overlay — every overridable value across all 5 Helm charts
 # =============================================================================
-# This single overlay file is applied to ALL 4 charts via helmfile.
+# This single overlay file is applied to ALL 5 charts via helmfile.
 # Each chart ignores keys it doesn't recognize.
 #
 # IMPORTANT: Some top-level keys exist in multiple charts with different
@@ -935,3 +935,304 @@ kafkaConnect:
         healthcheck.enabled: "true"
         healthcheck.interval: "10000"
       dlq: {}
+
+
+# =============================================================================
+#  OBSERVABILITY CHART  (charts/countly-observability)
+# =============================================================================
+# NOTE: The following keys conflict with other charts:
+#
+#   ingress:
+#     countly chart       → ingress: { enabled, className, annotations, hosts, tls }  (app ingress)
+#     observability chart → ingress: { enabled, className, annotations, hosts, tls }  (Grafana ingress)
+#
+#   networkPolicy:
+#     countly chart       → networkPolicy: { enabled, ingressNamespaceSelector, additionalIngress }
+#     observability chart → networkPolicy: { enabled, additionalIngress }
+#
+# Use per-chart overlays for these conflicting keys.
+
+# -- Deployment mode
+#   "full"     — All backends + Grafana in-cluster
+#   "hybrid"   — Backends in-cluster, no Grafana (use external Grafana)
+#   "external" — Only collectors, send data to external endpoints
+mode: full
+
+# -- Cluster name injected into Prometheus external_labels
+clusterName: countly-production
+
+# -- Cross-namespace references for scrape target discovery
+countlyNamespace: countly
+clickhouseNamespace: clickhouse
+mongodbNamespace: mongodb
+kafkaNamespace: kafka
+ingressNamespace: ingress-nginx
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PER-SIGNAL TOGGLES + SAMPLING
+# ─────────────────────────────────────────────────────────────────────────────
+
+metrics:
+  enabled: true
+  sampling:
+    interval: "15s"                                  # Global Prometheus scrape_interval
+
+traces:
+  enabled: true
+  sampling:
+    strategy: "TraceIdRatio"                         # AlwaysOn | TraceIdRatio | ParentBased
+    ratio: 0.1                                       # 10% sampling in production
+
+logs:
+  enabled: true
+  sampling:
+    enabled: false                                   # Enable to drop a fraction of logs
+    dropRate: 0                                      # 0.0-1.0
+
+profiling:
+  enabled: true
+  sampling:
+    rate: "100"                                      # Advisory only — SDK config hint
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPONENT: Prometheus
+# ─────────────────────────────────────────────────────────────────────────────
+prometheus:
+  image:
+    repository: prom/prometheus
+    tag: "v3.10.0"
+  retention:
+    time: "30d"
+    size: "50GB"
+  storage:
+    size: 100Gi
+    storageClass: "gp3"
+  resources:
+    requests: { cpu: "2", memory: "3Gi" }
+    limits: { cpu: "2", memory: "4Gi" }
+  extraArgs: []                                      # Additional Prometheus CLI args
+  scheduling:
+    nodeSelector:
+      workload: observability
+    tolerations: []
+    affinity: {}
+  external:
+    remoteWriteUrl: ""                               # e.g. https://prom.corp.com/api/v1/write
+    auth:
+      existingSecret: ""                             # Secret containing bearer token
+      bearerTokenKey: ""                             # Key within the Secret
+    tls:
+      insecureSkipVerify: false
+      caSecretName: ""                               # Secret containing CA cert
+      caKey: ""                                      # Key within CA secret
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPONENT: Loki
+# ─────────────────────────────────────────────────────────────────────────────
+loki:
+  image:
+    repository: grafana/loki
+    tag: "3.6.7"
+  retention: "30d"
+  storage:
+    size: 100Gi
+    storageClass: "gp3"
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  config:
+    maxStreamsPerUser: 10000
+    maxLineSize: 256000                              # Max log line size in bytes
+    ingestionRateMb: 64                              # Per-tenant ingestion rate limit
+    ingestionBurstSizeMb: 128
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    pushUrl: ""                                      # e.g. https://loki.corp.com/loki/api/v1/push
+    auth:
+      existingSecret: ""
+      bearerTokenKey: ""
+    tls:
+      insecureSkipVerify: false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPONENT: Tempo
+# ─────────────────────────────────────────────────────────────────────────────
+tempo:
+  image:
+    repository: grafana/tempo
+    tag: "2.10.1"
+  retention: "12h"
+  storage:
+    size: 150Gi
+    storageClass: "gp3"
+  resources:
+    requests: { cpu: "3", memory: "6Gi" }
+    limits: { cpu: "4", memory: "10Gi" }
+  config:
+    ingestionRateLimitBytes: 100000000               # 100 MB/s
+    ingestionBurstSizeBytes: 150000000               # 150 MB burst
+    maxTracesPerUser: 50000
+    maxBytesPerTrace: 5000000                        # 5 MB
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    otlpGrpcEndpoint: ""                             # e.g. tempo.corp.com:4317
+    otlpHttpEndpoint: ""                             # e.g. https://tempo.corp.com:4318
+    auth:
+      existingSecret: ""
+      headerKey: ""
+    tls:
+      insecureSkipVerify: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPONENT: Pyroscope
+# ─────────────────────────────────────────────────────────────────────────────
+pyroscope:
+  image:
+    repository: grafana/pyroscope
+    tag: "1.2.0"
+  storage:
+    size: 20Gi
+    storageClass: "gp3"
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    ingestUrl: ""                                    # e.g. https://pyroscope.corp.com
+    auth:
+      existingSecret: ""
+      headerKey: ""
+    tls:
+      insecureSkipVerify: false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPONENT: Grafana (only deployed when mode == "full")
+# ─────────────────────────────────────────────────────────────────────────────
+grafana:
+  enabled: true
+  image:
+    repository: grafana/grafana
+    tag: "12.4.0"
+  admin:
+    existingSecret: ""                               # Pre-existing Secret for admin creds
+    userKey: "admin-user"
+    passwordKey: "admin-password"
+  persistence:
+    enabled: false                                   # Ephemeral by default (declarative config)
+    size: 10Gi
+    storageClass: "gp3"
+  resources:
+    requests: { cpu: "1", memory: "1Gi" }
+    limits: { cpu: "2", memory: "2Gi" }
+  plugins:
+    install: "grafana-pyroscope-datasource"
+  featureToggles: "tempoSearch,tempoBackendSearch,traceqlEditor"
+  dashboards:
+    enabled: true                                    # Deploy dashboard ConfigMaps
+    core: true                                       # Core infra dashboards
+    data: true                                       # MongoDB/Kafka/ClickHouse dashboards
+    clickhouse: true                                 # ClickHouse-specific dashboards
+  pdb:
+    enabled: false
+    minAvailable: 1
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    url: ""                                          # External Grafana URL (NOTES.txt only)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPONENT: Alloy (DaemonSet — logs, OTLP receive, profiling receive)
+# ─────────────────────────────────────────────────────────────────────────────
+alloy:
+  image:
+    repository: grafana/alloy
+    tag: "v1.13.2"
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "2", memory: "2Gi" }
+  scheduling:
+    nodeSelector:
+      kubernetes.io/os: linux                        # Alloy only runs on Linux nodes
+    tolerations: []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPONENT: Alloy-Metrics (Deployment — ALL Prometheus scraping)
+# ─────────────────────────────────────────────────────────────────────────────
+alloyMetrics:
+  image:
+    repository: grafana/alloy
+    tag: "v1.13.2"
+  replicas: 1
+  resources:
+    requests: { cpu: "500m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "512Mi" }
+  pdb:
+    enabled: false
+    minAvailable: 1
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPONENT: kube-state-metrics
+# ─────────────────────────────────────────────────────────────────────────────
+kubeStateMetrics:
+  enabled: true
+  image:
+    repository: registry.k8s.io/kube-state-metrics/kube-state-metrics
+    tag: "v2.18.0"
+  resources:
+    requests: { cpu: "10m", memory: "32Mi" }
+    limits: { cpu: "100m", memory: "256Mi" }
+  namespaces:                                        # Namespaces to watch
+    - countly
+    - observability
+    - ingress-nginx
+    - kube-system
+    - clickhouse
+    - mongodb
+    - kafka
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPONENT: node-exporter
+# ─────────────────────────────────────────────────────────────────────────────
+nodeExporter:
+  enabled: true
+  image:
+    repository: prom/node-exporter
+    tag: "v1.10.2"
+  resources:
+    requests: { cpu: "100m", memory: "180Mi" }
+    limits: { cpu: "250m", memory: "300Mi" }
+
+# Observability ingress (conflicts with countly chart's ingress key above).
+# For the observability chart (Grafana), set ingress via a per-chart overlay.
+# Observability chart structure:
+#   ingress:
+#     enabled: false
+#     className: nginx
+#     annotations: {}
+#     hosts:
+#       - host: obs.example.com
+#     tls: []
+
+# Observability networkPolicy (conflicts with countly chart's networkPolicy key above).
+# For the observability chart, set networkPolicy via a per-chart overlay.
+# Observability chart structure:
+#   networkPolicy:
+#     enabled: false
+#     additionalIngress: []

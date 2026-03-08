@@ -1,0 +1,17 @@
+{{- if (include "obs.deployPyroscope" .) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "obs.fullname" . }}-pyroscope
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pyroscope
+data:
+  pyroscope.yaml: |
+    pyroscopedb:
+      data_path: /data
+
+    server:
+      http_listen_port: 4040
+{{- end }}

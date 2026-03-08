@@ -1,0 +1,532 @@
+{{- if (include "obs.deployAlloyMetrics" .) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "obs.fullname" . }}-alloy-metrics-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: alloy-metrics
+data:
+  config.alloy: |
+    // ===== Prometheus Remote Write =====
+    prometheus.remote_write "default" {
+      endpoint {
+        url = "{{ include "obs.prometheus.remoteWriteUrl" . }}"
+
+        queue_config {
+          capacity              = 15000
+          max_shards            = 2
+          min_shards            = 1
+          max_samples_per_send  = 500
+          batch_send_deadline   = "30s"
+          min_backoff           = "1s"
+          max_backoff           = "30s"
+        }
+
+        metadata_config {
+          send = false
+        }
+      }
+
+      wal {
+        truncate_frequency = "2h"
+        min_keepalive_time = "5m"
+        max_keepalive_time = "8h"
+      }
+    }
+
+    // ===== ClickHouse Exporter =====
+    discovery.kubernetes "svc_clickhouse" {
+      role = "service"
+      namespaces {
+        names = ["{{ .Values.clickhouseNamespace }}"]
+      }
+    }
+
+    discovery.relabel "svc_clickhouse" {
+      targets = discovery.kubernetes.svc_clickhouse.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_service_label_clickhouse_altinity_com_chi"]
+        regex         = "ch-prod"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_service_port_name"]
+        regex         = "metrics"
+        action        = "keep"
+      }
+    }
+
+    prometheus.scrape "clickhouse_exporter" {
+      targets         = discovery.relabel.svc_clickhouse.output
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "clickhouse-exporter"
+      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
+      scrape_timeout  = "10s"
+      honor_labels    = true
+    }
+
+    // ===== ClickHouse Keeper =====
+    discovery.kubernetes "svc_chk" {
+      role = "service"
+      namespaces {
+        names = ["{{ .Values.clickhouseNamespace }}"]
+      }
+    }
+
+    discovery.relabel "svc_chk" {
+      targets = discovery.kubernetes.svc_chk.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_service_label_app"]
+        regex         = "clickhouse-keeper"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_service_port_name"]
+        regex         = "metrics"
+        action        = "keep"
+      }
+    }
+
+    prometheus.scrape "clickhouse_keeper" {
+      targets         = discovery.relabel.svc_chk.output
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "clickhouse-keeper"
+      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
+      scrape_timeout  = "10s"
+      honor_labels    = true
+    }
+
+    // ===== MongoDB Exporter =====
+    discovery.kubernetes "svc_mongodb" {
+      role = "service"
+      namespaces {
+        names = ["{{ .Values.mongodbNamespace }}"]
+      }
+    }
+
+    discovery.relabel "svc_mongodb" {
+      targets = discovery.kubernetes.svc_mongodb.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_service_label_app_kubernetes_io_instance"]
+        regex         = "app-mongodb"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_service_port_name"]
+        regex         = "http-metrics"
+        action        = "keep"
+      }
+    }
+
+    prometheus.scrape "mongodb_exporter" {
+      targets         = discovery.relabel.svc_mongodb.output
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "mongodb-exporter"
+      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
+      scrape_timeout  = "10s"
+    }
+
+    // ===== Kafka Broker JMX Metrics =====
+    discovery.kubernetes "kafka_pods" {
+      role = "pod"
+      namespaces {
+        names = ["{{ .Values.kafkaNamespace }}"]
+      }
+    }
+
+    discovery.relabel "kafka_brokers" {
+      targets = discovery.kubernetes.kafka_pods.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_strimzi_io_kind"]
+        regex         = "Kafka"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_port_name"]
+        regex         = "tcp-prometheus"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_ip", "__meta_kubernetes_pod_container_port_number"]
+        separator     = ":"
+        regex         = "(.+):(.+)"
+        target_label  = "__address__"
+        replacement   = "$1:$2"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_strimzi_io_cluster"]
+        target_label  = "kafka_cluster"
+      }
+
+      rule {
+        target_label = "cluster"
+        replacement  = "{{ .Values.clusterName }}"
+      }
+    }
+
+    prometheus.scrape "kafka_broker_jmx" {
+      targets         = discovery.relabel.kafka_brokers.output
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "kafka-broker-jmx"
+      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
+      scrape_timeout  = "10s"
+    }
+
+    // ===== Strimzi Cluster Operator =====
+    discovery.kubernetes "strimzi_cluster_operator" {
+      role = "pod"
+      namespaces {
+        names = ["{{ .Values.kafkaNamespace }}"]
+      }
+    }
+
+    discovery.relabel "strimzi_cluster_operator" {
+      targets = discovery.kubernetes.strimzi_cluster_operator.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_strimzi_io_kind"]
+        regex         = "cluster-operator"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_port_name"]
+        regex         = "http"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_ip", "__meta_kubernetes_pod_container_port_number"]
+        separator     = ":"
+        regex         = "(.+):(.+)"
+        target_label  = "__address__"
+        replacement   = "$1:$2"
+      }
+    }
+
+    prometheus.scrape "strimzi_cluster_operator" {
+      targets         = discovery.relabel.strimzi_cluster_operator.output
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "strimzi-cluster-operator"
+      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
+      scrape_timeout  = "10s"
+    }
+
+    // ===== Strimzi Entity Operator =====
+    discovery.kubernetes "strimzi_entity_operator" {
+      role = "pod"
+      namespaces {
+        names = ["{{ .Values.kafkaNamespace }}"]
+      }
+    }
+
+    discovery.relabel "strimzi_entity_operator" {
+      targets = discovery.kubernetes.strimzi_entity_operator.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+        regex         = "entity-operator"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_port_name"]
+        regex         = "healthcheck|metrics|http"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_ip", "__meta_kubernetes_pod_container_port_number"]
+        separator     = ":"
+        regex         = "(.+):(.+)"
+        target_label  = "__address__"
+        replacement   = "$1:$2"
+      }
+    }
+
+    prometheus.scrape "strimzi_entity_operator" {
+      targets         = discovery.relabel.strimzi_entity_operator.output
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "strimzi-entity-operator"
+      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
+      scrape_timeout  = "10s"
+      metrics_path    = "/metrics"
+    }
+
+    // ===== Kafka Connect JMX Metrics =====
+    discovery.kubernetes "kafka_connect_pods" {
+      role = "pod"
+      namespaces {
+        names = ["{{ .Values.kafkaNamespace }}"]
+      }
+    }
+
+    discovery.relabel "kafka_connect" {
+      targets = discovery.kubernetes.kafka_connect_pods.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_strimzi_io_kind"]
+        regex         = "KafkaConnect"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_port_name"]
+        regex         = "tcp-prometheus"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_ip", "__meta_kubernetes_pod_container_port_number"]
+        separator     = ":"
+        regex         = "(.+):(.+)"
+        target_label  = "__address__"
+        replacement   = "$1:$2"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_strimzi_io_cluster"]
+        target_label  = "kafka_cluster"
+      }
+
+      rule {
+        target_label = "cluster"
+        replacement  = "{{ .Values.clusterName }}"
+      }
+    }
+
+    prometheus.scrape "kafka_connect_jmx" {
+      targets         = discovery.relabel.kafka_connect.output
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "kafka-connect-jmx"
+      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
+      scrape_timeout  = "10s"
+    }
+
+    // ===== NGINX Ingress Controller =====
+    discovery.kubernetes "nginx_ingress_pods" {
+      role = "pod"
+      namespaces {
+        names = ["{{ .Values.ingressNamespace }}"]
+      }
+    }
+
+    discovery.relabel "nginx_ingress" {
+      targets = discovery.kubernetes.nginx_ingress_pods.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+        regex         = "{{ .Values.nginxIngress.podLabelName }}"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_port_number"]
+        regex         = "{{ .Values.nginxIngress.metricsPort }}"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_ip", "__meta_kubernetes_pod_container_port_number"]
+        separator     = ":"
+        regex         = "(.+):(.+)"
+        target_label  = "__address__"
+        replacement   = "$1:$2"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+
+      rule {
+        target_label = "cluster"
+        replacement  = "{{ .Values.clusterName }}"
+      }
+    }
+
+    prometheus.scrape "nginx_ingress_controller" {
+      targets         = discovery.relabel.nginx_ingress.output
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "nginx-ingress-controller"
+      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
+      scrape_timeout  = "10s"
+      metrics_path    = "/metrics"
+    }
+
+    // ===== kube-state-metrics =====
+    discovery.kubernetes "kube_state_metrics" {
+      role = "service"
+      namespaces {
+        names = ["{{ .Release.Namespace }}"]
+      }
+    }
+
+    discovery.relabel "kube_state_metrics" {
+      targets = discovery.kubernetes.kube_state_metrics.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_service_name"]
+        regex         = "{{ include "obs.fullname" . }}-kube-state-metrics"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_service_port_name"]
+        regex         = "http-metrics"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__address__"]
+        target_label  = "__address__"
+        replacement   = "$1:8080"
+        regex         = "([^:]+)(?::\\d+)?"
+      }
+    }
+
+    prometheus.scrape "kube_state_metrics" {
+      targets           = discovery.relabel.kube_state_metrics.output
+      forward_to        = [prometheus.remote_write.default.receiver]
+      job_name          = "kube-state-metrics"
+      scrape_interval   = "{{ .Values.metrics.sampling.interval }}"
+      scrape_timeout    = "10s"
+      honor_timestamps  = false
+    }
+
+    // ===== node-exporter (all nodes) =====
+    discovery.kubernetes "node_exporter" {
+      role = "pod"
+      namespaces {
+        names = ["{{ .Release.Namespace }}"]
+      }
+    }
+
+    discovery.relabel "node_exporter" {
+      targets = discovery.kubernetes.node_exporter.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_component"]
+        regex         = "node-exporter"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_port_name"]
+        regex         = "http-metrics"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_node_name"]
+        target_label  = "node"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_host_ip"]
+        target_label  = "__address__"
+        replacement   = "$1:9100"
+      }
+    }
+
+    prometheus.scrape "node_exporter" {
+      targets         = discovery.relabel.node_exporter.output
+      forward_to      = [prometheus.relabel.node_exporter_relabel.receiver]
+      job_name        = "node-exporter"
+      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
+      scrape_timeout  = "14s"
+    }
+
+    prometheus.relabel "node_exporter_relabel" {
+      forward_to = [prometheus.remote_write.default.receiver]
+
+      rule {
+        source_labels = ["__name__", "mountpoint"]
+        regex         = "node_filesystem.*;/var/lib/docker/.*"
+        action        = "drop"
+      }
+      rule {
+        source_labels = ["__name__", "mountpoint"]
+        regex         = "node_filesystem.*;/var/lib/kubelet/.*"
+        action        = "drop"
+      }
+    }
+
+    // ===== kubelet / cAdvisor (all nodes) =====
+    discovery.kubernetes "kubelet" {
+      role = "node"
+    }
+
+    discovery.relabel "kubelet_cadvisor" {
+      targets = discovery.kubernetes.kubelet.targets
+
+      rule {
+        source_labels = ["__address__"]
+        regex         = "([^:]+):?(\\d+)?"
+        target_label  = "__address__"
+        replacement   = "$1:10250"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_node_name"]
+        target_label  = "node"
+      }
+
+      rule {
+        target_label = "__metrics_path__"
+        replacement  = "/metrics/cadvisor"
+      }
+
+      rule {
+        target_label = "__scheme__"
+        replacement  = "https"
+      }
+    }
+
+    prometheus.scrape "kubelet_cadvisor" {
+      targets         = discovery.relabel.kubelet_cadvisor.output
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "kubelet-cadvisor"
+      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
+      scrape_timeout  = "10s"
+
+      tls_config {
+        insecure_skip_verify = true
+      }
+
+      bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+    }
+
+    // ===== Self-monitoring =====
+    prometheus.exporter.self "alloy_metrics" {
+    }
+
+    prometheus.scrape "alloy_metrics" {
+      targets         = prometheus.exporter.self.alloy_metrics.targets
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "alloy-metrics-internal"
+      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
+    }
+{{- end }}

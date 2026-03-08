@@ -1,0 +1,89 @@
+{{- if (include "obs.deployAlloyMetrics" .) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "obs.fullname" . }}-alloy-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: alloy-metrics
+spec:
+  replicas: {{ .Values.alloyMetrics.replicas }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "obs.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: alloy-metrics
+  template:
+    metadata:
+      labels:
+        {{- include "obs.labels" . | nindent 8 }}
+        app.kubernetes.io/component: alloy-metrics
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/alloy-metrics/configmap.yaml") . | sha256sum }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "12345"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: {{ include "obs.fullname" . }}-alloy
+      {{- include "obs.scheduling" (dict "values" .Values.alloyMetrics "global" .Values.global "component" "alloy-metrics" "fullname" (include "obs.fullname" .)) | nindent 6 }}
+      containers:
+      - name: alloy
+        image: {{ include "obs.image" (dict "global" .Values.global "image" .Values.alloyMetrics.image) }}
+        args:
+          - run
+          - /etc/alloy/config.alloy
+          - --storage.path=/tmp/alloy
+          - --server.http.listen-addr=0.0.0.0:12345
+        ports:
+        - name: http-metrics
+          containerPort: 12345
+          protocol: TCP
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: ALLOY_DEPLOY_MODE
+          value: "metrics"
+        securityContext:
+          runAsUser: 65534
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: config
+          mountPath: /etc/alloy
+        - name: alloy-storage
+          mountPath: /tmp/alloy
+        {{- with .Values.alloyMetrics.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 12345
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 12345
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "obs.fullname" . }}-alloy-metrics-config
+      - name: alloy-storage
+        emptyDir: {}
+{{- end }}

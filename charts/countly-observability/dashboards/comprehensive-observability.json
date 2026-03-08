@@ -1,0 +1,956 @@
+{
+  "id": null,
+  "title": "Comprehensive Observability Overview",
+  "tags": [
+    "overview",
+    "comprehensive",
+    "all-services",
+    "slo",
+    "observability"
+  ],
+  "style": "dark",
+  "timezone": "browser",
+  "editable": true,
+  "hideControls": false,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "templating": {
+    "list": [
+      {
+        "name": "interval",
+        "type": "interval",
+        "query": "1m,5m,10m,30m,1h,6h,12h,1d,7d,14d,30d",
+        "current": {
+          "value": "5m",
+          "text": "5m"
+        },
+        "hide": 0,
+        "options": [
+          {
+            "selected": false,
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "selected": true,
+            "text": "5m",
+            "value": "5m"
+          },
+          {
+            "selected": false,
+            "text": "10m",
+            "value": "10m"
+          },
+          {
+            "selected": false,
+            "text": "30m",
+            "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
+          },
+          {
+            "selected": false,
+            "text": "6h",
+            "value": "6h"
+          },
+          {
+            "selected": false,
+            "text": "12h",
+            "value": "12h"
+          },
+          {
+            "selected": false,
+            "text": "1d",
+            "value": "1d"
+          },
+          {
+            "selected": false,
+            "text": "7d",
+            "value": "7d"
+          },
+          {
+            "selected": false,
+            "text": "14d",
+            "value": "14d"
+          },
+          {
+            "selected": false,
+            "text": "30d",
+            "value": "30d"
+          }
+        ]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Service Health Overview",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "title": "Cluster Health",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(up)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "green",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 20
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "MongoDB Status",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(mongodb_up)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 2
+              }
+            ]
+          },
+          "unit": "short",
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "text": "DOWN",
+                  "color": "red"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "1": {
+                  "text": "PARTIAL",
+                  "color": "yellow"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "2": {
+                  "text": "UP",
+                  "color": "green"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "3": {
+                  "text": "UP",
+                  "color": "green"
+                }
+              },
+              "type": "value"
+            }
+          ]
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Kafka Brokers",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "{__name__=~\"kafka_controller_activebrokercount.*\", namespace=\"kafka\"}",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Kafka Connect",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum({__name__=~\"kafka_connect_connector_running_task_count.*\", namespace=\"kafka\"})",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 4
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value"
+      }
+    },
+    {
+      "id": 6,
+      "title": "K8s Nodes Ready",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(kube_node_status_condition{condition=\"Ready\"} == 1)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value"
+      }
+    },
+    {
+      "id": 7,
+      "title": "Failed Pods",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "count(kube_pod_info{status_phase=\"Failed\"})",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "name_and_value"
+      }
+    },
+    {
+      "id": 8,
+      "title": "Application Performance Metrics",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      }
+    },
+    {
+      "id": 9,
+      "title": "MongoDB Operations/sec",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(mongodb_ss_opcounters_query[$interval]))",
+          "refId": "A",
+          "legendFormat": "Queries/sec"
+        },
+        {
+          "expr": "sum(rate(mongodb_ss_opcounters_insert[$interval]))",
+          "refId": "B",
+          "legendFormat": "Inserts/sec"
+        },
+        {
+          "expr": "sum(rate(mongodb_ss_opcounters_update[$interval]))",
+          "refId": "C",
+          "legendFormat": "Updates/sec"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "ops/sec",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 10,
+      "title": "Kafka Message Throughput",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate({__name__=~\"kafka_brokertopic_messagesin.*\", namespace=\"kafka\"}[$interval]))",
+          "refId": "A",
+          "legendFormat": "Messages In/sec"
+        },
+        {
+          "expr": "sum(rate({__name__=~\"kafka_brokertopic_bytesin.*\", namespace=\"kafka\"}[$interval]))",
+          "refId": "B",
+          "legendFormat": "Bytes In/sec"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "throughput",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 11,
+      "title": "Resource Utilization Overview",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      }
+    },
+    {
+      "id": 12,
+      "title": "Node CPU Usage",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "avg(rate(container_cpu_usage_seconds_total{container!=\"\", container!=\"POD\"}[$interval])) * 100",
+          "refId": "A",
+          "legendFormat": "Overall CPU Usage %"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 19
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "percent",
+          "show": true,
+          "unit": "percent",
+          "max": 100,
+          "min": 0
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": false,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 13,
+      "title": "Node Memory Usage",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "100 * (1 - (avg(node_memory_MemAvailable_bytes) / avg(node_memory_MemTotal_bytes)))",
+          "refId": "A",
+          "legendFormat": "Overall Memory Usage %"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 19
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "percent",
+          "show": true,
+          "unit": "percent",
+          "max": 100,
+          "min": 0
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": false,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 14,
+      "title": "Network Traffic",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(node_network_receive_bytes_total{device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*\"}[$interval]))",
+          "refId": "A",
+          "legendFormat": "Network RX"
+        },
+        {
+          "expr": "sum(rate(node_network_transmit_bytes_total{device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*\"}[$interval]))",
+          "refId": "B",
+          "legendFormat": "Network TX"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 19
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "bytes/sec",
+          "show": true,
+          "unit": "Bps"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": false,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 15,
+      "title": "Service-Level Indicators (SLIs)",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      }
+    },
+    {
+      "id": 16,
+      "title": "MongoDB Cache Hit Ratio",
+      "type": "singlestat",
+      "targets": [
+        {
+          "expr": "100 * (mongodb_ss_wt_cache_bytes_currently_in_the_cache{namespace=\"mongodb\"} / mongodb_ss_wt_cache_maximum_bytes_configured{namespace=\"mongodb\"})",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 28
+      },
+      "format": "percent",
+      "prefix": "",
+      "postfix": "",
+      "nullText": null,
+      "valueMaps": [],
+      "mappingTypes": [],
+      "rangeMaps": [],
+      "mappingType": 1,
+      "nullPointMode": "connected",
+      "valueName": "current",
+      "prefixFontSize": "50%",
+      "valueFontSize": "80%",
+      "postfixFontSize": "50%",
+      "thresholds": "70,90",
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#d44a3a",
+        "#e24d42",
+        "#299c46"
+      ],
+      "sparkline": {
+        "show": true,
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "fillColor": "rgba(31, 118, 189, 0.18)"
+      },
+      "gauge": {
+        "show": false,
+        "minValue": 0,
+        "maxValue": 100,
+        "thresholdMarkers": true,
+        "thresholdLabels": false
+      }
+    },
+    {
+      "id": 17,
+      "title": "Kafka Connect Tasks Running",
+      "type": "singlestat",
+      "targets": [
+        {
+          "expr": "sum(kafka_connect_connector_running_task_count{namespace=\"kafka\"}) / sum(kafka_connect_connector_total_task_count{namespace=\"kafka\"}) * 100",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 28
+      },
+      "format": "percent",
+      "prefix": "",
+      "postfix": "",
+      "nullText": null,
+      "valueMaps": [],
+      "mappingTypes": [],
+      "rangeMaps": [],
+      "mappingType": 1,
+      "nullPointMode": "connected",
+      "valueName": "current",
+      "prefixFontSize": "50%",
+      "valueFontSize": "80%",
+      "postfixFontSize": "50%",
+      "thresholds": "80,95",
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#d44a3a",
+        "#e24d42",
+        "#299c46"
+      ],
+      "sparkline": {
+        "show": true,
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "fillColor": "rgba(31, 118, 189, 0.18)"
+      },
+      "gauge": {
+        "show": false,
+        "minValue": 0,
+        "maxValue": 100,
+        "thresholdMarkers": true,
+        "thresholdLabels": false
+      }
+    },
+    {
+      "id": 18,
+      "title": "Pod Success Rate",
+      "type": "singlestat",
+      "targets": [
+        {
+          "expr": "sum(kube_pod_status_phase{phase=\"Running\"}) / sum(kube_pod_status_phase{phase=~\"Running|Pending|Failed\"}) * 100",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 28
+      },
+      "format": "percent",
+      "prefix": "",
+      "postfix": "",
+      "nullText": null,
+      "valueMaps": [],
+      "mappingTypes": [],
+      "rangeMaps": [],
+      "mappingType": 1,
+      "nullPointMode": "connected",
+      "valueName": "current",
+      "prefixFontSize": "50%",
+      "valueFontSize": "80%",
+      "postfixFontSize": "50%",
+      "thresholds": "90,98",
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#d44a3a",
+        "#e24d42",
+        "#299c46"
+      ],
+      "sparkline": {
+        "show": true,
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "fillColor": "rgba(31, 118, 189, 0.18)"
+      },
+      "gauge": {
+        "show": false,
+        "minValue": 0,
+        "maxValue": 100,
+        "thresholdMarkers": true,
+        "thresholdLabels": false
+      }
+    },
+    {
+      "id": 19,
+      "title": "Observability Stack Health",
+      "type": "singlestat",
+      "targets": [
+        {
+          "expr": "sum(up{namespace=\"observability\"}) / count(up{namespace=\"observability\"}) * 100",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 28
+      },
+      "format": "percent",
+      "prefix": "",
+      "postfix": "",
+      "nullText": null,
+      "valueMaps": [],
+      "mappingTypes": [],
+      "rangeMaps": [],
+      "mappingType": 1,
+      "nullPointMode": "connected",
+      "valueName": "current",
+      "prefixFontSize": "50%",
+      "valueFontSize": "80%",
+      "postfixFontSize": "50%",
+      "thresholds": "90,98",
+      "colorBackground": false,
+      "colorValue": true,
+      "colors": [
+        "#d44a3a",
+        "#e24d42",
+        "#299c46"
+      ],
+      "sparkline": {
+        "show": true,
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "fillColor": "rgba(31, 118, 189, 0.18)"
+      },
+      "gauge": {
+        "show": false,
+        "minValue": 0,
+        "maxValue": 100,
+        "thresholdMarkers": true,
+        "thresholdLabels": false
+      }
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "refresh": "30s",
+  "schemaVersion": 27,
+  "version": 1
+}

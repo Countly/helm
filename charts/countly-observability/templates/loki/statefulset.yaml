@@ -1,0 +1,88 @@
+{{- if (include "obs.deployLoki" .) }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "obs.fullname" . }}-loki
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: loki
+spec:
+  serviceName: {{ include "obs.fullname" . }}-loki
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "obs.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: loki
+  template:
+    metadata:
+      labels:
+        {{- include "obs.labels" . | nindent 8 }}
+        app.kubernetes.io/component: loki
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/loki/configmap.yaml") . | sha256sum }}
+    spec:
+      initContainers:
+      - name: init-data-dir
+        image: busybox:1.35
+        command: ['sh', '-c', 'mkdir -p /loki/chunks /loki/rules /loki/tsdb-shipper-cache /loki/wal && chown -R 10001:10001 /loki && chmod -R 755 /loki']
+        volumeMounts:
+        - name: data
+          mountPath: /loki
+        securityContext:
+          runAsUser: 0
+      containers:
+      - name: loki
+        image: {{ include "obs.image" (dict "global" .Values.global "image" .Values.loki.image) }}
+        args:
+          - '-config.file=/etc/loki/loki.yaml'
+        volumeMounts:
+        - name: config
+          mountPath: /etc/loki
+        - name: data
+          mountPath: /loki
+        ports:
+        - containerPort: 3100
+          name: http
+          protocol: TCP
+        - containerPort: 9096
+          name: grpc
+          protocol: TCP
+        {{- with .Values.loki.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 3100
+          initialDelaySeconds: 45
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3100
+          initialDelaySeconds: 45
+          periodSeconds: 10
+        securityContext:
+          runAsUser: 10001
+          runAsGroup: 10001
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "obs.fullname" . }}-loki
+      {{- include "obs.scheduling" (dict "values" .Values.loki "global" .Values.global "component" "loki" "fullname" (include "obs.fullname" .)) | nindent 6 }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      {{- include "obs.storageClass" (dict "componentSC" .Values.loki.storage.storageClass "globalSC" .Values.global.storageClass) | nindent 6 }}
+      resources:
+        requests:
+          storage: {{ .Values.loki.storage.size }}
+{{- end }}

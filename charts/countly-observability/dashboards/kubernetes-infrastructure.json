@@ -1,0 +1,792 @@
+{
+  "id": null,
+  "title": "Kubernetes Infrastructure Overview",
+  "tags": [
+    "kubernetes",
+    "infrastructure",
+    "cluster",
+    "nodes",
+    "pods",
+    "observability"
+  ],
+  "style": "dark",
+  "timezone": "browser",
+  "editable": true,
+  "hideControls": false,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "type": "query",
+        "query": "label_values(kube_pod_info, namespace)",
+        "current": {
+          "value": "All",
+          "text": "All"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "sort": 1
+      },
+      {
+        "name": "node",
+        "type": "query",
+        "query": "label_values(kube_node_info, node)",
+        "current": {
+          "value": "All",
+          "text": "All"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "options": [],
+        "refresh": 1,
+        "regex": "",
+        "sort": 1
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Cluster Overview",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "title": "Nodes",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "count(kube_node_info)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Ready Nodes",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(kube_node_status_condition{condition=\"Ready\"} == 1)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Total Pods",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "count(kube_pod_info{namespace=~\"$namespace\"})",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Running Pods",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(kube_pod_status_phase{phase=\"Running\", namespace=~\"$namespace\"})",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "green",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Failed Pods",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(kube_pod_status_phase{phase=\"Failed\", namespace=~\"$namespace\"})",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 7,
+      "title": "Namespaces",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "count(kube_namespace_status_phase{phase=\"Active\"})",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 8,
+      "title": "Node Resource Usage",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      }
+    },
+    {
+      "id": 9,
+      "title": "Node CPU Usage",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "avg(rate(container_cpu_usage_seconds_total{container!=\"\", container!=\"POD\"}[5m])) * 100",
+          "refId": "A",
+          "legendFormat": "CPU Usage - {{pod}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "percent",
+          "show": true,
+          "unit": "percent",
+          "max": 100,
+          "min": 0
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 10,
+      "title": "Node Memory Usage",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "100 * (container_memory_working_set_bytes{container!=\"\", container!=\"POD\"} / container_spec_memory_limit_bytes{container!=\"\", container!=\"POD\"})",
+          "refId": "A",
+          "legendFormat": "Memory Usage - {{pod}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "percent",
+          "show": true,
+          "unit": "percent",
+          "max": 100,
+          "min": 0
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 11,
+      "title": "Node Disk Usage",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "100 * (container_fs_usage_bytes{container!=\"\", container!=\"POD\"} / container_fs_limit_bytes{container!=\"\", container!=\"POD\"})",
+          "refId": "A",
+          "legendFormat": "Disk Usage - {{pod}} {{container}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "percent",
+          "show": true,
+          "unit": "percent",
+          "max": 100,
+          "min": 0
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 12,
+      "title": "Node Network Traffic",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(container_network_receive_bytes_total{container!=\"\", container!=\"POD\"}[5m])",
+          "refId": "A",
+          "legendFormat": "RX - {{pod}} {{interface}}"
+        },
+        {
+          "expr": "rate(container_network_transmit_bytes_total{container!=\"\", container!=\"POD\"}[5m])",
+          "refId": "B",
+          "legendFormat": "TX - {{pod}} {{interface}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "bytes/sec",
+          "show": true,
+          "unit": "Bps"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 13,
+      "title": "Workload Distribution",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      }
+    },
+    {
+      "id": 14,
+      "title": "Pods by Namespace",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "count by (namespace) (kube_pod_info)",
+          "refId": "A",
+          "legendFormat": "Total Pods - {{namespace}}"
+        },
+        {
+          "expr": "count by (namespace) (kube_pod_status_ready{condition=\"true\"})",
+          "refId": "B",
+          "legendFormat": "Ready Pods - {{namespace}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "pods",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": false,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 15,
+      "title": "Deployments Status",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "kube_deployment_status_replicas_available{namespace=~\"$namespace\"}",
+          "refId": "A",
+          "legendFormat": "Available - {{namespace}}/{{deployment}}"
+        },
+        {
+          "expr": "kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\"}",
+          "refId": "B",
+          "legendFormat": "Unavailable - {{namespace}}/{{deployment}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "replicas",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": false,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 16,
+      "title": "Persistent Volume Status",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "kube_persistentvolume_status_phase",
+          "refId": "A",
+          "legendFormat": "PV Status - {{persistentvolume}} ({{phase}})"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 35
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "status",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": false,
+        "current": true,
+        "max": false,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    },
+    {
+      "id": 17,
+      "title": "Service & Ingress Count",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "count by (namespace) (kube_service_info{namespace=~\"$namespace\"})",
+          "refId": "A",
+          "legendFormat": "Services - {{namespace}}"
+        },
+        {
+          "expr": "count by (namespace) (kube_ingress_info{namespace=~\"$namespace\"})",
+          "refId": "B",
+          "legendFormat": "Ingresses - {{namespace}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 35
+      },
+      "xAxis": {
+        "show": true
+      },
+      "yAxes": [
+        {
+          "label": "count",
+          "show": true,
+          "unit": "short"
+        },
+        {
+          "show": true
+        }
+      ],
+      "legend": {
+        "show": true,
+        "alignAsTable": true,
+        "rightSide": false,
+        "avg": false,
+        "current": true,
+        "max": true,
+        "min": false,
+        "total": false,
+        "values": true
+      }
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "refresh": "30s",
+  "schemaVersion": 27,
+  "version": 1
+}
