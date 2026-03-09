@@ -1,6 +1,14 @@
 # Local environment — Observability chart choices (non-sizing)
-# Grafana ingress with self-signed TLS
 
+# Deployment mode: full | hybrid | external | disabled
+mode: full
+
+# Grafana admin credentials
+grafana:
+  auth:
+    adminPassword: "countly-local-2026"
+
+# Grafana ingress with self-signed TLS
 ingress:
   enabled: true
   className: nginx

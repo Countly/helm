@@ -38,8 +38,10 @@ ingress:
   tls:
     mode: selfSigned
 
-# Enable OTEL to connect to observability stack
+# Override Kafka replication factor — local has only 1 broker
 config:
+  kafka:
+    COUNTLY_CONFIG__KAFKA_REPLICATIONFACTOR: "1"
   otel:
     OTEL_ENABLED: "true"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4318"

@@ -1,0 +1,4 @@
+# Local environment — MongoDB chart overrides (non-sizing)
+# Profile defaults come from profiles/local/mongodb.yaml
+# Secrets come from secrets-mongodb.yaml
+{}

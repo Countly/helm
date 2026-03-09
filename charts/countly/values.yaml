@@ -340,6 +340,8 @@ config:
     OTEL_ENABLED: "false"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4318"
     OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+    OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
+    OTEL_TRACES_SAMPLER_ARG: "1.0"
     PYROSCOPE_ENABLED: "false"
 
 # Node options per component (injected into configmap)

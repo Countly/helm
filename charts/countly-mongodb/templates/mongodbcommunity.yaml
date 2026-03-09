@@ -88,7 +88,7 @@ spec:
               requiredDuringSchedulingIgnoredDuringExecution:
                 - labelSelector:
                     matchLabels:
-                      app: {{ include "countly-mongodb.fullname" . }}
+                      app: {{ include "countly-mongodb.fullname" . }}-svc
                   topologyKey: {{ $antiAffinity.topologyKey | default "kubernetes.io/hostname" }}
               {{- else }}
               preferredDuringSchedulingIgnoredDuringExecution:
@@ -96,7 +96,7 @@ spec:
                   podAffinityTerm:
                     labelSelector:
                       matchLabels:
-                        app: {{ include "countly-mongodb.fullname" . }}
+                        app: {{ include "countly-mongodb.fullname" . }}-svc
                     topologyKey: {{ $antiAffinity.topologyKey | default "kubernetes.io/hostname" }}
               {{- end }}
           {{- end }}

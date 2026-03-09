@@ -1,0 +1,14 @@
+{{- if and (include "obs.deployGrafana" .) .Values.grafana.dashboards.enabled .Values.grafana.dashboards.edge }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "obs.fullname" . }}-grafana-dashboards-edge
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+data:
+  nginx-ingress.json: |-
+    {{ .Files.Get "dashboards/40-edge/nginx-ingress.json" | nindent 4 }}
+  platform-controllers.json: |-
+    {{ .Files.Get "dashboards/40-edge/platform-controllers.json" | nindent 4 }}
+{{- end }}

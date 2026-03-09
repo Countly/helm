@@ -94,7 +94,7 @@ keeper:
   settings:
     prometheus:
       enabled: true
-      port: 9363
+      port: 9090
       endpoint: /metrics
   scheduling:
     nodeSelector: {}
@@ -125,7 +125,7 @@ networkPolicy:
   additionalIngress: []
 
 serviceMonitor:
-  enabled: true
+  enabled: false
   interval: "15s"
   serviceType: headless    # "headless" for per-pod scraping, "clusterIP" for any-pod
 

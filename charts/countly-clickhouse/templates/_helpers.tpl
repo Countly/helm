@@ -87,7 +87,7 @@ affinity:
     requiredDuringSchedulingIgnoredDuringExecution:
       - labelSelector:
           matchLabels:
-            countly.io/component: {{ $component }}
+            clickhouse.com/role: {{ $component }}
         topologyKey: {{ $topologyKey }}
     {{- else }}
     preferredDuringSchedulingIgnoredDuringExecution:
@@ -95,7 +95,7 @@ affinity:
         podAffinityTerm:
           labelSelector:
             matchLabels:
-              countly.io/component: {{ $component }}
+              clickhouse.com/role: {{ $component }}
           topologyKey: {{ $topologyKey }}
     {{- end }}
 {{- end }}

@@ -10,6 +10,8 @@ clickhouseNamespace: clickhouse
 mongodbNamespace: mongodb
 kafkaNamespace: kafka
 ingressNamespace: ingress-nginx
+certManagerNamespace: cert-manager
+clickhouseOperatorNamespace: clickhouse-operator-system
 
 # -- NGINX Ingress Controller scrape configuration
 nginxIngress:
@@ -258,9 +260,11 @@ grafana:
   featureToggles: "tempoSearch,tempoBackendSearch,traceqlEditor"
   dashboards:
     enabled: true
-    core: true
+    overview: true
+    platform: true
+    countly: true
     data: true
-    clickhouse: true
+    edge: true
   pdb:
     enabled: false
     minAvailable: 1

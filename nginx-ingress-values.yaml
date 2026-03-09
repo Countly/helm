@@ -11,6 +11,8 @@
 controller:
   # --- Image (OSS) ---
   nginxplus: false
+  # Export upstream latency histograms on /metrics for Prometheus scraping.
+  enableLatencyMetrics: true
   image:
     repository: nginx/nginx-ingress
     tag: "5.3.4"

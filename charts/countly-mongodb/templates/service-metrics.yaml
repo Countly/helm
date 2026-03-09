@@ -8,7 +8,7 @@ metadata:
     countly.io/metrics: "true"
 spec:
   selector:
-    app: {{ include "countly-mongodb.fullname" . }}
+    app: {{ include "countly-mongodb.fullname" . }}-svc
   ports:
     - name: http-metrics
       port: {{ .Values.exporter.port }}

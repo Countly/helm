@@ -14,5 +14,5 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      app: {{ include "countly-mongodb.fullname" . }}
+      app: {{ include "countly-mongodb.fullname" . }}-svc
 {{- end }}

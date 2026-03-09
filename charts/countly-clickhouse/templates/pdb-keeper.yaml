@@ -9,5 +9,5 @@ spec:
   maxUnavailable: {{ .Values.podDisruptionBudget.keeper.maxUnavailable | default 1 }}
   selector:
     matchLabels:
-      countly.io/component: clickhouse-keeper
+      clickhouse.com/role: clickhouse-keeper
 {{- end }}

@@ -1,0 +1,14 @@
+{{- if and (include "obs.deployGrafana" .) .Values.grafana.dashboards.enabled .Values.grafana.dashboards.platform }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "obs.fullname" . }}-grafana-dashboards-platform
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+data:
+  kubernetes-platform.json: |-
+    {{ .Files.Get "dashboards/10-platform/kubernetes-platform.json" | nindent 4 }}
+  node-infrastructure.json: |-
+    {{ .Files.Get "dashboards/10-platform/node-infrastructure.json" | nindent 4 }}
+{{- end }}

@@ -93,19 +93,29 @@ spec:
             - name: dashboard-provider
               mountPath: /etc/grafana/provisioning/dashboards
               readOnly: true
-            {{- if .Values.grafana.dashboards.core }}
-            - name: dashboards-core
-              mountPath: /var/lib/grafana/dashboards/core
+            {{- if .Values.grafana.dashboards.overview }}
+            - name: dashboards-overview
+              mountPath: /var/lib/grafana/dashboards/00-overview
+              readOnly: true
+            {{- end }}
+            {{- if .Values.grafana.dashboards.platform }}
+            - name: dashboards-platform
+              mountPath: /var/lib/grafana/dashboards/10-platform
+              readOnly: true
+            {{- end }}
+            {{- if .Values.grafana.dashboards.countly }}
+            - name: dashboards-countly
+              mountPath: /var/lib/grafana/dashboards/20-countly
               readOnly: true
             {{- end }}
             {{- if .Values.grafana.dashboards.data }}
             - name: dashboards-data
-              mountPath: /var/lib/grafana/dashboards/data
+              mountPath: /var/lib/grafana/dashboards/30-data
               readOnly: true
             {{- end }}
-            {{- if .Values.grafana.dashboards.clickhouse }}
-            - name: dashboards-clickhouse
-              mountPath: /var/lib/grafana/dashboards/clickhouse
+            {{- if .Values.grafana.dashboards.edge }}
+            - name: dashboards-edge
+              mountPath: /var/lib/grafana/dashboards/40-edge
               readOnly: true
             {{- end }}
             {{- end }}
@@ -122,20 +132,30 @@ spec:
         - name: dashboard-provider
           configMap:
             name: {{ include "obs.fullname" . }}-grafana-dashboards-provider
-        {{- if .Values.grafana.dashboards.core }}
-        - name: dashboards-core
+        {{- if .Values.grafana.dashboards.overview }}
+        - name: dashboards-overview
           configMap:
-            name: {{ include "obs.fullname" . }}-grafana-dashboards-core
+            name: {{ include "obs.fullname" . }}-grafana-dashboards-overview
+        {{- end }}
+        {{- if .Values.grafana.dashboards.platform }}
+        - name: dashboards-platform
+          configMap:
+            name: {{ include "obs.fullname" . }}-grafana-dashboards-platform
+        {{- end }}
+        {{- if .Values.grafana.dashboards.countly }}
+        - name: dashboards-countly
+          configMap:
+            name: {{ include "obs.fullname" . }}-grafana-dashboards-countly
         {{- end }}
         {{- if .Values.grafana.dashboards.data }}
         - name: dashboards-data
           configMap:
             name: {{ include "obs.fullname" . }}-grafana-dashboards-data
         {{- end }}
-        {{- if .Values.grafana.dashboards.clickhouse }}
-        - name: dashboards-clickhouse
+        {{- if .Values.grafana.dashboards.edge }}
+        - name: dashboards-edge
           configMap:
-            name: {{ include "obs.fullname" . }}-grafana-dashboards-clickhouse
+            name: {{ include "obs.fullname" . }}-grafana-dashboards-edge
         {{- end }}
         {{- end }}
         - name: storage

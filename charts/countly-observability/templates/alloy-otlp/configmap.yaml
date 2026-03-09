@@ -24,6 +24,14 @@ data:
       }
     }
 
+  {{- if .Values.metrics.enabled }}
+    // OTLP Metrics → Prometheus Exporter
+    otelcol.exporter.prometheus "default" {
+      resource_to_telemetry_conversion = true
+      forward_to = [prometheus.remote_write.default.receiver]
+    }
+  {{- end }}
+
     // Batch Processor (last before export)
     otelcol.processor.batch "default" {
       timeout             = "15s"
@@ -31,7 +39,10 @@ data:
       send_batch_max_size = 2048
 
       output {
-        traces = [otelcol.exporter.otlp.tempo.input]
+        traces  = [otelcol.exporter.otlp.tempo.input]
+  {{- if .Values.metrics.enabled }}
+        metrics = [otelcol.exporter.prometheus.default.input]
+  {{- end }}
       }
     }
 
@@ -164,6 +175,9 @@ data:
   {{- else }}
         traces = [otelcol.processor.batch.default.input]
   {{- end }}
+  {{- if .Values.metrics.enabled }}
+        metrics = [otelcol.processor.batch.default.input]
+  {{- end }}
       }
     }
 
@@ -174,14 +188,18 @@ data:
       spike_limit    = "{{ .Values.alloyOtlp.memoryLimiter.spikeLimit }}"
 
       output {
-        traces = [otelcol.processor.k8sattributes.default.input]
+        traces  = [otelcol.processor.k8sattributes.default.input]
+  {{- if .Values.metrics.enabled }}
+        metrics = [otelcol.processor.k8sattributes.default.input]
+  {{- end }}
       }
     }
 
     // OTLP Receiver (entry point)
     otelcol.receiver.otlp "default" {
       grpc {
-        endpoint = "0.0.0.0:4317"
+        endpoint          = "0.0.0.0:4317"
+        max_recv_msg_size = "16MiB"
       }
 
       http {
@@ -189,7 +207,10 @@ data:
       }
 
       output {
-        traces = [otelcol.processor.memory_limiter.default.input]
+        traces  = [otelcol.processor.memory_limiter.default.input]
+  {{- if .Values.metrics.enabled }}
+        metrics = [otelcol.processor.memory_limiter.default.input]
+  {{- end }}
       }
     }
 {{- end }}

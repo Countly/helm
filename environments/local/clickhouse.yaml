@@ -1,0 +1,3 @@
+# Local environment — ClickHouse chart overrides (non-sizing)
+# Profile defaults come from profiles/local/clickhouse.yaml
+# Secrets come from secrets-clickhouse.yaml

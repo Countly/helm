@@ -518,6 +518,89 @@ data:
       bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
     }
 
+    // ===== cert-manager =====
+    discovery.kubernetes "cert_manager" {
+      role = "endpoints"
+      namespaces {
+        names = ["{{ .Values.certManagerNamespace }}"]
+      }
+    }
+
+    discovery.relabel "cert_manager" {
+      targets = discovery.kubernetes.cert_manager.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_endpoint_port_name"]
+        regex         = ".*metrics.*|.*prometheus.*"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_service_name"]
+        target_label  = "service"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+
+      rule {
+        target_label = "cluster"
+        replacement  = "{{ .Values.clusterName }}"
+      }
+    }
+
+    prometheus.scrape "cert_manager" {
+      targets         = discovery.relabel.cert_manager.output
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "cert-manager"
+      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
+      scrape_timeout  = "10s"
+    }
+
+    // ===== ClickHouse Operator =====
+    discovery.kubernetes "clickhouse_operator" {
+      role = "endpoints"
+      namespaces {
+        names = ["{{ .Values.clickhouseOperatorNamespace }}"]
+      }
+    }
+
+    discovery.relabel "clickhouse_operator" {
+      targets = discovery.kubernetes.clickhouse_operator.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_service_name"]
+        regex         = ".*metrics.*"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_endpoint_port_name"]
+        regex         = "metrics"
+        action        = "keep"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+
+      rule {
+        target_label = "cluster"
+        replacement  = "{{ .Values.clusterName }}"
+      }
+    }
+
+    prometheus.scrape "clickhouse_operator" {
+      targets         = discovery.relabel.clickhouse_operator.output
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "clickhouse-operator"
+      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
+      scrape_timeout  = "10s"
+    }
+
     // ===== Self-monitoring =====
     prometheus.exporter.self "alloy_metrics" {
     }

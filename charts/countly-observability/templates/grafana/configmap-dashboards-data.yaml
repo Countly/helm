@@ -7,12 +7,14 @@ metadata:
     {{- include "obs.labels" . | nindent 4 }}
     app.kubernetes.io/component: grafana
 data:
-  mongodb-comprehensive.json: |-
-    {{ .Files.Get "dashboards/mongodb-comprehensive.json" | nindent 4 }}
-  kafka-connect-comprehensive.json: |-
-    {{ .Files.Get "dashboards/kafka-connect-comprehensive.json" | nindent 4 }}
-  kafka-cluster-comprehensive.json: |-
-    {{ .Files.Get "dashboards/kafka-cluster-comprehensive.json" | nindent 4 }}
-  kafka-consumer-lag.json: |-
-    {{ .Files.Get "dashboards/kafka-consumer-lag.json" | nindent 4 }}
+  mongodb-overview.json: |-
+    {{ .Files.Get "dashboards/30-data/mongodb-overview.json" | nindent 4 }}
+  clickhouse-server.json: |-
+    {{ .Files.Get "dashboards/30-data/clickhouse-server.json" | nindent 4 }}
+  clickhouse-keeper.json: |-
+    {{ .Files.Get "dashboards/30-data/clickhouse-keeper.json" | nindent 4 }}
+  kafka-cluster.json: |-
+    {{ .Files.Get "dashboards/30-data/kafka-cluster.json" | nindent 4 }}
+  kafka-connect.json: |-
+    {{ .Files.Get "dashboards/30-data/kafka-connect.json" | nindent 4 }}
 {{- end }}

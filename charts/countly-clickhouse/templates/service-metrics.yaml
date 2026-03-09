@@ -1,4 +1,4 @@
-{{- if .Values.serviceMonitor.enabled }}
+{{- if (.Values.server.settings.prometheus).enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -13,13 +13,15 @@ spec:
   clusterIP: None
   {{- end }}
   selector:
-    countly.io/component: clickhouse-server
+    clickhouse.com/role: clickhouse-server
   ports:
     - name: metrics
       port: {{ (.Values.server.settings.prometheus).port | default 9363 }}
       targetPort: {{ (.Values.server.settings.prometheus).port | default 9363 }}
       protocol: TCP
+{{- end }}
 ---
+{{- if (.Values.keeper.settings.prometheus).enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -34,10 +36,10 @@ spec:
   clusterIP: None
   {{- end }}
   selector:
-    countly.io/component: clickhouse-keeper
+    clickhouse.com/role: clickhouse-keeper
   ports:
     - name: metrics
-      port: {{ (.Values.keeper.settings.prometheus).port | default 9363 }}
-      targetPort: {{ (.Values.keeper.settings.prometheus).port | default 9363 }}
+      port: {{ (.Values.keeper.settings.prometheus).port | default 9090 }}
+      targetPort: {{ (.Values.keeper.settings.prometheus).port | default 9090 }}
       protocol: TCP
 {{- end }}
