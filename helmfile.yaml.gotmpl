@@ -1,0 +1,86 @@
+---
+environments:
+  local:
+    values:
+      - environments/local/global.yaml
+  reference:
+    values:
+      - environments/reference/global.yaml
+  customer-small:
+    values:
+      - environments/customer-small/global.yaml
+  customer-production:
+    values:
+      - environments/customer-production/global.yaml
+---
+
+repositories: []
+
+missingFileHandler: Warn
+
+helmDefaults:
+  wait: true
+  timeout: 600
+  createNamespace: true
+
+releases:
+  - name: countly-mongodb
+    installed: {{ ne (.Values | get "backingServices.mongodb.mode" "bundled") "external" }}
+    chart: ./charts/countly-mongodb
+    namespace: mongodb
+    values:
+      - environments/{{ .Environment.Name }}/global.yaml
+      - profiles/{{ .Values | get "global.profile" "small" }}/mongodb.yaml
+      - environments/{{ .Environment.Name }}/mongodb.yaml
+      - environments/{{ .Environment.Name }}/secrets-mongodb.yaml
+
+  - name: countly-clickhouse
+    installed: {{ ne (.Values | get "backingServices.clickhouse.mode" "bundled") "external" }}
+    chart: ./charts/countly-clickhouse
+    namespace: clickhouse
+    values:
+      - environments/{{ .Environment.Name }}/global.yaml
+      - profiles/{{ .Values | get "global.profile" "small" }}/clickhouse.yaml
+      - environments/{{ .Environment.Name }}/clickhouse.yaml
+      - environments/{{ .Environment.Name }}/secrets-clickhouse.yaml
+
+  - name: countly-kafka
+    installed: {{ ne (.Values | get "backingServices.kafka.mode" "bundled") "external" }}
+    chart: ./charts/countly-kafka
+    namespace: kafka
+    values:
+      - environments/{{ .Environment.Name }}/global.yaml
+      - profiles/{{ .Values | get "global.profile" "small" }}/kafka.yaml
+      - environments/{{ .Environment.Name }}/kafka.yaml
+      - environments/{{ .Environment.Name }}/secrets-kafka.yaml
+    needs:
+      - mongodb/countly-mongodb
+      - clickhouse/countly-clickhouse
+
+  - name: countly
+    chart: ./charts/countly
+    namespace: countly
+    values:
+      - environments/{{ .Environment.Name }}/global.yaml
+      - profiles/{{ .Values | get "global.profile" "small" }}/countly.yaml
+      - environments/{{ .Environment.Name }}/countly.yaml
+      - environments/{{ .Environment.Name }}/secrets-countly.yaml
+    needs:
+      - mongodb/countly-mongodb
+      - clickhouse/countly-clickhouse
+      - kafka/countly-kafka
+
+  - name: countly-observability
+    installed: {{ ne (.Values | get "observability.mode" "") "disabled" }}
+    chart: ./charts/countly-observability
+    namespace: observability
+    set:
+      - name: mode
+        value: {{ .Values | get "observability.mode" "full" }}
+    values:
+      - environments/{{ .Environment.Name }}/global.yaml
+      - profiles/{{ .Values | get "global.profile" "small" }}/observability.yaml
+      - environments/{{ .Environment.Name }}/observability.yaml
+      - environments/{{ .Environment.Name }}/secrets-observability.yaml
+    needs:
+      - countly/countly

@@ -5,6 +5,7 @@ metadata:
   name: {{ include "countly-mongodb.fullname" . }}-metrics
   labels:
     {{- include "countly-mongodb.labels" . | nindent 4 }}
+    countly.io/metrics: "true"
 spec:
   selector:
     app: {{ include "countly-mongodb.fullname" . }}

@@ -1,0 +1,22 @@
+# Profile: small — ClickHouse chart sizing
+
+shards: 1
+replicas: 1
+
+server:
+  resources:
+    requests: { cpu: "500m", memory: "2Gi" }
+    limits: { cpu: "1", memory: "4Gi" }
+  persistence:
+    size: 50Gi
+  scheduling:
+    antiAffinity:
+      enabled: false
+
+keeper:
+  replicas: 1
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+  persistence:
+    size: 5Gi

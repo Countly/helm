@@ -2,7 +2,7 @@ global:
   imageRegistry: ""
   imagePullSecrets: []
   storageClass: ""
-  clusterProfile: small
+  profile: small
   scheduling:
     nodeSelector: {}
     tolerations: []
@@ -125,7 +125,7 @@ networkPolicy:
   additionalIngress: []
 
 serviceMonitor:
-  enabled: false
+  enabled: true
   interval: "15s"
   serviceType: headless    # "headless" for per-pod scraping, "clusterIP" for any-pod
 

@@ -1,8 +1,0 @@
-global:
-  imageRegistry: ""
-  imagePullSecrets: []
-  storageClass: ""
-  clusterProfile: small
-  scheduling:
-    nodeSelector: {}
-    tolerations: []

@@ -1,0 +1,63 @@
+# Profile: production — Countly chart sizing
+
+api:
+  replicaCount: 2
+  resources:
+    requests: { cpu: "1", memory: "3.5Gi" }
+    limits: { cpu: "1", memory: "4Gi" }
+  hpa:
+    minReplicas: 2
+    maxReplicas: 6
+  pdb:
+    enabled: true
+    minAvailable: 1
+  scheduling:
+    antiAffinity:
+      enabled: true
+      type: preferred
+
+frontend:
+  replicaCount: 2
+  resources:
+    requests: { cpu: "1", memory: "2.5Gi" }
+    limits: { cpu: "1", memory: "3Gi" }
+  hpa:
+    minReplicas: 2
+    maxReplicas: 4
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+ingestor:
+  replicaCount: 2
+  resources:
+    requests: { cpu: "1", memory: "3Gi" }
+    limits: { cpu: "1", memory: "3Gi" }
+  hpa:
+    minReplicas: 2
+    maxReplicas: 12
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+aggregator:
+  replicaCount: 4
+  resources:
+    requests: { cpu: "1", memory: "3.5Gi" }
+    limits: { cpu: "2", memory: "4Gi" }
+  hpa:
+    minReplicas: 4
+    maxReplicas: 8
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+jobserver:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "1", memory: "3Gi" }
+    limits: { cpu: "1", memory: "3Gi" }
+
+config:
+  frontend:
+    COUNTLY_CONFIG__WEB_SECURE_COOKIES: "true"

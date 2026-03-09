@@ -1,0 +1,45 @@
+# =============================================================================
+# Countly Chart — Customer Overrides
+# =============================================================================
+# Override only what differs from the profile defaults.
+# Profile defaults (replicas, resources, HPA) come from profiles/<profile>/countly.yaml.
+
+# --- Secrets ---
+# Choose one of three secret modes:
+#   values          — provide secrets directly in this file (default)
+#   existingSecret  — reference pre-created Kubernetes secrets
+#   externalSecret  — use External Secrets Operator (ESO)
+
+secrets:
+  mode: values
+
+  common:
+    encryptionReportsKey: ""              # REQUIRED: min 8 chars
+    webSessionSecret: ""                  # REQUIRED: min 8 chars
+    passwordSecret: ""                    # REQUIRED: min 8 chars
+
+  clickhouse:
+    password: ""                          # REQUIRED: must match countly-clickhouse chart
+
+  mongodb:
+    password: ""                          # REQUIRED: must match countly-mongodb chart
+
+# --- Network Policy ---
+# networkPolicy:
+#   enabled: true
+
+# --- OTEL Integration (optional) ---
+# config:
+#   otel:
+#     OTEL_ENABLED: "true"
+#     OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4318"
+#     PYROSCOPE_ENABLED: "true"
+#     PYROSCOPE_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:9999"
+
+# --- Component Tuning (optional, beyond profile defaults) ---
+# api:
+#   hpa:
+#     maxReplicas: 10
+# ingestor:
+#   hpa:
+#     maxReplicas: 20

@@ -60,9 +60,9 @@ users:
 
 **Error:** `Failed to create topic drill-events: Topic creation errors`
 
-**Cause:** Default `COUNTLY_CONFIG__KAFKA_REPLICATIONFACTOR: "2"` but tier1 deploys only 1 broker.
+**Cause:** Default `COUNTLY_CONFIG__KAFKA_REPLICATIONFACTOR: "2"` but the local profile deploys only 1 broker.
 
-**Fix:** The tier1 values already set `config.kafka.COUNTLY_CONFIG__KAFKA_REPLICATIONFACTOR: "1"`. If you use a custom tier with fewer than 2 brokers, override this value.
+**Fix:** The local profile already sets `config.kafka.COUNTLY_CONFIG__KAFKA_REPLICATIONFACTOR: "1"`. If you use a custom profile with fewer than 2 brokers, override this value.
 
 ### Kafka Connect connector 400 — consumer override policy
 
@@ -141,9 +141,9 @@ kafkaConnect:
 
 **Error:** `TLS secret countly-tls is invalid: secret doesn't exist or of an unsupported type`
 
-**Cause:** The ingress references a TLS secret that doesn't exist. By default, TLS is disabled (`tls: []`). If you added a TLS overlay but the secret hasn't been created yet, this error appears.
+**Cause:** The ingress references a TLS secret that doesn't exist. By default, TLS is disabled (`ingress.tls.mode: http`). If you enabled TLS but the secret hasn't been created yet, this error appears.
 
-**Fix:** Use cert-manager (`overlay-tls-letsencrypt.yaml`) which creates the secret automatically, create the secret manually (`overlay-tls-custom.yaml`), or disable TLS entirely (`overlay-tls-none.yaml`). See the [TLS Certificates](../README.md#5-tls-certificates) section.
+**Fix:** Set `ingress.tls.mode: letsencrypt` for automatic certificate provisioning via cert-manager, `ingress.tls.mode: existingSecret` with a pre-created TLS secret, or `ingress.tls.mode: http` to disable TLS. See [DEPLOYMENT-MODES.md](DEPLOYMENT-MODES.md).
 
 ---
 

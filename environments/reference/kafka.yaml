@@ -1,0 +1,15 @@
+# =============================================================================
+# Kafka Chart — Customer Overrides
+# =============================================================================
+# Profile defaults (brokers, controllers, resources) come from profiles/<profile>/kafka.yaml.
+
+# --- Kafka Connect ClickHouse Credentials ---
+kafkaConnect:
+  clickhouse:
+    password: ""                          # REQUIRED: must match ClickHouse default user password
+
+# --- Custom Kafka Connect Image (if using private registry) ---
+# kafkaConnect:
+#   image:
+#     repository: your-registry.com/kafka-connect-clickhouse
+#     tag: "4.2.0-1.3.5-strimzi-amd64"

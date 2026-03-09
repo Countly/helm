@@ -1,380 +1,133 @@
 # Countly Helm Charts
 
-Helm-based deployment for Countly across 5 namespaces, each managed by its own chart.
+Helm charts for deploying Countly analytics on Kubernetes.
 
-> **Quick Start:** Install [operators](#1-prerequisites), [build the Kafka Connect image](#2-build-kafka-connect-image), then run `helmfile -e tier1 apply`. The observability stack is included automatically. For production, use `tier2`. See [docs/DEPLOYING.md](docs/DEPLOYING.md) for the full guide.
+## Architecture
 
-| Chart | Namespace | What it deploys |
-|-------|-----------|-----------------|
-| `countly` | countly | API, Frontend, Ingestor, Aggregator, JobServer + Ingress |
-| `countly-mongodb` | mongodb | MongoDBCommunity ReplicaSet (operator CR) |
-| `countly-clickhouse` | clickhouse | ClickHouseCluster + KeeperCluster (operator CRs) |
-| `countly-kafka` | kafka | Kafka cluster (KRaft) + KafkaConnect + Connectors (Strimzi CRs) |
-| `countly-observability` | observability | Prometheus, Grafana, Loki, Tempo, Pyroscope, Alloy collectors |
+Five charts, each in its own namespace:
 
-Charts render **operator Custom Resources** — they do not install the operators themselves.
-The observability chart deploys standard Kubernetes workloads (no operator required).
+| Chart | Namespace | Purpose |
+|-------|-----------|---------|
+| `countly` | countly | Application (API, Frontend, Ingestor, Aggregator, JobServer) |
+| `countly-mongodb` | mongodb | MongoDB via MongoDB Community Operator |
+| `countly-clickhouse` | clickhouse | ClickHouse via ClickHouse Operator |
+| `countly-kafka` | kafka | Kafka via Strimzi Operator |
+| `countly-observability` | observability | Prometheus, Grafana, Loki, Tempo, Pyroscope |
 
----
+## Quick Start
 
-## 1. Prerequisites
+### Prerequisites
 
-### Tools
+Install required operators before deploying Countly. See [docs/PREREQUISITES.md](docs/PREREQUISITES.md).
 
-- [Helm](https://helm.sh/) v3.12+
-- [Helmfile](https://github.com/helmfile/helmfile) (recommended for multi-chart deploy)
-- Docker (to build the Kafka Connect image)
-- `kubectl` configured for the target cluster
+### Deploy
 
-### Operators
+1. **Copy the reference environment:**
+   ```bash
+   cp -r environments/reference environments/my-deployment
+   ```
 
-Install these **before** deploying the charts. Versions are pinned — see [docs/VERSION-MATRIX.md](docs/VERSION-MATRIX.md).
+2. **Edit `environments/my-deployment/global.yaml`:**
+   - Set `ingress.hostname` to your domain
+   - Choose `global.profile`: `local`, `small`, or `production`
+   - Choose `ingress.tls.mode`: `letsencrypt`, `existingSecret`, `selfSigned`, or `http`
 
-**cert-manager** (required by ClickHouse Operator):
+3. **Fill in required secrets** in the chart-specific files. See `environments/reference/secrets.example.yaml` for a complete reference.
 
-```bash
-helm repo add jetstack https://charts.jetstack.io
-helm install cert-manager jetstack/cert-manager \
-  --version v1.17.2 \
-  --set crds.enabled=true \
-  --create-namespace -n cert-manager
-```
+4. **Register your environment** in `helmfile.yaml.gotmpl`:
+   ```yaml
+   environments:
+     my-deployment:
+       values:
+         - environments/my-deployment/global.yaml
+   ```
 
-**ClickHouse Operator:**
+5. **Deploy:**
+   ```bash
+   helmfile -e my-deployment apply
+   ```
 
-```bash
-helm install clickhouse-operator \
-  oci://ghcr.io/clickhouse/clickhouse-operator-helm \
-  --version 0.0.2 \
-  --set certManager.install=false \
-  --create-namespace -n clickhouse-operator-system
-```
-
-**Strimzi Kafka Operator:**
+### Manual Installation (without Helmfile)
 
 ```bash
-helm repo add strimzi https://strimzi.io/charts/
-helm install strimzi-kafka-operator strimzi/strimzi-kafka-operator \
-  --version 0.51.0 \
-  --create-namespace -n kafka
+helm install countly-mongodb ./charts/countly-mongodb -n mongodb --create-namespace \
+  -f profiles/production/mongodb.yaml \
+  -f environments/my-deployment/mongodb.yaml
+
+helm install countly-clickhouse ./charts/countly-clickhouse -n clickhouse --create-namespace \
+  -f profiles/production/clickhouse.yaml \
+  -f environments/my-deployment/clickhouse.yaml
+
+helm install countly-kafka ./charts/countly-kafka -n kafka --create-namespace \
+  -f profiles/production/kafka.yaml \
+  -f environments/my-deployment/kafka.yaml
+
+helm install countly ./charts/countly -n countly --create-namespace \
+  -f profiles/production/countly.yaml \
+  -f environments/my-deployment/countly.yaml
+
+helm install countly-observability ./charts/countly-observability -n observability --create-namespace \
+  -f profiles/production/observability.yaml \
+  -f environments/my-deployment/observability.yaml
 ```
 
-**MongoDB Controllers for Kubernetes (MCK):**
-
-```bash
-MCK_VERSION=1.7.0
-helm repo add mongodb https://mongodb.github.io/helm-charts
-helm repo update
-kubectl apply -f "https://raw.githubusercontent.com/mongodb/mongodb-kubernetes/${MCK_VERSION}/public/crds.yaml"
-helm upgrade --install mongodb-kubernetes-operator mongodb/mongodb-kubernetes \
-  --version ${MCK_VERSION} \
-  --set operator.watchedResources[0]=mongodbcommunity \
-  --create-namespace -n mongodb
-```
-
-**F5 NGINX Ingress Controller (OSS):**
-
-```bash
-helm repo add nginx-stable https://helm.nginx.com/stable
-helm repo update
-helm upgrade --install nginx-ingress nginx-stable/nginx-ingress \
-  --version 2.1.0 \
-  -f k8s/ingress/f5-nginx-values.yaml \
-  --create-namespace -n ingress-nginx
-```
-
-Verify all operators are running:
-
-```bash
-kubectl get pods -n cert-manager
-kubectl get pods -n clickhouse-operator-system
-kubectl get pods -n kafka
-kubectl get pods -n mongodb
-kubectl get pods -n ingress-nginx
-```
-
----
-
-## 2. Build Kafka Connect Image
-
-A custom image bundles the ClickHouse Sink Connector plugin into Strimzi's Kafka Connect base.
-
-```bash
-cd helm/kafka-connect-build
-docker build -t <your-registry>/kafka-connect-clickhouse:1.3.5 .
-docker push <your-registry>/kafka-connect-clickhouse:1.3.5
-```
-
----
-
-## 3. Configuration
-
-### Values hierarchy
-
-Values are layered (last file wins):
+## Configuration Model
 
 ```
-values-common.yaml          # Shared defaults (image registry, storage class, etc.)
-  └─ environments/<tier>/values.yaml   # Tier profile (tier1 = dev, tier2 = production)
-       └─ customer-overlay.yaml        # Customer-specific overrides (ingress host, secrets, resources)
+chart defaults -> profile (sizing) -> environment (choices) -> secrets
 ```
 
-### Tier profiles
+### Profiles (`profiles/`)
 
-| Tier | Use case | Approx resources |
-|------|----------|------------------|
-| `tier1` | Development / small | ~8 CPU / ~20 Gi RAM |
-| `tier2` | Production | Full HA, PDBs, anti-affinity |
+Profiles control sizing and high-availability settings:
+- **`local`** — Minimal resources, single replicas, no HA
+- **`small`** — Development/staging, moderate resources
+- **`production`** — Full HA with PDBs, anti-affinity, multiple replicas
 
-### Required secrets
+### Environments (`environments/`)
 
-On **first install**, these must be provided (via `--set`, overlay file, or external secret manager):
+Environments contain customer-specific choices:
+- `global.yaml` — Profile selection, hostname, TLS mode, backing service modes
+- `<chart>.yaml` — Per-chart overrides (secrets, network policy, OTEL)
+- `secrets-<chart>.yaml` — Per-chart secrets (gitignored)
 
-| Secret | Flag | Notes |
-|--------|------|-------|
-| Encryption key | `secrets.common.encryptionReportsKey` | Min 8 chars |
-| Session secret | `secrets.common.webSessionSecret` | Min 8 chars |
-| Password secret | `secrets.common.passwordSecret` | Min 8 chars |
-| ClickHouse password | `secrets.clickhouse.password` | Used by app + Connect |
-| MongoDB app password | `users.app.password` | In countly-mongodb chart |
-| MongoDB metrics password | `users.metrics.password` | In countly-mongodb chart |
-| MongoDB password (app side) | `secrets.mongodb.password` | In countly chart (must match `users.app.password`) |
+### Deployment Modes
 
-On **upgrades**, existing secrets are preserved automatically (lookup-or-create pattern).
+| Mode | Options | Documentation |
+|------|---------|---------------|
+| TLS | `http`, `letsencrypt`, `existingSecret`, `selfSigned` | [DEPLOYMENT-MODES.md](docs/DEPLOYMENT-MODES.md) |
+| Backing Services | `bundled`, `external` (per service) | [DEPLOYMENT-MODES.md](docs/DEPLOYMENT-MODES.md) |
+| Secrets | `values`, `existingSecret`, `externalSecret` | [SECRET-MANAGEMENT.md](docs/SECRET-MANAGEMENT.md) |
+| Observability | `full`, `hybrid`, `external`, `disabled` | [DEPLOYMENT-MODES.md](docs/DEPLOYMENT-MODES.md) |
 
-To use externally managed secrets instead, set `existingSecret` per component — see [docs/SECRET-MANAGEMENT.md](docs/SECRET-MANAGEMENT.md).
+## Documentation
 
----
+- [DEPLOYING.md](docs/DEPLOYING.md) — Step-by-step deployment guide
+- [DEPLOYMENT-MODES.md](docs/DEPLOYMENT-MODES.md) — TLS, observability, backing service modes
+- [SECRET-MANAGEMENT.md](docs/SECRET-MANAGEMENT.md) — Secret modes, rotation, ESO integration
+- [PREREQUISITES.md](docs/PREREQUISITES.md) — Required operators and versions
+- [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — Common issues and fixes
+- [VERSION-MATRIX.md](docs/VERSION-MATRIX.md) — Pinned operator and image versions
 
-## 4. Deploy
+## Repository Structure
 
-### Option A: Helmfile (recommended)
-
-```bash
-cd helm
-helmfile -e tier1 apply
 ```
-
-Helmfile installs charts in dependency order: MongoDB + ClickHouse first, then Kafka, then Countly.
-
-### Option B: Manual (per-chart)
-
-Install in this exact order:
-
-```bash
-cd helm
-
-# 1. MongoDB
-helm install countly-mongodb ./charts/countly-mongodb \
-  -f values-common.yaml \
-  -f environments/tier1/values.yaml \
-  --set users.app.password='<mongo-password>' \
-  --set users.metrics.password='<metrics-password>' \
-  -n mongodb --create-namespace
-
-# 2. ClickHouse
-helm install countly-clickhouse ./charts/countly-clickhouse \
-  -f values-common.yaml \
-  -f environments/tier1/values.yaml \
-  --set auth.defaultUserPassword.password='<ch-password>' \
-  -n clickhouse --create-namespace
-
-# 3. Kafka
-helm install countly-kafka ./charts/countly-kafka \
-  -f values-common.yaml \
-  -f environments/tier1/values.yaml \
-  --set kafkaConnect.image='<your-registry>/kafka-connect-clickhouse:1.3.5' \
-  --set kafkaConnect.clickhouse.password='<ch-password>' \
-  -n kafka --create-namespace
-
-# 4. Observability (optional — no dependencies)
-helm install countly-observability ./charts/countly-observability \
-  -f values-common.yaml \
-  -f environments/tier1/values.yaml \
-  -n observability --create-namespace
-
-# 5. Countly (last — depends on all three)
-helm install countly ./charts/countly \
-  -f values-common.yaml \
-  -f environments/tier1/values.yaml \
-  --set image.tag='<version>' \
-  --set secrets.common.encryptionReportsKey='<key>' \
-  --set secrets.common.webSessionSecret='<secret>' \
-  --set secrets.common.passwordSecret='<secret>' \
-  --set secrets.clickhouse.password='<ch-password>' \
-  --set secrets.mongodb.password='<mongo-password>' \
-  -n countly --create-namespace
+helm/
+  charts/                           # Helm charts
+    countly/
+    countly-mongodb/
+    countly-clickhouse/
+    countly-kafka/
+    countly-observability/
+  profiles/                         # Sizing profiles
+    local/
+    small/
+    production/
+  environments/                     # Customer environments
+    reference/                      # Copy this to start
+    local/                          # Local development
+    customer-small/                 # Example: small deployment
+    customer-production/            # Example: production deployment
+  docs/                             # Documentation
+  helmfile.yaml.gotmpl              # Helmfile orchestration
 ```
-
----
-
-## 5. TLS Certificates
-
-The Countly ingress defaults to **no TLS** (`tls: []`). Choose a TLS strategy by layering one of the provided overlay files.
-
-### Option A: Let's Encrypt via cert-manager (recommended)
-
-cert-manager is already installed (prerequisite for ClickHouse Operator).
-
-1. Create the ClusterIssuer (one-time, edit the email first):
-
-```bash
-kubectl apply -f k8s/cert-manager/letsencrypt-clusterissuer.yaml
-```
-
-2. Deploy with the Let's Encrypt overlay:
-
-```bash
-helm install countly ./charts/countly \
-  -f values-common.yaml \
-  -f environments/tier1/values.yaml \
-  -f examples/overlay-tls-letsencrypt.yaml \
-  --set ingress.hosts[0].host=my-countly.example.com \
-  --set ingress.tls[0].hosts[0]=my-countly.example.com \
-  -n countly --create-namespace
-```
-
-cert-manager provisions and auto-renews the certificate.
-
-### Option B: Bring your own certificate
-
-1. Create the TLS secret:
-
-```bash
-kubectl create secret tls countly-tls \
-  --cert=path/to/tls.crt \
-  --key=path/to/tls.key \
-  -n countly
-```
-
-2. Deploy with the custom cert overlay:
-
-```bash
-helm install countly ./charts/countly \
-  -f values-common.yaml \
-  -f environments/tier1/values.yaml \
-  -f examples/overlay-tls-custom.yaml \
-  -n countly
-```
-
-To renew, update the secret:
-
-```bash
-kubectl create secret tls countly-tls \
-  --cert=new-tls.crt --key=new-tls.key \
-  -n countly --dry-run=client -o yaml | kubectl apply -f -
-```
-
-### No TLS (development only)
-
-For local or air-gapped environments behind a separate TLS terminator:
-
-```bash
-helm install countly ./charts/countly \
-  -f values-common.yaml \
-  -f environments/tier1/values.yaml \
-  -f examples/overlay-tls-none.yaml \
-  -n countly --create-namespace
-```
-
----
-
-## 6. Customer Overlays
-
-Create a YAML file with customer-specific overrides and layer it on top of a tier:
-
-```yaml
-# customer-acme.yaml
-global:
-  storageClass: gp3
-
-image:
-  repository: myregistry.example.com/countly-unified
-  tag: "24.11.1"
-
-ingress:
-  hosts:
-    - host: analytics.acme.com
-  tls:
-    - hosts: [analytics.acme.com]
-      secretName: acme-tls
-
-api:
-  hpa:
-    maxReplicas: 10
-  scheduling:
-    nodeSelector:
-      workload: countly
-```
-
-### Apply with Helmfile
-
-Add a new environment in `helmfile.yaml`:
-
-```yaml
-environments:
-  acme:
-```
-
-Create `environments/acme/values.yaml` with your tier base + customer overrides, then:
-
-```bash
-helmfile -e acme apply
-```
-
-### Apply manually
-
-```bash
-helm install countly ./charts/countly \
-  -f values-common.yaml \
-  -f environments/tier2/values.yaml \
-  -f customer-acme.yaml \
-  -n countly --create-namespace
-```
-
-Repeat for each chart that needs the overlay. See `examples/` for more overlay examples.
-
----
-
-## 7. Upgrade
-
-```bash
-# Helmfile
-helmfile -e tier1 apply
-
-# Or per-chart
-helm upgrade countly ./charts/countly \
-  -f values-common.yaml \
-  -f environments/tier1/values.yaml \
-  -n countly
-```
-
----
-
-## 8. Uninstall
-
-```bash
-# Helmfile
-helmfile -e tier1 destroy
-
-# Or per-chart (reverse order)
-helm uninstall countly -n countly
-helm uninstall countly-observability -n observability
-helm uninstall countly-kafka -n kafka
-helm uninstall countly-clickhouse -n clickhouse
-helm uninstall countly-mongodb -n mongodb
-```
-
-Secrets with `helm.sh/resource-policy: keep` survive uninstall. Delete manually if needed.
-
----
-
-## Further Reading
-
-- [docs/PREREQUISITES.md](docs/PREREQUISITES.md) — Detailed operator installation
-- [docs/DEPLOYING.md](docs/DEPLOYING.md) — Extended deployment guide
-- [docs/SECRET-MANAGEMENT.md](docs/SECRET-MANAGEMENT.md) — Secret rotation, external secrets, cross-chart credentials
-- [docs/VERSION-MATRIX.md](docs/VERSION-MATRIX.md) — Pinned operator/image version combinations
-- [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — Common issues and fixes
-- [charts/countly-observability/README.md](charts/countly-observability/README.md) — Observability chart configuration and deployment modes
-- [examples/](examples/) — Customer overlay, secrets overlay, and Helmfile examples

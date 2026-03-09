@@ -1,0 +1,55 @@
+# =============================================================================
+# Observability Chart — Customer Overrides
+# =============================================================================
+# Profile defaults (resources, storage) come from profiles/<profile>/observability.yaml.
+#
+# Modes:
+#   full     — All backends + Grafana in-cluster (default)
+#   hybrid   — All backends in-cluster, no Grafana (use external Grafana)
+#   external — Collectors only, forward to external endpoints
+#   disabled — Set in global.yaml to skip this chart entirely
+
+# mode: full                              # Set in global.yaml
+
+# --- Per-Signal Toggles ---
+# metrics:
+#   enabled: true
+# traces:
+#   enabled: true
+# logs:
+#   enabled: true
+# profiling:
+#   enabled: true
+
+# --- External Endpoints (for hybrid/external modes) ---
+# prometheus:
+#   external:
+#     remoteWriteUrl: "https://mimir.example.com/api/v1/push"
+# loki:
+#   external:
+#     pushUrl: "https://loki.example.com/loki/api/v1/push"
+# tempo:
+#   external:
+#     otlpGrpcEndpoint: "tempo.example.com:4317"
+# pyroscope:
+#   external:
+#     ingestUrl: "https://pyroscope.example.com"
+
+# --- Storage Backends (default: filesystem) ---
+# loki:
+#   storage:
+#     backend: s3
+#     bucket: "countly-loki"
+#     endpoint: "s3.amazonaws.com"
+#     region: "us-east-1"
+
+# --- Grafana Ingress (full mode only) ---
+# ingress:
+#   enabled: true
+#   className: nginx
+#   hosts:
+#     - host: grafana.example.com
+#   tls:
+#     - hosts:
+#         - grafana.example.com
+#       secretName: grafana-tls

@@ -1,0 +1,21 @@
+# =============================================================================
+# MongoDB Chart — Customer Overrides
+# =============================================================================
+# Profile defaults (members, resources, persistence) come from profiles/<profile>/mongodb.yaml.
+
+# --- Users ---
+# Passwords are REQUIRED on first install.
+# On upgrades, existing passwords are preserved automatically.
+users:
+  app:
+    password: ""                          # REQUIRED: MongoDB application user password
+  metrics:
+    password: ""                          # REQUIRED: MongoDB metrics exporter password
+
+# --- External MongoDB (when backingServices.mongodb.mode=external in global.yaml) ---
+# When using external MongoDB, this chart is not installed.
+# Configure the connection in environments/<env>/countly.yaml instead:
+#   backingServices:
+#     mongodb:
+#       mode: external
+#       connectionString: "mongodb://user:pass@host:27017/admin?replicaSet=rs0"

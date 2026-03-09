@@ -1,0 +1,48 @@
+# Local environment — Countly chart choices (non-sizing)
+
+# Ingress with self-signed TLS
+ingress:
+  enabled: true
+  className: nginx
+  hostname: countly.local
+  annotations:
+    nginx.org/client-max-body-size: "50m"
+    nginx.org/proxy-buffering: "True"
+    nginx.org/proxy-buffer-size: "256k"
+    nginx.org/proxy-buffers: "16 256k"
+    nginx.org/proxy-busy-buffers-size: "512k"
+    nginx.org/proxy-max-temp-file-size: "2048m"
+    nginx.org/client-body-buffer-size: "2m"
+    nginx.org/proxy-connect-timeout: "60s"
+    nginx.org/proxy-read-timeout: "120s"
+    nginx.org/proxy-send-timeout: "120s"
+    nginx.org/keepalive: "256"
+    nginx.org/server-snippets: |
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Port $server_port;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Scheme $scheme;
+      proxy_set_header Connection "";
+      proxy_set_header X-Request-ID $request_id;
+      proxy_set_header X-Request-Start $msec;
+      proxy_set_header traceparent $http_traceparent;
+      proxy_set_header tracestate $http_tracestate;
+      client_header_timeout 30s;
+    nginx.org/location-snippets: |
+      proxy_request_buffering on;
+      proxy_next_upstream error timeout http_502 http_503 http_504;
+      proxy_next_upstream_timeout 30s;
+      proxy_next_upstream_tries 3;
+      proxy_temp_file_write_size 1m;
+      client_body_timeout 120s;
+  tls:
+    mode: selfSigned
+
+# Enable OTEL to connect to observability stack
+config:
+  otel:
+    OTEL_ENABLED: "true"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4318"
+    OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+    PYROSCOPE_ENABLED: "true"
+    PYROSCOPE_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:9999"

@@ -1,0 +1,12 @@
+# Profile: local — MongoDB chart sizing (identical to small)
+
+mongodb:
+  members: 1
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  persistence:
+    size: 50Gi
+  scheduling:
+    antiAffinity:
+      enabled: false

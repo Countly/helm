@@ -8,3 +8,4 @@ data:
   {{- range $key, $value := .Values.config.kafka }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
+  COUNTLY_CONFIG__KAFKA_CONNECTAPIURL: {{ include "countly.kafka.connectApiUrl" . | quote }}

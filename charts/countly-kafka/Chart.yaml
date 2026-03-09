@@ -1,6 +1,6 @@
 apiVersion: v2
 name: countly-kafka
-description: Strimzi Kafka operator CRs for Countly
+description: Kafka for Countly event streaming via Strimzi Operator
 type: application
 version: 0.1.0
 appVersion: "4.2.0"
@@ -10,9 +10,8 @@ sources:
   - https://github.com/Countly/countly-server
 keywords:
   - kafka
-  - strimzi
-  - countly
   - streaming
+  - countly
 maintainers:
   - name: Countly
     url: https://countly.com

@@ -85,31 +85,21 @@ mode: external
 prometheus:
   external:
     remoteWriteUrl: "https://mimir.corp.com/api/v1/push"
-    auth:
-      existingSecret: "prom-auth"
-      bearerTokenKey: "token"
 
 loki:
   external:
     pushUrl: "https://loki.corp.com/loki/api/v1/push"
-    auth:
-      existingSecret: "loki-auth"
-      bearerTokenKey: "token"
 
 tempo:
   external:
     otlpGrpcEndpoint: "tempo.corp.com:4317"
-    auth:
-      existingSecret: "tempo-auth"
-      headerKey: "Authorization"
 
 pyroscope:
   external:
     ingestUrl: "https://pyroscope.corp.com"
-    auth:
-      existingSecret: "pyroscope-auth"
-      headerKey: "Authorization"
 ```
+
+> **Note:** External endpoints must accept unauthenticated pushes or use network-level auth. Auth header injection is planned for a future release.
 
 ---
 
@@ -230,32 +220,11 @@ grafana:
     passwordKey: "admin-password"
 ```
 
+> **GitOps note:** When using ArgoCD or Flux with `helm template`, set `grafana.admin.existingSecret` to a pre-created Secret. Without it, the admin password regenerates on every render, causing drift.
+
 ### External endpoint auth
 
-Each backend's `external.auth` block references an existing Secret. Credentials are never stored in `values.yaml` or ConfigMaps.
-
-```yaml
-prometheus:
-  external:
-    auth:
-      existingSecret: "prom-remote-write-auth"
-      bearerTokenKey: "token"
-```
-
-The same pattern applies to `loki.external.auth`, `tempo.external.auth`, and `pyroscope.external.auth`.
-
-### TLS
-
-For external endpoints that require custom CA certificates:
-
-```yaml
-prometheus:
-  external:
-    tls:
-      insecureSkipVerify: false
-      caSecretName: "custom-ca"
-      caKey: "ca.crt"
-```
+Auth header injection for external endpoints is planned for a future release. Currently, external endpoints must accept unauthenticated pushes or use network-level authentication (VPN, mTLS at the load balancer, etc.).
 
 ---
 
@@ -393,11 +362,11 @@ Below are the most important configuration knobs. See `values.yaml` for the full
 
 ---
 
-## Tier Profiles
+## Sizing Profiles
 
 The chart is designed to support two resource tiers. Override the resource blocks per component to match your environment.
 
-### tier1 (development / small clusters)
+### small (development / small clusters)
 
 Suitable for development, testing, and small-scale deployments. Uses the default resource values from `values.yaml`:
 
@@ -414,7 +383,7 @@ Suitable for development, testing, and small-scale deployments. Uses the default
 | kube-state-metrics | 10m | 32Mi | 100m | 256Mi |
 | node-exporter | 100m | 180Mi | 250m | 300Mi |
 
-### tier2 (production)
+### production
 
 For production deployments with higher throughput, increase resources. Example overrides:
 

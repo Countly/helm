@@ -2,7 +2,7 @@ global:
   imageRegistry: ""
   imagePullSecrets: []
   storageClass: ""
-  clusterProfile: small
+  profile: small
   scheduling:
     nodeSelector: {}
     tolerations: []
@@ -239,6 +239,9 @@ kafkaConnect:
         healthcheck.enabled: "true"
         healthcheck.interval: "10000"
       dlq: {}
+
+metrics:
+  enabled: true
 
 clickhouseNamespace: clickhouse
 

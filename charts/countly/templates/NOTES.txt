@@ -1,10 +1,9 @@
+{{- include "countly.validateBackingServices" . -}}
 Countly has been deployed!
 
 Get the application URL:
 {{- if .Values.ingress.enabled }}
-{{- range .Values.ingress.hosts }}
-  https://{{ .host }}
-{{- end }}
+  https://{{ include "countly.hostname" . }}
 {{- else }}
   kubectl port-forward svc/{{ include "countly.fullname" . }}-frontend {{ .Values.frontend.port }}:{{ .Values.frontend.port }} -n {{ .Release.Namespace }}
 {{- end }}

@@ -48,8 +48,8 @@ data:
       targets = discovery.kubernetes.svc_clickhouse.targets
 
       rule {
-        source_labels = ["__meta_kubernetes_service_label_clickhouse_altinity_com_chi"]
-        regex         = "ch-prod"
+        source_labels = ["__meta_kubernetes_service_label_countly_io_component"]
+        regex         = "clickhouse-server"
         action        = "keep"
       }
 
@@ -81,7 +81,7 @@ data:
       targets = discovery.kubernetes.svc_chk.targets
 
       rule {
-        source_labels = ["__meta_kubernetes_service_label_app"]
+        source_labels = ["__meta_kubernetes_service_label_countly_io_component"]
         regex         = "clickhouse-keeper"
         action        = "keep"
       }
@@ -114,8 +114,8 @@ data:
       targets = discovery.kubernetes.svc_mongodb.targets
 
       rule {
-        source_labels = ["__meta_kubernetes_service_label_app_kubernetes_io_instance"]
-        regex         = "app-mongodb"
+        source_labels = ["__meta_kubernetes_service_label_countly_io_metrics"]
+        regex         = "true"
         action        = "keep"
       }
 

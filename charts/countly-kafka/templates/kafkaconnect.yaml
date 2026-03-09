@@ -11,6 +11,14 @@ spec:
   version: {{ .Values.version | quote }}
   replicas: {{ .Values.kafkaConnect.replicas }}
   bootstrapServers: {{ include "countly-kafka.bootstrapServers" . }}
+  {{- if .Values.metrics.enabled }}
+  metricsConfig:
+    type: jmxPrometheusExporter
+    valueFrom:
+      configMapKeyRef:
+        name: {{ include "countly-kafka.fullname" . }}-metrics
+        key: connect-metrics-config.yml
+  {{- end }}
   image: {{ .Values.kafkaConnect.image }}
   groupId: {{ .Values.kafkaConnect.workerConfig | dig "group.id" "connect-cluster" }}
   offsetStorageTopic: {{ .Values.kafkaConnect.workerConfig | dig "offset.storage.topic" "connect-offsets" }}

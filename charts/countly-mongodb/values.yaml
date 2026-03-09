@@ -2,7 +2,7 @@ global:
   imageRegistry: ""
   imagePullSecrets: []
   storageClass: ""
-  clusterProfile: small
+  profile: small
   scheduling:
     nodeSelector: {}
     tolerations: []

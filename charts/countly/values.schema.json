@@ -9,7 +9,7 @@
         "imageRegistry": { "type": "string" },
         "imagePullSecrets": { "type": "array" },
         "storageClass": { "type": "string" },
-        "clusterProfile": { "type": "string", "enum": ["small", "production"] },
+        "profile": { "type": "string", "enum": ["local", "small", "production"] },
         "scheduling": { "type": "object" }
       }
     },
@@ -30,6 +30,7 @@
     "secrets": {
       "type": "object",
       "properties": {
+        "mode": { "type": "string", "enum": ["values", "existingSecret", "externalSecret"] },
         "keep": { "type": "boolean" },
         "rotationId": { "type": "string" },
         "common": {
@@ -45,9 +46,6 @@
           "type": "object",
           "properties": {
             "existingSecret": { "type": "string" },
-            "host": { "type": "string" },
-            "port": { "type": "string" },
-            "tls": { "type": "string", "enum": ["true", "false"] },
             "username": { "type": "string" },
             "password": { "type": "string" },
             "database": { "type": "string" }
@@ -57,10 +55,9 @@
           "type": "object",
           "properties": {
             "existingSecret": { "type": "string" },
-            "brokers": { "type": "string" },
             "securityProtocol": {
               "type": "string",
-              "enum": ["PLAINTEXT", "SSL", "SASL_PLAINTEXT", "SASL_SSL"]
+              "enum": ["", "PLAINTEXT", "SSL", "SASL_PLAINTEXT", "SASL_SSL"]
             },
             "saslMechanism": { "type": "string" },
             "saslUsername": { "type": "string" },
@@ -72,7 +69,31 @@
           "properties": {
             "existingSecret": { "type": "string" },
             "key": { "type": "string" },
-            "connectionString": { "type": "string" }
+            "password": { "type": "string" }
+          }
+        }
+      }
+    },
+    "backingServices": {
+      "type": "object",
+      "description": "Backing service connection configuration",
+      "properties": {
+        "mongodb": {
+          "type": "object",
+          "properties": {
+            "mode": { "type": "string", "enum": ["bundled", "external"] }
+          }
+        },
+        "clickhouse": {
+          "type": "object",
+          "properties": {
+            "mode": { "type": "string", "enum": ["bundled", "external"] }
+          }
+        },
+        "kafka": {
+          "type": "object",
+          "properties": {
+            "mode": { "type": "string", "enum": ["bundled", "external"] }
           }
         }
       }
@@ -111,9 +132,24 @@
       "properties": {
         "enabled": { "type": "boolean" },
         "className": { "type": "string" },
+        "hostname": { "type": "string", "description": "Single hostname for the ingress" },
         "annotations": { "type": "object" },
-        "tls": { "type": "array" },
-        "hosts": { "type": "array" }
+        "tls": {
+          "type": "object",
+          "description": "TLS mode configuration",
+          "properties": {
+            "mode": { "type": "string", "enum": ["http", "letsencrypt", "existingSecret", "selfSigned"] },
+            "clusterIssuer": { "type": "string" },
+            "secretName": { "type": "string" },
+            "selfSigned": {
+              "type": "object",
+              "properties": {
+                "issuerName": { "type": "string" },
+                "caSecretName": { "type": "string" }
+              }
+            }
+          }
+        }
       }
     }
   },

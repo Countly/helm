@@ -1,0 +1,52 @@
+# Profile: production — Kafka chart sizing
+
+brokers:
+  replicas: 3
+  resources:
+    requests: { cpu: "2", memory: "12Gi" }
+    limits: { cpu: "2", memory: "12Gi" }
+  jvmOptions:
+    xms: "4g"
+    xmx: "4g"
+  persistence:
+    volumes:
+      - id: 0
+        size: 200Gi
+  config:
+    default.replication.factor: 2
+    min.insync.replicas: 2
+    offsets.topic.replication.factor: 3
+    transaction.state.log.replication.factor: 3
+    transaction.state.log.min.isr: 2
+    auto.create.topics.enable: false
+  scheduling:
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+
+controllers:
+  replicas: 3
+  resources:
+    requests: { cpu: "500m", memory: "2Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  scheduling:
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+
+cruiseControl:
+  enabled: true
+  resources:
+    requests: { cpu: "1", memory: "2Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+
+kafkaConnect:
+  replicas: 2
+  resources:
+    requests: { cpu: "2", memory: "8Gi" }
+    limits: { cpu: "2", memory: "8Gi" }
+  jvmOptions:
+    xms: "5g"
+    xmx: "5g"

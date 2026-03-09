@@ -1,0 +1,16 @@
+# =============================================================================
+# ClickHouse Chart — Customer Overrides
+# =============================================================================
+# Profile defaults (shards, replicas, resources) come from profiles/<profile>/clickhouse.yaml.
+
+# --- Authentication ---
+auth:
+  defaultUserPassword:
+    password: ""                          # REQUIRED: ClickHouse default user password
+
+# --- Admin User (optional) ---
+# auth:
+#   adminUser:
+#     enabled: false
+#     username: admin
+#     passwordSha256Hex: ""              # echo -n 'password' | sha256sum | cut -d' ' -f1

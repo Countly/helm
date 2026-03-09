@@ -1,0 +1,19 @@
+# Example: Production deployment with Let's Encrypt TLS
+
+global:
+  profile: production
+  storageClass: gp3
+
+ingress:
+  hostname: analytics.example.com
+  tls:
+    mode: letsencrypt
+    clusterIssuer: letsencrypt-prod
+
+backingServices:
+  mongodb:   { mode: bundled }
+  clickhouse: { mode: bundled }
+  kafka:     { mode: bundled }
+
+observability:
+  mode: full

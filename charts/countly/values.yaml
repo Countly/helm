@@ -2,7 +2,7 @@ global:
   imageRegistry: ""
   imagePullSecrets: []
   storageClass: ""
-  clusterProfile: small
+  profile: small
   scheduling:
     nodeSelector: {}
     tolerations: []
@@ -275,7 +275,7 @@ config:
     COUNTLY_CONTAINER: frontend
     COUNTLY_CONFIG__WEB_PORT: "6001"
     COUNTLY_CONFIG__WEB_HOST: "0.0.0.0"
-    COUNTLY_CONFIG__WEB_SECURE_COOKIES: "true"
+    COUNTLY_CONFIG__WEB_SECURE_COOKIES: "false"
     COUNTLY_CONFIG__COOKIE_MAXAGE: "86400000"
   ingestor:
     COUNTLY_CONTAINER: ingestor
@@ -335,7 +335,6 @@ config:
     COUNTLY_CONFIG__KAFKA_CONSUMER_AUTOOFFSETRESET: earliest
     COUNTLY_CONFIG__KAFKA_CONSUMER_ENABLEAUTOCOMMIT: "false"
     COUNTLY_CONFIG__KAFKA_CONSUMER_MAXPOLLINTERVALMS: "600000"
-    COUNTLY_CONFIG__KAFKA_CONNECTAPIURL: "http://connect-ch-connect-api.kafka.svc.cluster.local:8083"
     COUNTLY_CONFIG__KAFKA_CONNECTCONSUMERGROUPID: "connect-ch"
   otel:
     OTEL_ENABLED: "false"
@@ -351,9 +350,44 @@ nodeOptions:
   aggregator: "--max-old-space-size=3072 --max-semi-space-size=128"
   jobserver: "--max-old-space-size=2048 --max-semi-space-size=256"
 
+# --- Backing Service Modes ---
+# Control whether each backing service is deployed in-cluster (bundled) or provided externally.
+# When mode=external, the corresponding chart is not deployed and connection details must be provided.
+
+backingServices:
+  mongodb:
+    mode: bundled       # bundled | external
+    # External-mode connection (used only when mode=external):
+    host: ""
+    port: "27017"
+    connectionString: ""    # If set, used as-is (bypasses host/port/user/pass)
+    username: "app"
+    password: ""
+    database: "admin"
+    replicaSet: ""
+    existingSecret: ""
+  clickhouse:
+    mode: bundled       # bundled | external
+    host: ""
+    port: "8123"
+    tls: "false"
+    username: "default"
+    password: ""
+    database: "countly_drill"
+    existingSecret: ""
+  kafka:
+    mode: bundled       # bundled | external
+    brokers: ""
+    securityProtocol: "PLAINTEXT"
+    saslMechanism: ""
+    saslUsername: ""
+    saslPassword: ""
+    existingSecret: ""
+
 # --- Secrets ---
 
 secrets:
+  mode: values           # values | existingSecret | externalSecret
   keep: true
   rotationId: ""
 
@@ -365,17 +399,13 @@ secrets:
 
   clickhouse:
     existingSecret: ""
-    host: ""
-    port: "8123"
-    tls: "false"
-    username: "default"
+    username: ""
     password: ""
-    database: "countly_drill"
+    database: ""
 
   kafka:
     existingSecret: ""
-    brokers: ""
-    securityProtocol: "PLAINTEXT"
+    securityProtocol: ""
     saslMechanism: ""
     saslUsername: ""
     saslPassword: ""
@@ -383,13 +413,32 @@ secrets:
   mongodb:
     existingSecret: ""
     key: "connectionString.standard"
-    connectionString: ""  # If set, used as-is (bypasses password requirement)
-    host: ""
-    port: "27017"
-    username: "app"
     password: ""  # REQUIRED on first install (must match users.app.password in countly-mongodb chart)
-    database: "admin"
-    replicaSet: ""
+
+  # --- ExternalSecret configuration (used only when mode=externalSecret) ---
+  externalSecret:
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: ""
+      kind: ClusterSecretStore
+    remoteRefs:
+      common:
+        encryptionReportsKey: ""
+        webSessionSecret: ""
+        passwordSecret: ""
+      clickhouse:
+        url: ""
+        username: ""
+        password: ""
+        database: ""
+      kafka:
+        brokers: ""
+        securityProtocol: ""
+        saslMechanism: ""
+        saslUsername: ""
+        saslPassword: ""
+      mongodb:
+        connectionString: ""
 
 # --- Network Policy ---
 
@@ -435,19 +484,16 @@ ingress:
       proxy_next_upstream_tries 3;
       proxy_temp_file_write_size 1m;
       client_body_timeout 120s;
-  # TLS is disabled by default. Choose a TLS strategy via an overlay file:
-  #   overlay-tls-letsencrypt.yaml  -- cert-manager + Let's Encrypt (recommended)
-  #   overlay-tls-custom.yaml       -- bring your own cert/key
-  #   overlay-tls-none.yaml         -- no TLS (HTTP only, not recommended)
-  # See helm/examples/ for ready-to-use overlays.
-  tls: []
-  hosts:
-    - host: countly.example.com
-
-# --- TLS ---
-
-tls:
-  selfSigned:
-    enabled: false
-    issuerName: countly-ca-issuer
-    caSecretName: countly-ca-keypair
+  hostname: countly.example.com
+  tls:
+    # TLS mode: letsencrypt | existingSecret | selfSigned | http
+    # - http:            No TLS (default)
+    # - letsencrypt:     cert-manager + Let's Encrypt (recommended for production)
+    # - existingSecret:  Bring your own TLS secret
+    # - selfSigned:      cert-manager self-signed CA (for development)
+    mode: http
+    clusterIssuer: letsencrypt-prod
+    secretName: ""                 # Auto-derived if empty: <fullname>-tls
+    selfSigned:
+      issuerName: ""       # Auto-derived if empty: <fullname>-ca-issuer
+      caSecretName: ""     # Auto-derived if empty: <fullname>-ca-keypair

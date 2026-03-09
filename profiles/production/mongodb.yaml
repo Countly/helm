@@ -1,0 +1,9 @@
+# Profile: production — MongoDB chart sizing
+
+mongodb:
+  members: 3
+  resources:
+    requests: { cpu: "3", memory: "6Gi" }
+    limits: { cpu: "4", memory: "8Gi" }
+  persistence:
+    size: 500Gi

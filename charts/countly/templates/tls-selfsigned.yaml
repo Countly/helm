@@ -1,10 +1,15 @@
-{{- if .Values.tls.selfSigned.enabled }}
+{{- $tlsMode := include "countly.tls.mode" . -}}
+{{- if eq $tlsMode "selfSigned" }}
+{{- $fullname := include "countly.fullname" . -}}
+{{- $caSecretName := (.Values.ingress.tls.selfSigned).caSecretName | default (printf "%s-ca-keypair" $fullname) -}}
+{{- $issuerName := (.Values.ingress.tls.selfSigned).issuerName | default (printf "%s-ca-issuer" $fullname) -}}
+{{- $selfSignedIssuerName := printf "%s-selfsigned-issuer" $fullname -}}
 ---
 # Step 1: SelfSigned issuer (bootstraps the CA)
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: selfsigned-issuer
+  name: {{ $selfSignedIssuerName }}
   labels:
     {{- include "countly.labels" . | nindent 4 }}
 spec:
@@ -16,17 +21,17 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: {{ .Values.tls.selfSigned.caSecretName }}
+  name: {{ $caSecretName }}
   namespace: cert-manager
   labels:
     {{- include "countly.labels" . | nindent 4 }}
 spec:
   isCA: true
-  commonName: countly-ca
-  secretName: {{ .Values.tls.selfSigned.caSecretName }}
+  commonName: {{ $fullname }}-ca
+  secretName: {{ $caSecretName }}
   duration: 87600h # 10 years
   issuerRef:
-    name: selfsigned-issuer
+    name: {{ $selfSignedIssuerName }}
     kind: ClusterIssuer
     group: cert-manager.io
 ---
@@ -34,10 +39,10 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: {{ .Values.tls.selfSigned.issuerName }}
+  name: {{ $issuerName }}
   labels:
     {{- include "countly.labels" . | nindent 4 }}
 spec:
   ca:
-    secretName: {{ .Values.tls.selfSigned.caSecretName }}
+    secretName: {{ $caSecretName }}
 {{- end }}

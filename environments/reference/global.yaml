@@ -1,0 +1,46 @@
+# =============================================================================
+# Countly Deployment — Global Configuration
+# =============================================================================
+# Copy this directory to create your deployment environment:
+#   cp -r environments/reference environments/my-deployment
+#
+# Then deploy with:
+#   helmfile -e my-deployment apply
+# =============================================================================
+
+global:
+  # Sizing profile: local | small | production
+  profile: production
+
+  # Private registry (leave empty for default public images)
+  imageRegistry: ""
+
+  # Default storage class for all PVCs (leave empty for cluster default)
+  storageClass: ""
+
+  # Image pull secrets for private registries
+  imagePullSecrets: []
+
+# --- Ingress & TLS ---
+ingress:
+  hostname: analytics.example.com        # CHANGEME: Your Countly hostname
+  className: nginx
+  tls:
+    mode: letsencrypt                     # http | letsencrypt | existingSecret | selfSigned
+    clusterIssuer: letsencrypt-prod       # Used with mode=letsencrypt
+    secretName: ""                        # Used with mode=existingSecret; auto-derived if empty
+
+# --- Backing Service Modes ---
+backingServices:
+  mongodb:
+    mode: bundled                         # bundled | external
+  clickhouse:
+    mode: bundled                         # bundled | external
+  kafka:
+    mode: bundled                         # bundled | external
+
+# --- Observability ---
+# Set to "disabled" to skip installing the observability chart entirely.
+# Other modes (full|hybrid|external) are set in observability.yaml.
+observability:
+  mode: full                              # full | hybrid | external | disabled

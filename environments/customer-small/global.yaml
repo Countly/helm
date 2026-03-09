@@ -1,0 +1,17 @@
+# Example: Small deployment (development/staging)
+
+global:
+  profile: small
+
+ingress:
+  hostname: analytics-dev.example.com
+  tls:
+    mode: http
+
+backingServices:
+  mongodb:   { mode: bundled }
+  clickhouse: { mode: bundled }
+  kafka:     { mode: bundled }
+
+observability:
+  mode: full

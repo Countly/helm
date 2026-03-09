@@ -1,0 +1,55 @@
+# Profile: local — Observability chart sizing (identical to small)
+
+prometheus:
+  storage:
+    size: 20Gi
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+
+loki:
+  retention: "30d"
+  storage:
+    size: 20Gi
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+
+tempo:
+  retention: "7d"
+  storage:
+    size: 20Gi
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+
+pyroscope:
+  retention: "168h"
+  storage:
+    size: 5Gi
+  resources:
+    requests: { cpu: "250m", memory: "256Mi" }
+    limits: { cpu: "500m", memory: "512Mi" }
+
+grafana:
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+
+alloy:
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+
+alloyOtlp:
+  resources:
+    requests: { cpu: "250m", memory: "768Mi" }
+    limits: { cpu: "500m", memory: "1536Mi" }
+  memoryLimiter:
+    limit: "1200MiB"
+    spikeLimit: "256MiB"
+
+alloyMetrics:
+  resources:
+    requests: { cpu: "250m", memory: "256Mi" }
+    limits: { cpu: "250m", memory: "512Mi" }

@@ -22,6 +22,14 @@ spec:
   replicas: {{ .Values.brokers.replicas }}
   roles:
     - broker
+  {{- if .Values.metrics.enabled }}
+  metricsConfig:
+    type: jmxPrometheusExporter
+    valueFrom:
+      configMapKeyRef:
+        name: {{ include "countly-kafka.fullname" . }}-metrics
+        key: kafka-metrics-config.yml
+  {{- end }}
   storage:
     type: jbod
     volumes:

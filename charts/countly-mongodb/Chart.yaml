@@ -1,6 +1,6 @@
 apiVersion: v2
 name: countly-mongodb
-description: MongoDB Community operator CRs for Countly
+description: MongoDB for Countly via MongoDB Community Operator
 type: application
 version: 0.1.0
 appVersion: "8.2.5"

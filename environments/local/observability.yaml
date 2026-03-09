@@ -1,10 +1,11 @@
-# Observability-specific overrides for local environment
-# Applied ONLY to the countly-observability release via helmfile
+# Local environment — Observability chart choices (non-sizing)
+# Grafana ingress with self-signed TLS
 
 ingress:
   enabled: true
   className: nginx
   annotations:
+    # Must match the Countly chart's ClusterIssuer: <release-name>-ca-issuer
     cert-manager.io/cluster-issuer: countly-ca-issuer
   hosts:
     - host: grafana.local

@@ -1,0 +1,43 @@
+# Profile: local — Countly chart sizing (identical to small)
+
+api:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1.5Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  hpa:
+    maxReplicas: 3
+
+frontend:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "500m", memory: "1.5Gi" }
+
+ingestor:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1.5Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  hpa:
+    maxReplicas: 4
+
+aggregator:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1.5Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  hpa:
+    minReplicas: 1
+    maxReplicas: 4
+  pdb:
+    enabled: false
+  scheduling:
+    antiAffinity:
+      enabled: false
+
+jobserver:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "500m", memory: "1.5Gi" }

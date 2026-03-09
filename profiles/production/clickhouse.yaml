@@ -1,0 +1,30 @@
+# Profile: production — ClickHouse chart sizing
+
+shards: 1
+replicas: 2
+
+server:
+  resources:
+    requests: { cpu: "4", memory: "12Gi" }
+    limits: { cpu: "4", memory: "16Gi" }
+  persistence:
+    size: 500Gi
+  scheduling:
+    antiAffinity:
+      enabled: true
+
+keeper:
+  replicas: 3
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  persistence:
+    size: 50Gi
+
+podDisruptionBudget:
+  server:
+    enabled: true
+    maxUnavailable: 1
+  keeper:
+    enabled: true
+    maxUnavailable: 1

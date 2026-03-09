@@ -1,20 +1,19 @@
 apiVersion: v2
 name: countly-observability
-description: Countly observability stack — metrics, logs, traces, and profiling
+description: Observability stack for Countly (Prometheus, Grafana, Loki, Tempo, Pyroscope)
 type: application
 version: 0.1.0
 appVersion: "1.0.0"
 home: https://countly.com
 sources:
   - https://github.com/Countly/countly-server
+icon: https://count.ly/images/logos/countly-logo.svg
 keywords:
   - observability
   - monitoring
   - prometheus
   - grafana
-  - loki
-  - tempo
-  - pyroscope
+  - countly
 maintainers:
   - name: Countly
     url: https://countly.com

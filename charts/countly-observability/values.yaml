@@ -99,13 +99,6 @@ prometheus:
   external:
     # -- Full Prometheus remote write URL (e.g. https://prom.corp.com/api/v1/write)
     remoteWriteUrl: ""
-    auth:
-      existingSecret: ""
-      bearerTokenKey: ""
-    tls:
-      insecureSkipVerify: false
-      caSecretName: ""
-      caKey: ""
 
 # ============================================================
 # Loki
@@ -152,11 +145,6 @@ loki:
   external:
     # -- Full Loki push URL (e.g. https://loki.corp.com/loki/api/v1/push)
     pushUrl: ""
-    auth:
-      existingSecret: ""
-      bearerTokenKey: ""
-    tls:
-      insecureSkipVerify: false
 
 # ============================================================
 # Tempo
@@ -201,11 +189,6 @@ tempo:
     otlpGrpcEndpoint: ""
     # -- Tempo OTLP HTTP URL (optional fallback)
     otlpHttpEndpoint: ""
-    auth:
-      existingSecret: ""
-      headerKey: ""
-    tls:
-      insecureSkipVerify: true
 
 # ============================================================
 # Pyroscope
@@ -243,11 +226,6 @@ pyroscope:
   external:
     # -- Pyroscope ingest URL (e.g. https://pyroscope.corp.com)
     ingestUrl: ""
-    auth:
-      existingSecret: ""
-      headerKey: ""
-    tls:
-      insecureSkipVerify: false
 
 # ============================================================
 # Grafana

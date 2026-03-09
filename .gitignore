@@ -3,17 +3,14 @@
 Chart.lock
 charts/*/charts/
 
-# Secret overlays (NEVER commit real secrets)
+# Secret files (NEVER commit real secrets)
 overlay-secrets.yaml
 *-secrets.yaml
-!examples/overlay-secrets.yaml
+secrets-*.yaml
 
 # Helmfile state
 helmfile.lock
 .helmfile/
-
-# Deployment logs (may contain credentials and cluster details)
-helm_deploy_log.md
 
 # OS junk
 .DS_Store

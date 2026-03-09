@@ -1,6 +1,6 @@
 apiVersion: v2
 name: countly-clickhouse
-description: ClickHouse operator CRs for Countly
+description: ClickHouse for Countly analytics via ClickHouse Operator
 type: application
 version: 0.1.0
 appVersion: "26.2"
@@ -10,7 +10,6 @@ sources:
   - https://github.com/Countly/countly-server
 keywords:
   - clickhouse
-  - database
   - analytics
   - countly
 maintainers:

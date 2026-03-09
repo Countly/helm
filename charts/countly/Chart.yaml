@@ -1,6 +1,6 @@
 apiVersion: v2
 name: countly
-description: Countly web analytics platform - application deployments
+description: Countly web analytics platform
 type: application
 version: 0.1.0
 appVersion: "26.01"
@@ -10,9 +10,8 @@ sources:
   - https://github.com/Countly/countly-server
 keywords:
   - analytics
-  - web-analytics
-  - mobile-analytics
   - countly
+  - web-analytics
 maintainers:
   - name: Countly
     url: https://countly.com

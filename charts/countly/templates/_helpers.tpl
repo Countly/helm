@@ -60,23 +60,31 @@ Service account name
 {{- end }}
 
 {{/*
-ClickHouse URL computation
+ClickHouse URL computation.
+Reads from backingServices.clickhouse; falls back to in-cluster DNS.
 */}}
 {{- define "countly.clickhouse.url" -}}
-{{- $scheme := ternary "https" "http" (eq (toString (.Values.secrets.clickhouse.tls | default "false")) "true") -}}
-{{- if .Values.secrets.clickhouse.host -}}
-{{ $scheme }}://{{ .Values.secrets.clickhouse.host }}:{{ .Values.secrets.clickhouse.port }}
+{{- $bs := (.Values.backingServices).clickhouse | default dict -}}
+{{- $host := $bs.host -}}
+{{- $port := $bs.port | default "8123" -}}
+{{- $tls := $bs.tls | default "false" -}}
+{{- $scheme := ternary "https" "http" (eq (toString $tls) "true") -}}
+{{- if $host -}}
+{{ $scheme }}://{{ $host }}:{{ $port }}
 {{- else -}}
-{{ $scheme }}://{{ .Release.Name }}-clickhouse-clickhouse-headless.{{ .Values.clickhouseNamespace | default "clickhouse" }}.svc:{{ .Values.secrets.clickhouse.port }}
+{{ $scheme }}://{{ .Release.Name }}-clickhouse-clickhouse-headless.{{ .Values.clickhouseNamespace | default "clickhouse" }}.svc:{{ $port }}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Kafka brokers computation
+Kafka brokers computation.
+Reads from backingServices.kafka; falls back to in-cluster DNS.
 */}}
 {{- define "countly.kafka.brokers" -}}
-{{- if .Values.secrets.kafka.brokers -}}
-{{ .Values.secrets.kafka.brokers }}
+{{- $bs := (.Values.backingServices).kafka | default dict -}}
+{{- $brokers := $bs.brokers -}}
+{{- if $brokers -}}
+{{ $brokers }}
 {{- else -}}
 ["{{ .Release.Name }}-kafka-kafka-bootstrap.{{ .Values.kafkaNamespace | default "kafka" }}.svc:9092"]
 {{- end -}}
@@ -90,22 +98,89 @@ MongoDB secret name
 {{- end -}}
 
 {{/*
-MongoDB connection string computation
-Constructs from service DNS if not provided explicitly, matching the ClickHouse/Kafka pattern.
+Resolve the effective hostname.
+*/}}
+{{- define "countly.hostname" -}}
+{{- .Values.ingress.hostname | default "countly.example.com" -}}
+{{- end -}}
+
+{{/*
+TLS mode resolution.
+Returns: letsencrypt, existingSecret, selfSigned, or http.
+*/}}
+{{- define "countly.tls.mode" -}}
+{{- ((.Values.ingress).tls).mode | default "http" -}}
+{{- end -}}
+
+{{/*
+Effective TLS secret name.
+*/}}
+{{- define "countly.tls.secretName" -}}
+{{- ((.Values.ingress).tls).secretName | default (printf "%s-tls" (include "countly.fullname" .)) -}}
+{{- end -}}
+
+{{/*
+MongoDB connection string computation.
+Reads from backingServices.mongodb; constructs from service DNS if not provided.
 */}}
 {{- define "countly.mongodb.connectionString" -}}
-{{- if .Values.secrets.mongodb.connectionString -}}
-{{ .Values.secrets.mongodb.connectionString }}
+{{- $bs := (.Values.backingServices).mongodb | default dict -}}
+{{- $connStr := $bs.connectionString -}}
+{{- if $connStr -}}
+{{- $connStr -}}
 {{- else -}}
-{{- if not .Values.secrets.mongodb.password -}}
-{{- fail "MongoDB password is required. Set secrets.mongodb.password." -}}
+{{- $pass := $bs.password | default .Values.secrets.mongodb.password -}}
+{{- if not $pass -}}
+{{- fail "MongoDB password is required. Set backingServices.mongodb.password or secrets.mongodb.password." -}}
 {{- end -}}
-{{- $host := .Values.secrets.mongodb.host | default (printf "%s-mongodb-svc.%s.svc.cluster.local" .Release.Name (.Values.mongodbNamespace | default "mongodb")) -}}
-{{- $port := .Values.secrets.mongodb.port | default "27017" -}}
-{{- $user := .Values.secrets.mongodb.username | default "app" -}}
-{{- $pass := .Values.secrets.mongodb.password -}}
-{{- $db := .Values.secrets.mongodb.database | default "admin" -}}
-{{- $rs := .Values.secrets.mongodb.replicaSet | default (printf "%s-mongodb" .Release.Name) -}}
+{{- $host := $bs.host | default (printf "%s-mongodb-svc.%s.svc.cluster.local" .Release.Name (.Values.mongodbNamespace | default "mongodb")) -}}
+{{- $port := $bs.port | default "27017" -}}
+{{- $user := $bs.username | default "app" -}}
+{{- $db := $bs.database | default "admin" -}}
+{{- $rs := $bs.replicaSet | default (printf "%s-mongodb" .Release.Name) -}}
 mongodb://{{ $user }}:{{ $pass }}@{{ $host }}:{{ $port }}/{{ $db }}?replicaSet={{ $rs }}&ssl=false
+{{- end -}}
+{{- end -}}
+
+{{/*
+Kafka Connect API URL computation.
+Reads from backingServices.kafka.connectApiUrl; falls back to in-cluster DNS.
+*/}}
+{{- define "countly.kafka.connectApiUrl" -}}
+{{- $bs := (.Values.backingServices).kafka | default dict -}}
+{{- if $bs.connectApiUrl -}}
+{{ $bs.connectApiUrl }}
+{{- else -}}
+http://{{ .Values.config.kafka.COUNTLY_CONFIG__KAFKA_CONNECTCONSUMERGROUPID | default "connect-ch" }}-connect-api.{{ .Values.kafkaNamespace | default "kafka" }}.svc.cluster.local:8083
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate backing service configuration.
+Called from NOTES.txt to surface errors during install.
+*/}}
+{{- define "countly.validateBackingServices" -}}
+{{- $bs := .Values.backingServices | default dict -}}
+{{- if eq (($bs.mongodb | default dict).mode | default "bundled") "external" -}}
+  {{- $connStr := ($bs.mongodb).connectionString -}}
+  {{- $host := ($bs.mongodb).host -}}
+  {{- $existingSecret := ($bs.mongodb).existingSecret -}}
+  {{- if not (or $connStr $host $existingSecret) -}}
+    {{- fail "backingServices.mongodb.mode is 'external' but no host, connectionString, or existingSecret provided" -}}
+  {{- end -}}
+{{- end -}}
+{{- if eq (($bs.clickhouse | default dict).mode | default "bundled") "external" -}}
+  {{- $host := ($bs.clickhouse).host -}}
+  {{- $existingSecret := ($bs.clickhouse).existingSecret -}}
+  {{- if not (or $host $existingSecret) -}}
+    {{- fail "backingServices.clickhouse.mode is 'external' but no host or existingSecret provided" -}}
+  {{- end -}}
+{{- end -}}
+{{- if eq (($bs.kafka | default dict).mode | default "bundled") "external" -}}
+  {{- $brokers := ($bs.kafka).brokers -}}
+  {{- $existingSecret := ($bs.kafka).existingSecret -}}
+  {{- if not (or $brokers $existingSecret) -}}
+    {{- fail "backingServices.kafka.mode is 'external' but no brokers or existingSecret provided" -}}
+  {{- end -}}
 {{- end -}}
 {{- end -}}
