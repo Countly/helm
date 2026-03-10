@@ -18,6 +18,7 @@ ingress:
     nginx.org/proxy-send-timeout: "120s"
     nginx.org/keepalive: "256"
     nginx.org/server-snippets: |
+      otel_trace on;
       proxy_set_header X-Forwarded-Proto $scheme;
       proxy_set_header X-Forwarded-Port $server_port;
       proxy_set_header X-Real-IP $remote_addr;
@@ -25,8 +26,7 @@ ingress:
       proxy_set_header Connection "";
       proxy_set_header X-Request-ID $request_id;
       proxy_set_header X-Request-Start $msec;
-      proxy_set_header traceparent $http_traceparent;
-      proxy_set_header tracestate $http_tracestate;
+      # traceparent/tracestate now handled by ngx_otel_module (otel-trace-context: propagate)
       client_header_timeout 30s;
     nginx.org/location-snippets: |
       proxy_request_buffering on;
@@ -37,6 +37,27 @@ ingress:
       client_body_timeout 120s;
   tls:
     mode: selfSigned
+
+# Updated image with metrics.js fix + explicit kafkajs instrumentation
+image:
+  tag: "f81b39d4488c596f76a5c385d088a8998b7c1b20933366ad994f5315597ec48b"
+
+# Local: single replica for all components
+api:
+  replicaCount: 1
+  hpa:
+    maxReplicas: 1
+
+aggregator:
+  replicaCount: 1
+  hpa:
+    minReplicas: 1
+    maxReplicas: 1
+
+ingestor:
+  replicaCount: 1
+  hpa:
+    maxReplicas: 1
 
 # Override Kafka replication factor — local has only 1 broker
 config:

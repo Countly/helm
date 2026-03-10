@@ -1,3 +1,8 @@
 # Local environment — ClickHouse chart overrides (non-sizing)
 # Profile defaults come from profiles/local/clickhouse.yaml
 # Secrets come from secrets-clickhouse.yaml
+
+# Enable server-side OpenTelemetry span logging
+# Queries with W3C traceparent headers will be logged to system.opentelemetry_span_log
+opentelemetry:
+  enabled: true

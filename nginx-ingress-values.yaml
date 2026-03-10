@@ -79,11 +79,24 @@ controller:
       map-hash-max-size: "4096"
       server-tokens: "False"
       http2: "True"
+      # --- OpenTelemetry tracing (ngx_otel_module) ---
+      # enable-opentelemetry activates otel_trace on; in the server block.
+      # Uses 'propagate' mode: honors inbound W3C context AND generates edge spans.
+      # Exports spans to Alloy-OTLP via gRPC for Tempo ingestion.
+      enable-opentelemetry: "true"
+      otel-exporter-endpoint: "countly-observability-alloy-otlp.observability.svc.cluster.local:4317"
+      otel-service-name: "edge-nginx"
+      otel-trace-context: "propagate"
+      otel-sampler: "AlwaysOn"
+      otel-sampler-ratio: "1.0"
+      # --- Access log format ---
+      # Uses $otel_trace_id and $otel_span_id from ngx_otel_module.
+      # Format matches Alloy Loki regex: traceId=<32hex>.*spanId=<16hex>
       log-format: >-
         $remote_addr - $remote_user [$time_local] "$request"
         $status $body_bytes_sent "$http_referer" "$http_user_agent"
         $request_time $upstream_response_time
-        request_id=$request_id trace_context=$http_traceparent
+        request_id=$request_id traceId=$otel_trace_id spanId=$otel_span_id
 
   telemetryReporting:
     enable: false
