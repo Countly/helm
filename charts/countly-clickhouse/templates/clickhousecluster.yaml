@@ -43,8 +43,18 @@ spec:
       max_connections: {{ .Values.server.settings.maxConnections | default 4096 }}
       default_database: {{ .Values.database | default "countly_drill" }}
     {{- $adminEnabled := .Values.auth.adminUser.enabled | default false }}
-    {{- if $adminEnabled }}
+    {{- $otelEnabled := .Values.opentelemetry.enabled | default false }}
+    {{- if or $adminEnabled $otelEnabled }}
     extraUsersConfig:
+      {{- if $otelEnabled }}
+      # opentelemetry_start_trace_probability is a user-level setting (not server-level).
+      # It must live inside <profiles> in users.xml so ClickHouse applies it per-query.
+      # Setting to 1 = trace all incoming requests with W3C traceparent context.
+      profiles:
+        default:
+          opentelemetry_start_trace_probability: 1
+      {{- end }}
+      {{- if $adminEnabled }}
       users:
         admin:
           password_sha256_hex: {{ required "auth.adminUser.passwordSha256Hex required when adminUser enabled" .Values.auth.adminUser.passwordSha256Hex }}
@@ -55,4 +65,5 @@ spec:
               - "::/0"
           profile: default
           quota: default
+      {{- end }}
     {{- end }}

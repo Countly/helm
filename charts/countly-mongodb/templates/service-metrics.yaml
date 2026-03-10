@@ -8,7 +8,8 @@ metadata:
     countly.io/metrics: "true"
 spec:
   selector:
-    app: {{ include "countly-mongodb.fullname" . }}-svc
+    {{- include "countly-mongodb.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: exporter
   ports:
     - name: http-metrics
       port: {{ .Values.exporter.port }}

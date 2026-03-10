@@ -60,6 +60,25 @@ spec:
       {{- end }}
     connectContainer:
       env:
+        {{- if .Values.kafkaConnect.otel.enabled }}
+        # OTel Java agent is baked into the image at /opt/otel/opentelemetry-javaagent.jar
+        - name: JAVA_TOOL_OPTIONS
+          value: "-javaagent:/opt/otel/opentelemetry-javaagent.jar"
+        - name: OTEL_SERVICE_NAME
+          value: {{ .Values.kafkaConnect.otel.serviceName | quote }}
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: {{ .Values.kafkaConnect.otel.exporterEndpoint | quote }}
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          value: {{ .Values.kafkaConnect.otel.exporterProtocol | quote }}
+        - name: OTEL_TRACES_SAMPLER
+          value: {{ .Values.kafkaConnect.otel.sampler | quote }}
+        - name: OTEL_TRACES_SAMPLER_ARG
+          value: {{ .Values.kafkaConnect.otel.samplerArg | quote }}
+        {{- if .Values.kafkaConnect.otel.resourceAttributes }}
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: {{ .Values.kafkaConnect.otel.resourceAttributes | quote }}
+        {{- end }}
+        {{- end }}
         - name: CLICKHOUSE_USER
           valueFrom:
             secretKeyRef:

@@ -187,6 +187,18 @@ kafkaConnect:
             value: 1
             periodSeconds: 300
         selectPolicy: Min
+  # --- OpenTelemetry Java Agent ---
+  # The OTel Java agent is baked into the Docker image at /opt/otel/opentelemetry-javaagent.jar.
+  # When enabled, JAVA_TOOL_OPTIONS activates it. Creates spans for Kafka consumer/producer
+  # and outbound HTTP (ClickHouse sink).
+  otel:
+    enabled: false
+    serviceName: "kafka-connect"
+    exporterEndpoint: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4317"
+    exporterProtocol: "grpc"
+    sampler: "parentbased_traceidratio"
+    samplerArg: "1.0"
+    resourceAttributes: ""   # e.g. "deployment.environment=production,k8s.cluster.name=my-cluster"
   scheduling:
     nodeSelector: {}
     tolerations: []
