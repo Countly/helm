@@ -1527,202 +1527,77 @@
       "type": "table"
     },
     {
-      "collapsed": true,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 45
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
       },
-      "id": 7,
-      "panels": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
           },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
+          "mappings": [],
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
               },
-              "custom": {
-                "align": "auto",
-                "cellOptions": {
-                  "type": "auto"
-                },
-                "inspect": false
+              {
+                "color": "#EAB839",
+                "value": 50
               },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
+              {
+                "color": "red",
+                "value": 70
               }
-            },
-            "overrides": []
+            ]
           },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 46
-          },
-          "id": 300,
-          "options": {
-            "cellHeight": "sm",
-            "footer": {
-              "countRows": false,
-              "fields": "",
-              "reducer": [
-                "sum"
-              ],
-              "show": false
-            },
-            "showHeader": true
-          },
-          "pluginVersion": "10.0.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "expr": "kube_pod_container_status_waiting{cluster=~\"$cluster\", namespace=~\"$namespace\"} == 1",
-              "format": "table",
-              "instant": true,
-              "legendFormat": "__auto",
-              "refId": "A"
-            }
-          ],
-          "title": "Waiting Containers",
-          "transformations": [
-            {
-              "id": "organize",
-              "options": {
-                "excludeByName": {
-                  "Time": true,
-                  "Value": true,
-                  "__name__": true,
-                  "cluster": true,
-                  "instance": true,
-                  "job": true,
-                  "uid": true
-                },
-                "includeByName": {},
-                "indexByName": {
-                  "namespace": 0,
-                  "pod": 1,
-                  "container": 2
-                },
-                "renameByName": {}
-              }
-            }
-          ],
-          "type": "table"
+          "unit": "percent"
         },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 46
+      },
+      "id": 500,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": false
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "custom": {
-                "align": "auto",
-                "cellOptions": {
-                  "type": "auto"
-                },
-                "inspect": false
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 46
-          },
-          "id": 301,
-          "options": {
-            "cellHeight": "sm",
-            "footer": {
-              "countRows": false,
-              "fields": "",
-              "reducer": [
-                "sum"
-              ],
-              "show": false
-            },
-            "showHeader": true
-          },
-          "pluginVersion": "10.0.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "expr": "kube_pod_container_status_last_terminated_reason{cluster=~\"$cluster\", namespace=~\"$namespace\"} > 0",
-              "format": "table",
-              "instant": true,
-              "legendFormat": "__auto",
-              "refId": "A"
-            }
-          ],
-          "title": "Last Terminated Reason",
-          "transformations": [
-            {
-              "id": "organize",
-              "options": {
-                "excludeByName": {
-                  "Time": true,
-                  "__name__": true,
-                  "cluster": true,
-                  "instance": true,
-                  "job": true,
-                  "uid": true
-                },
-                "includeByName": {},
-                "indexByName": {
-                  "namespace": 0,
-                  "pod": 1,
-                  "container": 2,
-                  "reason": 3,
-                  "Value": 4
-                },
-                "renameByName": {}
-              }
-            }
-          ],
-          "type": "table"
+          "expr": "kubelet_volume_stats_used_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\"} / kubelet_volume_stats_capacity_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\"} * 100",
+          "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}",
+          "refId": "A"
         }
       ],
-      "title": "Container Issues",
-      "type": "row"
+      "title": "PVC Usage %",
+      "type": "stat"
     },
     {
-      "id": 7,
-      "title": "Job & CronJob Status",
-      "type": "row",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -1730,21 +1605,216 @@
         "x": 0,
         "y": 54
       },
+      "id": 7,
+      "panels": [],
+      "title": "Container Issues",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 55
+      },
+      "id": 300,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "kube_pod_container_status_waiting{cluster=~\"$cluster\", namespace=~\"$namespace\"} == 1",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "Waiting Containers",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true,
+              "__name__": true,
+              "cluster": true,
+              "instance": true,
+              "job": true,
+              "uid": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "namespace": 0,
+              "pod": 1,
+              "container": 2
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 63
+      },
+      "id": 301,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "kube_pod_container_status_last_terminated_reason{cluster=~\"$cluster\", namespace=~\"$namespace\"} > 0",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "Last Terminated Reason",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "cluster": true,
+              "instance": true,
+              "job": true,
+              "uid": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "namespace": 0,
+              "pod": 1,
+              "container": 2,
+              "reason": 3,
+              "Value": 4
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "id": 8,
+      "title": "Job & CronJob Status",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 79
+      },
       "panels": []
     },
     {
       "id": 109,
-      "title": "Failed Jobs (1h)",
+      "title": "Failed Jobs",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "count(kube_job_status_failed{cluster=~\"$cluster\", namespace=~\"$namespace\"} > 0) or vector(0)",
           "refId": "A",
@@ -1775,7 +1845,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 55
+        "y": 80
       },
       "options": {
         "reduceOptions": {
@@ -1794,15 +1864,15 @@
       "type": "table",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
-          "expr": "time() - kube_cronjob_status_last_successful_time{cluster=~\"$cluster\", namespace=~\"$namespace\"}",
+          "expr": "(time() - kube_cronjob_status_last_successful_time{cluster=~\"$cluster\", namespace=~\"$namespace\"}) and kube_cronjob_status_last_successful_time{cluster=~\"$cluster\", namespace=~\"$namespace\"} > 0",
           "refId": "A",
           "format": "table",
           "instant": true
@@ -1835,7 +1905,7 @@
         "h": 8,
         "w": 18,
         "x": 6,
-        "y": 55
+        "y": 80
       },
       "options": {
         "sortBy": [
@@ -1852,7 +1922,10 @@
             "excludeByName": {
               "Time": true,
               "__name__": true,
-              "job": true
+              "cluster": true,
+              "instance": true,
+              "job": true,
+              "uid": true
             },
             "indexByName": {}
           }
@@ -1915,33 +1988,6 @@
         "options": [],
         "query": {
           "query": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(kube_node_info{cluster=~\"$cluster\"}, node)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Node",
-        "multi": true,
-        "name": "node",
-        "options": [],
-        "query": {
-          "query": "label_values(kube_node_info{cluster=~\"$cluster\"}, node)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,

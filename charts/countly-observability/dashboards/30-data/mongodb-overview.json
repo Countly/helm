@@ -213,7 +213,21 @@
           "color": {
             "mode": "thresholds"
           },
-          "mappings": [],
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "No",
+                  "color": "red"
+                },
+                "1": {
+                  "text": "Yes",
+                  "color": "green"
+                }
+              }
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -453,7 +467,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m]) / rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m]), 1)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -521,7 +535,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m]) / rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m]), 1)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -948,7 +962,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m]) / rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m]), 1)",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -1038,7 +1052,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m]) / rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m]), 1)",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -1140,7 +1154,7 @@
             "uid": "prometheus"
           },
           "expr": "mongodb_ss_connections{cluster=~\"$cluster\", instance=~\"$instance\"}",
-          "legendFormat": "{{state}} {{instance}}",
+          "legendFormat": "{{conn_type}} {{instance}}",
           "refId": "A"
         }
       ],
@@ -1747,7 +1761,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "mongodb_ss_metrics_cursor_lifespan_lessThan1Second{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_lessThan1Second{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "refId": "A",
           "legendFormat": "< 1s"
         },
@@ -1756,7 +1770,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "mongodb_ss_metrics_cursor_lifespan_lessThan15Seconds{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_lessThan15Seconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "refId": "B",
           "legendFormat": "< 15s"
         },
@@ -1765,7 +1779,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "mongodb_ss_metrics_cursor_lifespan_lessThan1Minute{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_lessThan1Minute{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "refId": "C",
           "legendFormat": "< 1m"
         },
@@ -1774,7 +1788,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "mongodb_ss_metrics_cursor_lifespan_lessThan10Minutes{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_lessThan10Minutes{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "refId": "D",
           "legendFormat": "< 10m"
         },
@@ -1783,7 +1797,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "mongodb_ss_metrics_cursor_lifespan_greaterThanOrEqual10Minutes{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_greaterThanOrEqual10Minutes{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "refId": "E",
           "legendFormat": ">= 10m"
         }
@@ -1899,15 +1913,15 @@
       "type": "bargauge",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
-          "expr": "topk(10, mongodb_top_queries_time{cluster=~\"$cluster\", instance=~\"$instance\"})",
+          "expr": "topk(10, rate(mongodb_top_queries_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]))",
           "refId": "A",
           "legendFormat": "{{database}}.{{collection}}"
         }
@@ -1949,15 +1963,15 @@
       "type": "bargauge",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
-          "expr": "topk(10, mongodb_top_insert_time{cluster=~\"$cluster\", instance=~\"$instance\"} + mongodb_top_update_time{cluster=~\"$cluster\", instance=~\"$instance\"} + mongodb_top_remove_time{cluster=~\"$cluster\", instance=~\"$instance\"})",
+          "expr": "topk(10, rate(mongodb_top_insert_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) + rate(mongodb_top_update_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) + rate(mongodb_top_remove_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]))",
           "refId": "A",
           "legendFormat": "{{database}}.{{collection}}"
         }
@@ -1999,13 +2013,13 @@
       "type": "bargauge",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "topk(10, rate(mongodb_top_queries_count{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]))",
           "refId": "A",
@@ -2049,13 +2063,13 @@
       "type": "bargauge",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "topk(10, rate(mongodb_top_insert_count{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) + rate(mongodb_top_update_count{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) + rate(mongodb_top_remove_count{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]))",
           "refId": "A",
@@ -2107,31 +2121,46 @@
       "panels": []
     },
     {
-      "id": 116,
-      "title": "Collection Scan vs Index Scan",
+      "id": 210,
+      "title": "Slow Query Indicators",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
+          "editorMode": "code",
           "expr": "rate(mongodb_ss_metrics_queryExecutor_collectionScans_total{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
-          "refId": "A",
-          "legendFormat": "Collection Scans"
+          "legendFormat": "Collection Scans/s",
+          "range": true,
+          "refId": "A"
         },
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_queryExecutor_scanned{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
-          "refId": "B",
-          "legendFormat": "Index Scans"
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_metrics_queryExecutor_collectionScans_nonTailable{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "legendFormat": "Non-Tailable Scans/s",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_metrics_query_sort_spillToDisk{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "legendFormat": "Sort Spill to Disk/s",
+          "range": true,
+          "refId": "C"
         }
       ],
       "fieldConfig": {
@@ -2140,8 +2169,7 @@
             "drawStyle": "line",
             "lineWidth": 1,
             "fillOpacity": 10,
-            "pointSize": 5,
-            "showPoints": "auto"
+            "showPoints": "never"
           },
           "unit": "ops",
           "thresholds": {
@@ -2164,7 +2192,8 @@
       },
       "options": {
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         },
         "legend": {
           "displayMode": "list",
@@ -2173,22 +2202,46 @@
       }
     },
     {
-      "id": 117,
-      "title": "Sort Spill to Disk Rate",
+      "id": 211,
+      "title": "Avg Op Latency (\u00b5s)",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_query_sort_spillToDisk{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
-          "refId": "A",
-          "legendFormat": "Spills/s"
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m]), 1)",
+          "legendFormat": "Read Latency",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m]), 1)",
+          "legendFormat": "Write Latency",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"commands\", instance=~\"$instance\"}[5m]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"commands\", instance=~\"$instance\"}[5m]), 1)",
+          "legendFormat": "Command Latency",
+          "range": true,
+          "refId": "C"
         }
       ],
       "fieldConfig": {
@@ -2197,10 +2250,9 @@
             "drawStyle": "line",
             "lineWidth": 1,
             "fillOpacity": 10,
-            "pointSize": 5,
-            "showPoints": "auto"
+            "showPoints": "never"
           },
-          "unit": "ops",
+          "unit": "\u00b5s",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -2221,7 +2273,8 @@
       },
       "options": {
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         },
         "legend": {
           "displayMode": "list",
@@ -2248,13 +2301,13 @@
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "rate(mongodb_ss_metrics_document{cluster=~\"$cluster\", instance=~\"$instance\", doc_op_type=\"inserted\"}[5m])",
           "refId": "A",
@@ -2263,7 +2316,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "rate(mongodb_ss_metrics_document{cluster=~\"$cluster\", instance=~\"$instance\", doc_op_type=\"updated\"}[5m])",
           "refId": "B",
@@ -2272,7 +2325,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "rate(mongodb_ss_metrics_document{cluster=~\"$cluster\", instance=~\"$instance\", doc_op_type=\"deleted\"}[5m])",
           "refId": "C",
@@ -2281,7 +2334,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "rate(mongodb_ss_metrics_document{cluster=~\"$cluster\", instance=~\"$instance\", doc_op_type=\"returned\"}[5m])",
           "refId": "D",
@@ -2345,13 +2398,13 @@
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "rate(mongodb_ss_extra_info_page_faults{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "refId": "A",
@@ -2415,13 +2468,13 @@
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "rate(mongodb_ss_asserts{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "refId": "A",
@@ -2472,13 +2525,13 @@
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "rate(mongodb_ss_network_numRequests{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "refId": "A",
@@ -2524,7 +2577,7 @@
       }
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -2532,76 +2585,884 @@
         "y": 59
       },
       "id": 8,
-      "panels": [
+      "title": "Per-Collection Drilldown",
+      "type": "row",
+      "panels": []
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 60
+      },
+      "id": 200,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "custom": {
-                "align": "auto",
-                "cellOptions": {
-                  "type": "auto"
-                },
-                "inspect": false
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 24,
-            "x": 0,
-            "y": 60
-          },
-          "id": 300,
-          "options": {
-            "cellHeight": "sm",
-            "footer": {
-              "countRows": false,
-              "fields": "",
-              "reducer": [
-                "sum"
-              ],
-              "show": false
-            },
-            "showHeader": true
-          },
-          "pluginVersion": "10.0.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "expr": "topk(20, mongodb_top_queries_time{cluster=~\"$cluster\", instance=~\"$instance\"})",
-              "format": "table",
-              "instant": true,
-              "legendFormat": "__auto",
-              "refId": "A"
-            }
-          ],
-          "title": "Top Collections by Time",
-          "type": "table"
+          "editorMode": "code",
+          "expr": "topk(10, rate(mongodb_top_queries_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]))",
+          "legendFormat": "{{collection}}",
+          "range": true,
+          "refId": "A"
         }
       ],
-      "title": "Per-Collection Drilldown",
-      "type": "row"
+      "title": "Read Time by Collection",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 60
+      },
+      "id": 201,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "topk(10, rate(mongodb_top_insert_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) + rate(mongodb_top_update_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) + rate(mongodb_top_remove_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]))",
+          "legendFormat": "{{collection}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Write Time by Collection",
+      "type": "timeseries"
+    },
+    {
+      "id": 14,
+      "title": "Database Stats",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 121
+      },
+      "panels": []
+    },
+    {
+      "id": 212,
+      "title": "Database Size",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "mongodb_dbstats_dataSize{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "legendFormat": "{{database}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "unit": "bytes",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 122
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 213,
+      "title": "Index Size",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "mongodb_dbstats_indexSize{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "legendFormat": "{{database}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "unit": "bytes",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 122
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "title": "WiredTiger Detail",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 130
+      },
+      "panels": []
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 131
+      },
+      "id": 500,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_wt_cache_pages_read_into_cache{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "legendFormat": "Pages Read",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_wt_cache_pages_written_from_cache{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "legendFormat": "Pages Written",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Cache Page I/O",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 131
+      },
+      "id": 501,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_wt_txn_transaction_begins{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "legendFormat": "Begins",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_wt_txn_transactions_committed{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "legendFormat": "Committed",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_wt_txn_transactions_rolled_back{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "legendFormat": "Rolled Back",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "WiredTiger Transactions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 139
+      },
+      "id": 502,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "mongodb_ss_wt_cache_bytes_currently_in_the_cache{cluster=~\"$cluster\", instance=~\"$instance\"} / mongodb_ss_wt_cache_maximum_bytes_configured{cluster=~\"$cluster\", instance=~\"$instance\"} * 100",
+          "legendFormat": "Cache Used %",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "mongodb_ss_wt_cache_tracked_dirty_bytes_in_the_cache{cluster=~\"$cluster\", instance=~\"$instance\"} / mongodb_ss_wt_cache_maximum_bytes_configured{cluster=~\"$cluster\", instance=~\"$instance\"} * 100",
+          "legendFormat": "Dirty %",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Cache Utilization %",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 139
+      },
+      "id": 503,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_wt_log_log_sync_operations{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "legendFormat": "Sync Ops",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_wt_log_log_write_operations{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "legendFormat": "Write Ops",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "WiredTiger Log Operations",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 147
+      },
+      "id": 504,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_wt_cursor_cursor_search_calls{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "legendFormat": "Search",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_wt_cursor_cursor_insert_calls{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "legendFormat": "Insert",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_wt_cursor_cursor_update_calls{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "legendFormat": "Update",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(mongodb_ss_wt_cursor_cursor_remove_calls{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "legendFormat": "Remove",
+          "range": true,
+          "refId": "D"
+        }
+      ],
+      "title": "Cursor Operations",
+      "type": "timeseries"
     }
   ],
   "refresh": "1m",
@@ -2649,34 +3510,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Namespace",
-        "multi": true,
-        "name": "namespace",
-        "options": [],
-        "query": {
-          "query": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(mongodb_ss_connections{namespace=~\"$namespace\"}, instance)",
+        "definition": "label_values(mongodb_ss_connections{cluster=~\"$cluster\"}, instance)",
         "hide": 0,
         "includeAll": true,
         "label": "Instance",
@@ -2684,7 +3518,7 @@
         "name": "instance",
         "options": [],
         "query": {
-          "query": "label_values(mongodb_ss_connections{cluster=~\"$cluster\", namespace=~\"$namespace\"}, instance)",
+          "query": "label_values(mongodb_ss_connections{cluster=~\"$cluster\"}, instance)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,

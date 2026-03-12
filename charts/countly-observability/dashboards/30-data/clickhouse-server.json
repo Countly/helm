@@ -319,7 +319,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(ClickHouseAsyncMetrics_DiskUsed_default{cluster=~\"$cluster\", instance=~\"$instance\"} / ClickHouseAsyncMetrics_DiskTotal_default{cluster=~\"$cluster\", instance=~\"$instance\"}) * 100",
+          "expr": "max((ClickHouseAsyncMetrics_DiskUsed_default{cluster=~\"$cluster\", instance=~\"$instance\"} / ClickHouseAsyncMetrics_DiskTotal_default{cluster=~\"$cluster\", instance=~\"$instance\"}) * 100)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -835,7 +835,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_QueryTimeMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) / rate(ClickHouseProfileEvents_Query{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_QueryTimeMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) / (rate(ClickHouseProfileEvents_Query{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) > 0)",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -1366,7 +1366,7 @@
           "refId": "B"
         }
       ],
-      "title": "Active Merges",
+      "title": "Active Merges & Mutations",
       "type": "timeseries"
     },
     {
@@ -2413,13 +2413,13 @@
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "rate(ClickHouseProfileEvents_FailedQuery{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "refId": "A",
@@ -2433,7 +2433,7 @@
             "lineWidth": 1,
             "fillOpacity": 10,
             "pointSize": 5,
-            "showPoints": "auto"
+            "showPoints": "never"
           },
           "unit": "ops",
           "thresholds": {
@@ -2470,13 +2470,13 @@
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "rate(ClickHouseProfileEvents_RejectedInserts{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "refId": "A",
@@ -2490,7 +2490,7 @@
             "lineWidth": 1,
             "fillOpacity": 10,
             "pointSize": 5,
-            "showPoints": "auto"
+            "showPoints": "never"
           },
           "unit": "ops",
           "thresholds": {
@@ -2527,13 +2527,13 @@
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "rate(ClickHouseProfileEvents_SlowRead{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "refId": "A",
@@ -2547,7 +2547,7 @@
             "lineWidth": 1,
             "fillOpacity": 10,
             "pointSize": 5,
-            "showPoints": "auto"
+            "showPoints": "never"
           },
           "unit": "ops",
           "thresholds": {
@@ -2584,13 +2584,13 @@
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "rate(ClickHouseProfileEvents_SelectedRows{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "refId": "A",
@@ -2599,7 +2599,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "rate(ClickHouseProfileEvents_InsertedRows{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "refId": "B",
@@ -2613,7 +2613,7 @@
             "lineWidth": 1,
             "fillOpacity": 10,
             "pointSize": 5,
-            "showPoints": "auto"
+            "showPoints": "never"
           },
           "unit": "short",
           "thresholds": {
@@ -2643,6 +2643,111 @@
           "placement": "bottom"
         }
       }
+    },
+    { "id": 300, "title": "Connections & Threads", "type": "row", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 94 }, "panels": [] },
+    {
+      "id": 301, "title": "HTTP & TCP Connections", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseMetrics_TCPConnection{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "TCP {{instance}}", "range": true, "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseMetrics_HTTPConnection{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "HTTP {{instance}}", "range": true, "refId": "B" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseMetrics_MySQLConnection{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "MySQL {{instance}}", "range": true, "refId": "C" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 95 },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 302, "title": "Thread Pool", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseMetrics_GlobalThreadActive{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "Active {{instance}}", "range": true, "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseMetrics_GlobalThread{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "Total {{instance}}", "range": true, "refId": "B" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 95 },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    { "id": 303, "title": "Query Performance Detail", "type": "row", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 103 }, "panels": [] },
+    {
+      "id": 304, "title": "Select vs Insert Query Time", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "rate(ClickHouseProfileEvents_SelectQueryTimeMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) / 1e6", "legendFormat": "Select Time (s/s) {{instance}}", "range": true, "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "rate(ClickHouseProfileEvents_InsertQueryTimeMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) / 1e6", "legendFormat": "Insert Time (s/s) {{instance}}", "range": true, "refId": "B" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "unit": "s", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 104 },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 305, "title": "Read/Write Throughput", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "rate(ClickHouseProfileEvents_ReadCompressedBytes{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])", "legendFormat": "Read Compressed {{instance}}", "range": true, "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "rate(ClickHouseProfileEvents_CompressedReadBufferBytes{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])", "legendFormat": "Read Uncompressed {{instance}}", "range": true, "refId": "B" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "unit": "Bps", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 104 },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    { "id": 306, "title": "ZooKeeper / Keeper", "type": "row", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 112 }, "panels": [] },
+    {
+      "id": 307, "title": "ZooKeeper Operations", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "rate(ClickHouseProfileEvents_ZooKeeperTransactions{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])", "legendFormat": "{{instance}}", "range": true, "refId": "A" }],
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "unit": "ops", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 113 },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 308, "title": "ZooKeeper Wait Time", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "rate(ClickHouseProfileEvents_ZooKeeperWaitMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) / 1e6", "legendFormat": "{{instance}}", "range": true, "refId": "A" }],
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "unit": "s", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 113 },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    { "id": 309, "title": "OS / System", "type": "row", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 121 }, "panels": [] },
+    {
+      "id": 310, "title": "Load Average", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseAsyncMetrics_LoadAverage1{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "1min {{instance}}", "range": true, "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseAsyncMetrics_LoadAverage5{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "5min {{instance}}", "range": true, "refId": "B" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseAsyncMetrics_LoadAverage15{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "15min {{instance}}", "range": true, "refId": "C" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 122 },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 311, "title": "Uptime", "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseAsyncMetrics_Uptime{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "{{instance}}", "range": true, "refId": "A" }],
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "unit": "s", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 122 },
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" }
+    },
+    { "id": 312, "title": "Replication Detail", "type": "row", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 130 }, "panels": [] },
+    {
+      "id": 313, "title": "Replication Delay", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseAsyncMetrics_ReplicasMaxAbsoluteDelay{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "{{instance}}", "range": true, "refId": "A" }],
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "unit": "s", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 131 },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 314, "title": "Replication Queue", "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseAsyncMetrics_ReplicasSumQueueSize{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "Sum Queue {{instance}}", "range": true, "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseAsyncMetrics_ReplicasMaxQueueSize{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "Max Queue {{instance}}", "range": true, "refId": "B" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 131 },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
     }
   ],
   "refresh": "1m",
@@ -2690,34 +2795,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Namespace",
-        "multi": true,
-        "name": "namespace",
-        "options": [],
-        "query": {
-          "query": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(ClickHouseMetrics_Query, instance)",
+        "definition": "label_values(ClickHouseMetrics_Query{cluster=~\"$cluster\"}, instance)",
         "hide": 0,
         "includeAll": true,
         "label": "Instance",
@@ -2726,33 +2804,6 @@
         "options": [],
         "query": {
           "query": "label_values(ClickHouseMetrics_Query{cluster=~\"$cluster\"}, instance)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(ClickHouseMetrics_Query, chi)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "CHI",
-        "multi": false,
-        "name": "chi",
-        "options": [],
-        "query": {
-          "query": "label_values(ClickHouseMetrics_Query{cluster=~\"$cluster\"}, chi)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,

@@ -134,7 +134,15 @@
           "color": {
             "mode": "thresholds"
           },
-          "mappings": [],
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "text": "No", "color": "red" },
+                "1": { "text": "Yes", "color": "green" }
+              }
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -202,8 +210,16 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 2
               }
             ]
           }
@@ -261,8 +277,16 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 2
               }
             ]
           }
@@ -874,7 +898,7 @@
             "uid": "prometheus"
           },
           "expr": "ClickHouseMetrics_KeeperAliveConnections{cluster=~\"$cluster\", instance=~\"$instance\"}",
-          "legendFormat": "Alive",
+          "legendFormat": "Alive {{instance}}",
           "refId": "A"
         },
         {
@@ -883,7 +907,7 @@
             "uid": "prometheus"
           },
           "expr": "ClickHouseAsyncMetrics_KeeperTCPRejectedConnections{cluster=~\"$cluster\", instance=~\"$instance\"}",
-          "legendFormat": "Rejected",
+          "legendFormat": "Rejected {{instance}}",
           "refId": "B"
         }
       ],
@@ -1353,7 +1377,7 @@
             "uid": "prometheus"
           },
           "expr": "rate(ClickHouseProfileEvents_KeeperCommits{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
-          "legendFormat": "Commits/s",
+          "legendFormat": "Commits/s {{instance}}",
           "refId": "A"
         },
         {
@@ -1362,7 +1386,7 @@
             "uid": "prometheus"
           },
           "expr": "rate(ClickHouseProfileEvents_KeeperCommitsFailed{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
-          "legendFormat": "Commits Failed/s",
+          "legendFormat": "Commits Failed/s {{instance}}",
           "refId": "B"
         },
         {
@@ -1371,7 +1395,7 @@
             "uid": "prometheus"
           },
           "expr": "rate(ClickHouseProfileEvents_KeeperSnapshotCreations{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
-          "legendFormat": "Snapshots/s",
+          "legendFormat": "Snapshots/s {{instance}}",
           "refId": "C"
         },
         {
@@ -1380,7 +1404,7 @@
             "uid": "prometheus"
           },
           "expr": "rate(ClickHouseProfileEvents_KeeperSnapshotCreationsFailed{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
-          "legendFormat": "Snapshots Failed/s",
+          "legendFormat": "Snapshots Failed/s {{instance}}",
           "refId": "D"
         }
       ],
@@ -1481,7 +1505,7 @@
             "uid": "prometheus"
           },
           "expr": "ClickHouseAsyncMetrics_KeeperOpenFileDescriptorCount{cluster=~\"$cluster\", instance=~\"$instance\"}",
-          "legendFormat": "Open",
+          "legendFormat": "Open {{instance}}",
           "refId": "A"
         },
         {
@@ -1490,7 +1514,7 @@
             "uid": "prometheus"
           },
           "expr": "ClickHouseAsyncMetrics_KeeperMaxFileDescriptorCount{cluster=~\"$cluster\", instance=~\"$instance\"}",
-          "legendFormat": "Max",
+          "legendFormat": "Max {{instance}}",
           "refId": "B"
         }
       ],
@@ -1544,34 +1568,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Namespace",
-        "multi": true,
-        "name": "namespace",
-        "options": [],
-        "query": {
-          "query": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(ClickHouseAsyncMetrics_KeeperIsLeader, instance)",
+        "definition": "label_values(ClickHouseAsyncMetrics_KeeperIsLeader{cluster=~\"$cluster\"}, instance)",
         "hide": 0,
         "includeAll": true,
         "label": "Instance",

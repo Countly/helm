@@ -118,8 +118,12 @@
                 "value": null
               },
               {
-                "color": "green",
+                "color": "yellow",
                 "value": 1
+              },
+              {
+                "color": "green",
+                "value": 5
               }
             ]
           }
@@ -155,7 +159,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(up{cluster=~\"$cluster\", namespace=~\"$namespace\"} == 1)",
+          "expr": "count(up{cluster=~\"$cluster\"} == 1)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -219,7 +223,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(up{cluster=~\"$cluster\", namespace=~\"$namespace\"} == 0) or vector(0)",
+          "expr": "count(up{cluster=~\"$cluster\"} == 0) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -292,7 +296,7 @@
           "refId": "A"
         }
       ],
-      "title": "Deploys Not Ready",
+      "title": "Deployments Not Ready",
       "type": "stat"
     },
     {
@@ -423,12 +427,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(container_oom_events_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}[1h])) or vector(0)",
+          "expr": "count(kube_pod_container_status_last_terminated_reason{cluster=~\"$cluster\", namespace=~\"$namespace\", reason=\"OOMKilled\"} == 1) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "OOM Events (1h)",
+      "title": "OOM Killed Pods",
       "type": "stat"
     },
     {
@@ -492,7 +496,7 @@
           "refId": "A"
         }
       ],
-      "title": "STS Not Ready",
+      "title": "StatefulSets Not Ready",
       "type": "stat"
     },
     {
@@ -556,7 +560,7 @@
           "refId": "A"
         }
       ],
-      "title": "DS Unavailable",
+      "title": "DaemonSets Unavailable",
       "type": "stat"
     },
     {
@@ -961,7 +965,9 @@
             },
             "thresholdsStyle": {
               "mode": "off"
-            }
+            },
+            "min": 0,
+            "max": 1
           },
           "mappings": [],
           "thresholds": {
@@ -1066,7 +1072,9 @@
             },
             "thresholdsStyle": {
               "mode": "off"
-            }
+            },
+            "min": 0,
+            "max": 1
           },
           "mappings": [],
           "thresholds": {
@@ -1158,7 +1166,9 @@
             },
             "thresholdsStyle": {
               "mode": "off"
-            }
+            },
+            "min": 0,
+            "max": 1
           },
           "mappings": [],
           "thresholds": {
@@ -1277,7 +1287,83 @@
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Running"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Succeeded"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pending"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "yellow"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Failed"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Unknown"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -1399,7 +1485,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(sum by (namespace, pod)(rate(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}[5m])) > 0) or vector(0)",
+          "expr": "(sum by (namespace, pod)(rate(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}[5m])) > 0)",
           "legendFormat": "{{namespace}}/{{pod}}",
           "refId": "A"
         }
@@ -1700,12 +1786,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(sum by (namespace, pod)(rate(container_oom_events_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}[5m])) > 0) or vector(0)",
-          "legendFormat": "{{namespace}}/{{pod}}",
+          "expr": "kube_pod_container_status_last_terminated_reason{cluster=~\"$cluster\", namespace=~\"$namespace\", reason=\"OOMKilled\"} == 1",
+          "legendFormat": "{{namespace}}/{{pod}} ({{container}})",
           "refId": "A"
         }
       ],
-      "title": "OOM Events",
+      "title": "OOM Killed Pods",
       "type": "timeseries"
     },
     {
@@ -1799,7 +1885,7 @@
       "type": "table"
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1807,256 +1893,282 @@
         "y": 51
       },
       "id": 9,
-      "panels": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic-by-name"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              },
-              "unit": "short"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 52
-          },
-          "id": 34,
-          "options": {
-            "displayMode": "gradient",
-            "minVizHeight": 10,
-            "minVizWidth": 0,
-            "namePlacement": "auto",
-            "orientation": "horizontal",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showUnfilled": true,
-            "sizing": "auto",
-            "valueMode": "color"
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "expr": "topk(10, sum by (namespace, pod)(rate(container_cpu_usage_seconds_total{cluster=~\"$cluster\", namespace=~\"$namespace\",container!=\"\",image!=\"\"}[5m])))",
-              "legendFormat": "{{namespace}}/{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "title": "Top 10 CPU",
-          "type": "bargauge"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic-by-name"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              },
-              "unit": "bytes"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 52
-          },
-          "id": 35,
-          "options": {
-            "displayMode": "gradient",
-            "minVizHeight": 10,
-            "minVizWidth": 0,
-            "namePlacement": "auto",
-            "orientation": "horizontal",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showUnfilled": true,
-            "sizing": "auto",
-            "valueMode": "color"
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "expr": "topk(10, sum by (namespace, pod)(container_memory_working_set_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\",container!=\"\",image!=\"\"}))",
-              "legendFormat": "{{namespace}}/{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "title": "Top 10 Memory",
-          "type": "bargauge"
-        }
-      ],
+      "panels": [],
       "title": "Top Resource Consumers",
       "type": "row"
     },
     {
-      "collapsed": true,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic-by-name"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
       "gridPos": {
-        "h": 1,
-        "w": 24,
+        "h": 8,
+        "w": 12,
         "x": 0,
         "y": 52
       },
-      "id": 6,
-      "panels": [
+      "id": 34,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "custom": {
-                "align": "auto",
-                "cellOptions": {
-                  "type": "auto"
-                },
-                "inspect": false
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              }
-            },
-            "overrides": [
+          "expr": "topk(10, sum by (namespace, pod)(rate(container_cpu_usage_seconds_total{cluster=~\"$cluster\", namespace=~\"$namespace\",container!=\"\",image!=\"\"}[5m])))",
+          "legendFormat": "{{namespace}}/{{pod}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Top 10 CPU",
+      "transformations": [
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
               {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Value"
-                },
-                "properties": [
-                  {
-                    "id": "displayName",
-                    "value": "Memory"
-                  },
-                  {
-                    "id": "unit",
-                    "value": "bytes"
-                  }
-                ]
+                "field": "Value",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic-by-name"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
               }
             ]
           },
-          "gridPos": {
-            "h": 8,
-            "w": 24,
-            "x": 0,
-            "y": 53
-          },
-          "id": 300,
-          "options": {
-            "cellHeight": "sm",
-            "footer": {
-              "countRows": false,
-              "fields": "",
-              "reducer": [
-                "sum"
-              ],
-              "show": false
-            },
-            "showHeader": true
-          },
-          "pluginVersion": "10.0.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "expr": "sum by (service_name, k8s_pod_name)(process_memory_usage_bytes{cluster=~\"$cluster\", service_namespace=\"countly\"})",
-              "format": "table",
-              "instant": true,
-              "legendFormat": "__auto",
-              "refId": "A"
-            }
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 60
+      },
+      "id": 35,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
           ],
-          "title": "OTLP Service Heartbeat",
-          "transformations": [
-            {
-              "id": "organize",
-              "options": {
-                "excludeByName": {
-                  "Time": true,
-                  "__name__": true,
-                  "cluster": true,
-                  "job": true,
-                  "namespace": true,
-                  "service_namespace": true
-                },
-                "includeByName": {},
-                "indexByName": {
-                  "service_name": 0,
-                  "instance": 1,
-                  "k8s_pod_name": 2,
-                  "Value": 3
-                },
-                "renameByName": {
-                  "Value": "Memory"
-                }
-              }
-            }
-          ],
-          "type": "table"
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "topk(10, sum by (namespace, pod)(container_memory_working_set_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\",container!=\"\",image!=\"\"}))",
+          "legendFormat": "{{namespace}}/{{pod}}",
+          "refId": "A"
         }
       ],
+      "title": "Top 10 Memory",
+      "transformations": [
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Value",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 68
+      },
+      "id": 6,
+      "panels": [],
       "title": "Countly OTLP Heartbeat",
       "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Memory"
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 69
+      },
+      "id": 300,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (service_name, k8s_pod_name)(process_memory_usage_bytes{cluster=~\"$cluster\", service_namespace=\"countly\"})",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "OTLP Service Heartbeat",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "cluster": true,
+              "job": true,
+              "namespace": true,
+              "service_namespace": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "service_name": 0,
+              "instance": 1,
+              "k8s_pod_name": 2,
+              "Value": 3
+            },
+            "renameByName": {
+              "Value": "Memory"
+            }
+          }
+        }
+      ],
+      "type": "table"
     }
   ],
   "refresh": "30s",
@@ -2130,7 +2242,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Service Availability & Rollouts",
+  "title": "Service Availability",
   "uid": "countly-service-availability",
   "version": 0,
   "weekStart": ""

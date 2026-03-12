@@ -293,7 +293,7 @@
           "refId": "A"
         }
       ],
-      "title": "Reconcile Errors (1h)",
+      "title": "All Controller Reconcile Errors (1h)",
       "type": "stat"
     },
     {
@@ -352,12 +352,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(strimzi_reconciliations_failed_total{cluster=~\"$cluster\"}) or vector(0)",
+          "expr": "sum(increase(strimzi_reconciliations_failed_total{cluster=~\"$cluster\"}[1h])) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "Strimzi Reconcile Failures",
+      "title": "Strimzi Reconcile Failures (1h)",
       "type": "stat"
     },
     {
@@ -681,7 +681,7 @@
           "refId": "A"
         }
       ],
-      "title": "Reconcile Errors",
+      "title": "cert-manager Reconcile Errors",
       "type": "timeseries"
     },
     {
@@ -1200,98 +1200,6 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "ms"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 30
-      },
-      "id": 107,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "strimzi_certificate_expiration_timestamp_ms{cluster=~\"$cluster\"}",
-          "legendFormat": "{{namespace}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Certificate Expiry",
-      "type": "timeseries"
-    },
-    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -1392,7 +1300,7 @@
           "refId": "A"
         }
       ],
-      "title": "Reconcile Errors",
+      "title": "ClickHouse Reconcile Errors",
       "type": "timeseries"
     },
     {
@@ -1700,13 +1608,13 @@
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "rate(strimzi_auto_restarts_total{cluster=~\"$cluster\"}[5m])",
           "refId": "A",
@@ -1720,7 +1628,7 @@
             "lineWidth": 1,
             "fillOpacity": 10,
             "pointSize": 5,
-            "showPoints": "auto"
+            "showPoints": "never"
           },
           "unit": "ops",
           "thresholds": {
@@ -1746,8 +1654,9 @@
           "mode": "multi"
         },
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["lastNotNull", "max"]
         }
       }
     },
@@ -1757,13 +1666,13 @@
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "prometheus"
       },
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "prometheus"
           },
           "expr": "(strimzi_certificate_expiration_timestamp_ms{cluster=~\"$cluster\"} / 1000 - time()) / 86400",
           "refId": "A",
@@ -1777,7 +1686,7 @@
             "lineWidth": 1,
             "fillOpacity": 10,
             "pointSize": 5,
-            "showPoints": "auto"
+            "showPoints": "never"
           },
           "unit": "d",
           "thresholds": {
@@ -1803,8 +1712,9 @@
           "mode": "multi"
         },
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["lastNotNull", "max"]
         }
       }
     }
@@ -1838,33 +1748,6 @@
         "options": [],
         "query": {
           "query": "label_values(up, cluster)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Namespace",
-        "multi": true,
-        "name": "namespace",
-        "options": [],
-        "query": {
-          "query": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,
