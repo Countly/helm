@@ -11,7 +11,7 @@ data:
   config.alloy: |
 {{- if .Values.traces.enabled }}
     // ===== OTLP TRACE PIPELINE =====
-    // Execution order: receiver → memory_limiter → k8sattributes → [sampler] → batch → exporter
+    // Execution order: receiver → memory_limiter → k8sattributes → add_cluster → [sampler] → batch → exporter
     // (River resolves by reference, so declaration order below is reversed)
 
     // Exporter (final destination)
@@ -165,6 +165,22 @@ data:
         source {
           from = "connection"
         }
+      }
+
+      output {
+        traces  = [otelcol.processor.attributes.add_cluster.input]
+  {{- if .Values.metrics.enabled }}
+        metrics = [otelcol.processor.attributes.add_cluster.input]
+  {{- end }}
+      }
+    }
+
+    // Add cluster resource attribute for multi-cluster filtering
+    otelcol.processor.attributes "add_cluster" {
+      action {
+        key    = "cluster"
+        value  = "{{ .Values.clusterName }}"
+        action = "upsert"
       }
 
       output {

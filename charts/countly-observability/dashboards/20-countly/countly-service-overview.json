@@ -31,6 +31,12 @@
       "id": "table",
       "name": "Table",
       "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "bargauge",
+      "name": "Bar gauge",
+      "version": ""
     }
   ],
   "annotations": {
@@ -60,7 +66,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["overview"],
+      "tags": [
+        "overview"
+      ],
       "targetBlank": false,
       "title": "Overview",
       "type": "dashboards"
@@ -70,7 +78,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["countly"],
+      "tags": [
+        "countly"
+      ],
       "targetBlank": false,
       "title": "Countly",
       "type": "dashboards"
@@ -80,7 +90,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["data"],
+      "tags": [
+        "data"
+      ],
       "targetBlank": false,
       "title": "Data Stores",
       "type": "dashboards"
@@ -90,7 +102,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["platform"],
+      "tags": [
+        "platform"
+      ],
       "targetBlank": false,
       "title": "Platform",
       "type": "dashboards"
@@ -100,7 +114,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["edge"],
+      "tags": [
+        "edge"
+      ],
       "targetBlank": false,
       "title": "Edge",
       "type": "dashboards"
@@ -158,7 +174,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -171,7 +189,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(http_request_total{namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m]))",
+          "expr": "sum(rate(http_request_total{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -224,7 +242,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -237,7 +257,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(http_response_status_total{namespace=~\"$namespace\", service_name=~\"$service_name\", status_class=\"500\"}[5m])) / sum(rate(http_request_total{namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) * 100",
+          "expr": "sum(rate(http_response_status_total{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\", http_status_code=~\"5..\"}[5m])) / sum(rate(http_request_total{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) * 100 or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -290,7 +310,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -303,7 +325,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_bucket{namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_milliseconds_bucket{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) by (le))",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -348,7 +370,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -361,7 +385,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(http_request_in_flight{namespace=~\"$namespace\", service_name=~\"$service_name\"})",
+          "expr": "sum(http_request_in_flight{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"})",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -414,7 +438,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -427,7 +453,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(http_timeout_total{namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m]))",
+          "expr": "sum(rate(http_timeout_total{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -472,7 +498,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -485,7 +513,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(http_connections_total{namespace=~\"$namespace\", service_name=~\"$service_name\"})",
+          "expr": "sum(http_connections_total{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"})",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -569,7 +597,10 @@
       "id": 100,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -585,7 +616,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (service_name)(rate(http_request_total{namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m]))",
+          "expr": "sum by (service_name)(rate(http_request_total{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m]))",
           "legendFormat": "{{service_name}}",
           "refId": "A"
         }
@@ -656,7 +687,10 @@
       "id": 101,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -672,7 +706,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (service_name)(rate(http_response_status_total{namespace=~\"$namespace\", service_name=~\"$service_name\", status_class=\"500\"}[5m])) / sum by (service_name)(rate(http_request_total{namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) * 100",
+          "expr": "sum by (service_name)(rate(http_response_status_total{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\", http_status_code=~\"5..\"}[5m])) / sum by (service_name)(rate(http_request_total{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) * 100",
           "legendFormat": "{{service_name}}",
           "refId": "A"
         }
@@ -743,7 +777,10 @@
       "id": 102,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -759,7 +796,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, service_name)(rate(http_request_duration_bucket{namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le, service_name)(rate(http_request_duration_milliseconds_bucket{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])))",
           "legendFormat": "{{service_name}}",
           "refId": "A"
         }
@@ -843,7 +880,10 @@
       "id": 103,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -859,7 +899,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (status_class)(rate(http_response_status_total{namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m]))",
+          "expr": "sum by (http_status_code)(rate(http_response_status_total{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m]))",
           "legendFormat": "{{status_class}}",
           "refId": "A"
         }
@@ -930,7 +970,10 @@
       "id": 104,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -946,7 +989,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(http_request_queue_duration_bucket{namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_queue_duration_milliseconds_bucket{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) by (le))",
           "legendFormat": "P95 Queue Time",
           "refId": "A"
         }
@@ -1030,7 +1073,10 @@
       "id": 105,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -1046,7 +1092,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(http_request_size_bucket{namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_size_bytes_bucket{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) by (le))",
           "legendFormat": "P95 Request Size",
           "refId": "A"
         }
@@ -1117,7 +1163,10 @@
       "id": 106,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -1133,7 +1182,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(http_response_size_bucket{namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_response_size_bytes_bucket{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) by (le))",
           "legendFormat": "P95 Response Size",
           "refId": "A"
         }
@@ -1217,7 +1266,10 @@
       "id": 107,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -1233,7 +1285,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (service_name)(http_connections_total{namespace=~\"$namespace\", service_name=~\"$service_name\"})",
+          "expr": "sum by (service_name)(http_connections_total{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"})",
           "legendFormat": "{{service_name}}",
           "refId": "A"
         }
@@ -1304,7 +1356,10 @@
       "id": 108,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -1320,13 +1375,126 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(http_connection_duration_bucket{namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_connection_duration_milliseconds_bucket{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])) by (le))",
           "legendFormat": "P95 Connection Duration",
           "refId": "A"
         }
       ],
       "title": "Connection Duration P95",
       "type": "timeseries"
+    },
+    {
+      "id": 8,
+      "title": "Route-Level Insights",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "panels": []
+    },
+    {
+      "id": 109,
+      "title": "Top 10 Slowest Routes P95",
+      "type": "bargauge",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "topk(10, histogram_quantile(0.95, sum by (le, path)(rate(http_request_duration_milliseconds_bucket{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m]))))",
+          "refId": "A",
+          "legendFormat": "{{path}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 51
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "displayMode": "gradient",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 110,
+      "title": "Top 10 Busiest Routes",
+      "type": "bargauge",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "topk(10, sum by (path)(rate(http_request_total{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])))",
+          "refId": "A",
+          "legendFormat": "{{path}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 51
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "displayMode": "gradient",
+        "orientation": "horizontal"
+      }
     },
     {
       "collapsed": true,
@@ -1393,7 +1561,9 @@
             "footer": {
               "countRows": false,
               "fields": "",
-              "reducer": ["sum"],
+              "reducer": [
+                "sum"
+              ],
               "show": false
             },
             "showHeader": true,
@@ -1411,7 +1581,7 @@
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "topk(20, sum by (path, status_code, service_name)(rate(http_error_total{namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])))",
+              "expr": "topk(20, sum by (path, status_code, service_name)(rate(http_error_total{cluster=~\"$cluster\", namespace=~\"$namespace\", service_name=~\"$service_name\"}[5m])))",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -1447,7 +1617,11 @@
   ],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["countly", "http", "red"],
+  "tags": [
+    "countly",
+    "http",
+    "red"
+  ],
   "templating": {
     "list": [
       {
@@ -1514,33 +1688,6 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(up{cluster=~\"$cluster\", namespace=~\"$namespace\"}, job)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Job",
-        "multi": true,
-        "name": "job",
-        "options": [],
-        "query": {
-          "query": "label_values(up{cluster=~\"$cluster\", namespace=~\"$namespace\"}, job)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
         "definition": "label_values(http_request_total{namespace=~\"$namespace\"}, service_name)",
         "hide": 0,
         "includeAll": true,
@@ -1549,7 +1696,7 @@
         "name": "service_name",
         "options": [],
         "query": {
-          "query": "label_values(http_request_total{namespace=~\"$namespace\"}, service_name)",
+          "query": "label_values(http_request_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}, service_name)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,

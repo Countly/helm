@@ -28,7 +28,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["overview"],
+      "tags": [
+        "overview"
+      ],
       "targetBlank": false,
       "title": "Overview",
       "type": "dashboards"
@@ -38,7 +40,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["countly"],
+      "tags": [
+        "countly"
+      ],
       "targetBlank": false,
       "title": "Countly",
       "type": "dashboards"
@@ -48,7 +52,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["data"],
+      "tags": [
+        "data"
+      ],
       "targetBlank": false,
       "title": "Data Stores",
       "type": "dashboards"
@@ -58,7 +64,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["platform"],
+      "tags": [
+        "platform"
+      ],
       "targetBlank": false,
       "title": "Platform",
       "type": "dashboards"
@@ -68,7 +76,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["edge"],
+      "tags": [
+        "edge"
+      ],
       "targetBlank": false,
       "title": "Edge",
       "type": "dashboards"
@@ -125,7 +135,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -139,7 +151,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(kube_pod_status_phase{namespace=~\"$namespace\"})",
+          "expr": "sum(kube_pod_status_phase{cluster=~\"$cluster\", namespace=~\"$namespace\"})",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -191,7 +203,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -205,7 +219,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(kube_pod_status_phase{namespace=~\"$namespace\", phase=\"Pending\"}) or vector(0)",
+          "expr": "sum(kube_pod_status_phase{cluster=~\"$cluster\", namespace=~\"$namespace\", phase=\"Pending\"}) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -253,7 +267,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -267,7 +283,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(kube_pod_status_phase{namespace=~\"$namespace\", phase=\"Failed\"}) or vector(0)",
+          "expr": "sum(kube_pod_status_phase{cluster=~\"$cluster\", namespace=~\"$namespace\", phase=\"Failed\"}) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -315,7 +331,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -329,7 +347,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(kube_node_status_condition{condition=\"Ready\", status=\"true\"})",
+          "expr": "sum(kube_node_status_condition{cluster=~\"$cluster\", condition=\"Ready\", status=\"true\"})",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -373,7 +391,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -387,7 +407,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(kube_persistentvolumeclaim_status_phase{namespace=~\"$namespace\", phase=\"Bound\"})",
+          "expr": "sum(kube_persistentvolumeclaim_status_phase{cluster=~\"$cluster\", namespace=~\"$namespace\", phase=\"Bound\"})",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -435,7 +455,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -449,7 +471,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(kube_persistentvolumeclaim_status_phase{namespace=~\"$namespace\", phase=\"Pending\"}) or vector(0)",
+          "expr": "sum(kube_persistentvolumeclaim_status_phase{cluster=~\"$cluster\", namespace=~\"$namespace\", phase=\"Pending\"}) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -497,7 +519,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -511,7 +535,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(kube_horizontalpodautoscaler_status_current_replicas{namespace=~\"$namespace\"} == kube_horizontalpodautoscaler_spec_max_replicas{namespace=~\"$namespace\"}) or vector(0)",
+          "expr": "count(kube_horizontalpodautoscaler_status_current_replicas{cluster=~\"$cluster\", namespace=~\"$namespace\"} == kube_horizontalpodautoscaler_spec_max_replicas{cluster=~\"$cluster\", namespace=~\"$namespace\"}) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -559,7 +583,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -573,7 +599,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(kube_poddisruptionbudget_status_pod_disruptions_allowed{namespace=~\"$namespace\"} == 0) or vector(0)",
+          "expr": "count(kube_poddisruptionbudget_status_pod_disruptions_allowed{cluster=~\"$cluster\", namespace=~\"$namespace\"} == 0) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -659,7 +685,10 @@
       "id": 100,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -675,7 +704,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (namespace, phase)(kube_pod_status_phase{namespace=~\"$namespace\"})",
+          "expr": "sum by (namespace, phase)(kube_pod_status_phase{cluster=~\"$cluster\", namespace=~\"$namespace\"})",
           "legendFormat": "{{namespace}} - {{phase}}",
           "refId": "A"
         }
@@ -748,7 +777,10 @@
       "id": 101,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -764,7 +796,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(kube_pod_status_phase{namespace=~\"$namespace\", phase=\"Pending\"})",
+          "expr": "sum(kube_pod_status_phase{cluster=~\"$cluster\", namespace=~\"$namespace\", phase=\"Pending\"})",
           "legendFormat": "Pending",
           "refId": "A"
         },
@@ -773,7 +805,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(kube_pod_status_phase{namespace=~\"$namespace\", phase=\"Failed\"})",
+          "expr": "sum(kube_pod_status_phase{cluster=~\"$cluster\", namespace=~\"$namespace\", phase=\"Failed\"})",
           "legendFormat": "Failed",
           "refId": "B"
         }
@@ -836,7 +868,9 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": ["sum"],
+          "reducer": [
+            "sum"
+          ],
           "show": false
         },
         "showHeader": true
@@ -848,7 +882,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "kube_node_status_condition{status=\"true\"} == 1",
+          "expr": "kube_node_status_condition{cluster=~\"$cluster\", status=\"true\"} == 1",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -959,7 +993,10 @@
       "id": 103,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -975,7 +1012,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (node)(kube_pod_container_resource_requests{resource=\"cpu\", namespace=~\"$namespace\"})",
+          "expr": "sum by (node)(kube_pod_container_resource_requests{cluster=~\"$cluster\", resource=\"cpu\", namespace=~\"$namespace\"})",
           "legendFormat": "Requests {{node}}",
           "refId": "A"
         },
@@ -984,7 +1021,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (node)(kube_node_status_allocatable{resource=\"cpu\"})",
+          "expr": "sum by (node)(kube_node_status_allocatable{cluster=~\"$cluster\", resource=\"cpu\"})",
           "legendFormat": "Allocatable {{node}}",
           "refId": "B"
         }
@@ -1057,7 +1094,10 @@
       "id": 104,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1073,7 +1113,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (node)(kube_pod_container_resource_requests{resource=\"memory\", namespace=~\"$namespace\"})",
+          "expr": "sum by (node)(kube_pod_container_resource_requests{cluster=~\"$cluster\", resource=\"memory\", namespace=~\"$namespace\"})",
           "legendFormat": "Requests {{node}}",
           "refId": "A"
         },
@@ -1082,7 +1122,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (node)(kube_node_status_allocatable{resource=\"memory\"})",
+          "expr": "sum by (node)(kube_node_status_allocatable{cluster=~\"$cluster\", resource=\"memory\"})",
           "legendFormat": "Allocatable {{node}}",
           "refId": "B"
         }
@@ -1168,7 +1208,10 @@
       "id": 105,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1184,7 +1227,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{namespace=~\"$namespace\"}",
+          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{cluster=~\"$cluster\", namespace=~\"$namespace\"}",
           "legendFormat": "Desired {{horizontalpodautoscaler}}",
           "refId": "A"
         },
@@ -1193,7 +1236,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "kube_horizontalpodautoscaler_status_current_replicas{namespace=~\"$namespace\"}",
+          "expr": "kube_horizontalpodautoscaler_status_current_replicas{cluster=~\"$cluster\", namespace=~\"$namespace\"}",
           "legendFormat": "Current {{horizontalpodautoscaler}}",
           "refId": "B"
         }
@@ -1266,7 +1309,10 @@
       "id": 106,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1282,7 +1328,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "kube_poddisruptionbudget_status_pod_disruptions_allowed{namespace=~\"$namespace\"}",
+          "expr": "kube_poddisruptionbudget_status_pod_disruptions_allowed{cluster=~\"$cluster\", namespace=~\"$namespace\"}",
           "legendFormat": "{{poddisruptionbudget}}",
           "refId": "A"
         }
@@ -1345,7 +1391,9 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": ["sum"],
+          "reducer": [
+            "sum"
+          ],
           "show": false
         },
         "showHeader": true
@@ -1357,7 +1405,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "kube_persistentvolumeclaim_status_phase{namespace=~\"$namespace\"} == 1",
+          "expr": "kube_persistentvolumeclaim_status_phase{cluster=~\"$cluster\", namespace=~\"$namespace\"} == 1",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -1433,7 +1481,9 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": ["sum"],
+          "reducer": [
+            "sum"
+          ],
           "show": false
         },
         "showHeader": true
@@ -1445,7 +1495,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "kube_persistentvolume_capacity_bytes",
+          "expr": "kube_persistentvolume_capacity_bytes{cluster=~\"$cluster\"}",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -1528,7 +1578,9 @@
             "footer": {
               "countRows": false,
               "fields": "",
-              "reducer": ["sum"],
+              "reducer": [
+                "sum"
+              ],
               "show": false
             },
             "showHeader": true
@@ -1540,7 +1592,7 @@
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "kube_pod_container_status_waiting{namespace=~\"$namespace\"} == 1",
+              "expr": "kube_pod_container_status_waiting{cluster=~\"$cluster\", namespace=~\"$namespace\"} == 1",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -1615,7 +1667,9 @@
             "footer": {
               "countRows": false,
               "fields": "",
-              "reducer": ["sum"],
+              "reducer": [
+                "sum"
+              ],
               "show": false
             },
             "showHeader": true
@@ -1627,7 +1681,7 @@
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\"} > 0",
+              "expr": "kube_pod_container_status_last_terminated_reason{cluster=~\"$cluster\", namespace=~\"$namespace\"} > 0",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -1664,11 +1718,155 @@
       ],
       "title": "Container Issues",
       "type": "row"
+    },
+    {
+      "id": 7,
+      "title": "Job & CronJob Status",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "panels": []
+    },
+    {
+      "id": 109,
+      "title": "Failed Jobs (1h)",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "count(kube_job_status_failed{cluster=~\"$cluster\", namespace=~\"$namespace\"} > 0) or vector(0)",
+          "refId": "A",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 55
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 110,
+      "title": "CronJob Last Success Age",
+      "type": "table",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "time() - kube_cronjob_status_last_successful_time{cluster=~\"$cluster\", namespace=~\"$namespace\"}",
+          "refId": "A",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 3600
+              },
+              {
+                "color": "red",
+                "value": 86400
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 18,
+        "x": 6,
+        "y": 55
+      },
+      "options": {
+        "sortBy": [
+          {
+            "displayName": "Value",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true
+            },
+            "indexByName": {}
+          }
+        }
+      ]
     }
   ],
   "refresh": "1m",
   "schemaVersion": 39,
-  "tags": ["platform", "kubernetes", "workloads"],
+  "tags": [
+    "platform",
+    "kubernetes",
+    "workloads"
+  ],
   "templating": {
     "list": [
       {
@@ -1717,33 +1915,6 @@
         "options": [],
         "query": {
           "query": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(up{cluster=~\"$cluster\", namespace=~\"$namespace\"}, job)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Job",
-        "multi": true,
-        "name": "job",
-        "options": [],
-        "query": {
-          "query": "label_values(up{cluster=~\"$cluster\", namespace=~\"$namespace\"}, job)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,

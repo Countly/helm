@@ -47,6 +47,14 @@ data:
     lowercaseOutputName: true
     lowercaseOutputLabelNames: true
     rules:
+      - pattern: "com.clickhouse<type=ClickHouseKafkaConnector, name=SinkTask(.*), version=(.*)><>(.*): (.*)"
+        name: "clickhouse_kafka_connect"
+        type: COUNTER
+        labels:
+          sinktask: "$1"
+          version: "$2"
+          attribute: "$3"
+        help: "ClickHouseKafkaConnector metrics"
       - pattern: "kafka.connect<type=(.+), connector=(.+), task=(.+)><>(.+): (.+)"
         name: "kafka_connect_$1_$4"
         type: GAUGE

@@ -28,7 +28,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["overview"],
+      "tags": [
+        "overview"
+      ],
       "targetBlank": false,
       "title": "Overview",
       "type": "dashboards"
@@ -38,7 +40,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["countly"],
+      "tags": [
+        "countly"
+      ],
       "targetBlank": false,
       "title": "Countly",
       "type": "dashboards"
@@ -48,7 +52,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["data"],
+      "tags": [
+        "data"
+      ],
       "targetBlank": false,
       "title": "Data Stores",
       "type": "dashboards"
@@ -58,7 +64,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["platform"],
+      "tags": [
+        "platform"
+      ],
       "targetBlank": false,
       "title": "Platform",
       "type": "dashboards"
@@ -68,7 +76,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["edge"],
+      "tags": [
+        "edge"
+      ],
       "targetBlank": false,
       "title": "Edge",
       "type": "dashboards"
@@ -134,7 +144,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -148,7 +160,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "avg(100 - (avg by (instance)(rate(node_cpu_seconds_total{mode=\"idle\", instance=~\"$node.*\"}[5m])) * 100))",
+          "expr": "avg(100 - (avg by (instance)(rate(node_cpu_seconds_total{cluster=~\"$cluster\", mode=\"idle\", node=~\"$node\"}[5m])) * 100))",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -201,7 +213,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -215,7 +229,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "avg((1 - node_memory_MemAvailable_bytes{instance=~\"$node.*\"} / node_memory_MemTotal_bytes{instance=~\"$node.*\"}) * 100)",
+          "expr": "avg((1 - node_memory_MemAvailable_bytes{cluster=~\"$cluster\", node=~\"$node\"} / node_memory_MemTotal_bytes{cluster=~\"$cluster\", node=~\"$node\"}) * 100)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -268,7 +282,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -282,7 +298,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "min(node_filesystem_avail_bytes{instance=~\"$node.*\", fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{instance=~\"$node.*\", fstype!~\"tmpfs|overlay\"} * 100)",
+          "expr": "min(node_filesystem_avail_bytes{cluster=~\"$cluster\", node=~\"$node\", fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{cluster=~\"$cluster\", node=~\"$node\", fstype!~\"tmpfs|overlay\"} * 100)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -335,7 +351,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -349,7 +367,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(node_network_receive_errs_total{instance=~\"$node.*\"}[5m])) + sum(rate(node_network_transmit_errs_total{instance=~\"$node.*\"}[5m]))",
+          "expr": "sum(rate(node_network_receive_errs_total{cluster=~\"$cluster\", node=~\"$node\"}[5m])) + sum(rate(node_network_transmit_errs_total{cluster=~\"$cluster\", node=~\"$node\"}[5m]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -397,7 +415,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -411,7 +431,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(node_vmstat_oom_kill{instance=~\"$node.*\"}[1h])) or vector(0)",
+          "expr": "sum(increase(node_vmstat_oom_kill{cluster=~\"$cluster\", node=~\"$node\"}[1h])) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -464,7 +484,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -478,7 +500,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "avg(node_load5{instance=~\"$node.*\"} / count without (cpu)(node_cpu_seconds_total{mode=\"idle\", instance=~\"$node.*\"}))",
+          "expr": "avg(node_load5{cluster=~\"$cluster\", node=~\"$node\"} / count without (cpu, mode)(node_cpu_seconds_total{cluster=~\"$cluster\", mode=\"idle\", node=~\"$node\"}))",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -564,7 +586,10 @@
       "id": 100,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -580,7 +605,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "100 - (avg by (instance)(rate(node_cpu_seconds_total{mode=\"idle\", instance=~\"$node.*\"}[5m])) * 100)",
+          "expr": "100 - (avg by (instance)(rate(node_cpu_seconds_total{cluster=~\"$cluster\", mode=\"idle\", node=~\"$node\"}[5m])) * 100)",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -653,7 +678,10 @@
       "id": 101,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -669,7 +697,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "node_load1{instance=~\"$node.*\"}",
+          "expr": "node_load1{cluster=~\"$cluster\", node=~\"$node\"}",
           "legendFormat": "1m {{instance}}",
           "refId": "A"
         },
@@ -678,7 +706,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "node_load5{instance=~\"$node.*\"}",
+          "expr": "node_load5{cluster=~\"$cluster\", node=~\"$node\"}",
           "legendFormat": "5m {{instance}}",
           "refId": "B"
         },
@@ -687,7 +715,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "node_load15{instance=~\"$node.*\"}",
+          "expr": "node_load15{cluster=~\"$cluster\", node=~\"$node\"}",
           "legendFormat": "15m {{instance}}",
           "refId": "C"
         }
@@ -773,7 +801,10 @@
       "id": 102,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -789,7 +820,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(1 - node_memory_MemAvailable_bytes{instance=~\"$node.*\"} / node_memory_MemTotal_bytes{instance=~\"$node.*\"}) * 100",
+          "expr": "(1 - node_memory_MemAvailable_bytes{cluster=~\"$cluster\", node=~\"$node\"} / node_memory_MemTotal_bytes{cluster=~\"$cluster\", node=~\"$node\"}) * 100",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -862,7 +893,10 @@
       "id": 103,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -878,7 +912,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "node_memory_SwapTotal_bytes{instance=~\"$node.*\"} - node_memory_SwapFree_bytes{instance=~\"$node.*\"}",
+          "expr": "node_memory_SwapTotal_bytes{cluster=~\"$cluster\", node=~\"$node\"} - node_memory_SwapFree_bytes{cluster=~\"$cluster\", node=~\"$node\"}",
           "legendFormat": "Used {{instance}}",
           "refId": "A"
         },
@@ -887,7 +921,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "node_memory_SwapTotal_bytes{instance=~\"$node.*\"}",
+          "expr": "node_memory_SwapTotal_bytes{cluster=~\"$cluster\", node=~\"$node\"}",
           "legendFormat": "Total {{instance}}",
           "refId": "B"
         }
@@ -973,7 +1007,10 @@
       "id": 104,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -989,7 +1026,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(1 - node_filesystem_avail_bytes{instance=~\"$node.*\", fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{instance=~\"$node.*\", fstype!~\"tmpfs|overlay\"}) * 100",
+          "expr": "(1 - node_filesystem_avail_bytes{cluster=~\"$cluster\", node=~\"$node\", fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{cluster=~\"$cluster\", node=~\"$node\", fstype!~\"tmpfs|overlay\"}) * 100",
           "legendFormat": "{{instance}} {{mountpoint}}",
           "refId": "A"
         }
@@ -1062,7 +1099,10 @@
       "id": 105,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1078,7 +1118,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(1 - node_filesystem_files_free{instance=~\"$node.*\", fstype!~\"tmpfs|overlay\"} / node_filesystem_files{instance=~\"$node.*\", fstype!~\"tmpfs|overlay\"}) * 100",
+          "expr": "(1 - node_filesystem_files_free{cluster=~\"$cluster\", node=~\"$node\", fstype!~\"tmpfs|overlay\"} / node_filesystem_files{cluster=~\"$cluster\", node=~\"$node\", fstype!~\"tmpfs|overlay\"}) * 100",
           "legendFormat": "{{instance}} {{mountpoint}}",
           "refId": "A"
         }
@@ -1164,7 +1204,10 @@
       "id": 106,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1180,7 +1223,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(node_pressure_io_waiting_seconds_total{instance=~\"$node.*\"}[5m])",
+          "expr": "rate(node_pressure_io_waiting_seconds_total{cluster=~\"$cluster\", node=~\"$node\"}[5m])",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -1253,7 +1296,10 @@
       "id": 107,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1269,7 +1315,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(node_pressure_io_stalled_seconds_total{instance=~\"$node.*\"}[5m])",
+          "expr": "rate(node_pressure_io_stalled_seconds_total{cluster=~\"$cluster\", node=~\"$node\"}[5m])",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -1355,7 +1401,10 @@
       "id": 108,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1371,7 +1420,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(node_network_receive_bytes_total{instance=~\"$node.*\", device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*\"}[5m])",
+          "expr": "rate(node_network_receive_bytes_total{cluster=~\"$cluster\", node=~\"$node\", device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*\"}[5m])",
           "legendFormat": "{{instance}} {{device}} rx",
           "refId": "A"
         },
@@ -1380,7 +1429,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(node_network_transmit_bytes_total{instance=~\"$node.*\", device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*\"}[5m])",
+          "expr": "rate(node_network_transmit_bytes_total{cluster=~\"$cluster\", node=~\"$node\", device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*\"}[5m])",
           "legendFormat": "{{instance}} {{device}} tx",
           "refId": "B"
         }
@@ -1453,7 +1502,10 @@
       "id": 109,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1469,7 +1521,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(node_network_receive_errs_total{instance=~\"$node.*\", device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*\"}[5m])",
+          "expr": "rate(node_network_receive_errs_total{cluster=~\"$cluster\", node=~\"$node\", device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*\"}[5m])",
           "legendFormat": "{{instance}} {{device}} rx errors",
           "refId": "A"
         },
@@ -1478,7 +1530,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(node_network_transmit_errs_total{instance=~\"$node.*\", device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*\"}[5m])",
+          "expr": "rate(node_network_transmit_errs_total{cluster=~\"$cluster\", node=~\"$node\", device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*\"}[5m])",
           "legendFormat": "{{instance}} {{device}} tx errors",
           "refId": "B"
         },
@@ -1487,7 +1539,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(node_network_receive_drop_total{instance=~\"$node.*\", device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*\"}[5m])",
+          "expr": "rate(node_network_receive_drop_total{cluster=~\"$cluster\", node=~\"$node\", device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*\"}[5m])",
           "legendFormat": "{{instance}} {{device}} rx drops",
           "refId": "C"
         },
@@ -1496,7 +1548,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(node_network_transmit_drop_total{instance=~\"$node.*\", device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*\"}[5m])",
+          "expr": "rate(node_network_transmit_drop_total{cluster=~\"$cluster\", node=~\"$node\", device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*\"}[5m])",
           "legendFormat": "{{instance}} {{device}} tx drops",
           "refId": "D"
         }
@@ -1582,7 +1634,10 @@
       "id": 110,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1598,7 +1653,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(node_netstat_Tcp_RetransSegs{instance=~\"$node.*\"}[5m])",
+          "expr": "rate(node_netstat_Tcp_RetransSegs{cluster=~\"$cluster\", node=~\"$node\"}[5m])",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -1671,7 +1726,10 @@
       "id": 111,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1687,7 +1745,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(node_netstat_TcpExt_ListenDrops{instance=~\"$node.*\"}[5m])",
+          "expr": "rate(node_netstat_TcpExt_ListenDrops{cluster=~\"$cluster\", node=~\"$node\"}[5m])",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -1760,7 +1818,10 @@
       "id": 112,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1776,7 +1837,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(node_netstat_TcpExt_TCPTimeouts{instance=~\"$node.*\"}[5m])",
+          "expr": "rate(node_netstat_TcpExt_TCPTimeouts{cluster=~\"$cluster\", node=~\"$node\"}[5m])",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -1859,7 +1920,10 @@
           "id": 300,
           "options": {
             "legend": {
-              "calcs": ["lastNotNull", "max"],
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
               "displayMode": "table",
               "placement": "right",
               "showLegend": true
@@ -1875,7 +1939,7 @@
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "sum by (namespace, pod)(rate(container_cpu_cfs_throttled_periods_total{namespace=~\"$namespace\"}[5m])) / sum by (namespace, pod)(rate(container_cpu_cfs_periods_total{namespace=~\"$namespace\"}[5m])) > 0.01",
+              "expr": "sum by (namespace, pod)(rate(container_cpu_cfs_throttled_periods_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}[5m])) / sum by (namespace, pod)(rate(container_cpu_cfs_periods_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}[5m])) > 0.01",
               "legendFormat": "{{namespace}}/{{pod}}",
               "refId": "A"
             }
@@ -1948,7 +2012,10 @@
           "id": 301,
           "options": {
             "legend": {
-              "calcs": ["lastNotNull", "max"],
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
               "displayMode": "table",
               "placement": "right",
               "showLegend": true
@@ -1964,7 +2031,7 @@
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "topk(10, sum by (namespace, pod)(container_memory_working_set_bytes{namespace=~\"$namespace\", container!=\"\"}))",
+              "expr": "topk(10, sum by (namespace, pod)(container_memory_working_set_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\", container!=\"\"}))",
               "legendFormat": "{{namespace}}/{{pod}}",
               "refId": "A"
             }
@@ -1979,7 +2046,11 @@
   ],
   "refresh": "1m",
   "schemaVersion": 39,
-  "tags": ["platform", "nodes", "infrastructure"],
+  "tags": [
+    "platform",
+    "nodes",
+    "infrastructure"
+  ],
   "templating": {
     "list": [
       {
@@ -2028,33 +2099,6 @@
         "options": [],
         "query": {
           "query": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(up{cluster=~\"$cluster\", namespace=~\"$namespace\"}, job)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Job",
-        "multi": true,
-        "name": "job",
-        "options": [],
-        "query": {
-          "query": "label_values(up{cluster=~\"$cluster\", namespace=~\"$namespace\"}, job)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,

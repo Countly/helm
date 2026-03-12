@@ -28,7 +28,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["overview"],
+      "tags": [
+        "overview"
+      ],
       "targetBlank": false,
       "title": "Overview",
       "type": "dashboards"
@@ -38,7 +40,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["countly"],
+      "tags": [
+        "countly"
+      ],
       "targetBlank": false,
       "title": "Countly",
       "type": "dashboards"
@@ -48,7 +52,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["data"],
+      "tags": [
+        "data"
+      ],
       "targetBlank": false,
       "title": "Data Stores",
       "type": "dashboards"
@@ -58,7 +64,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["platform"],
+      "tags": [
+        "platform"
+      ],
       "targetBlank": false,
       "title": "Platform",
       "type": "dashboards"
@@ -68,7 +76,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["edge"],
+      "tags": [
+        "edge"
+      ],
       "targetBlank": false,
       "title": "Edge",
       "type": "dashboards"
@@ -129,7 +139,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -143,7 +155,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(up{namespace=~\"$namespace\"} == 1)",
+          "expr": "count(up{cluster=~\"$cluster\", namespace=~\"$namespace\"} == 1)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -191,7 +203,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -205,7 +219,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(up{namespace=~\"$namespace\"} == 0) or vector(0)",
+          "expr": "count(up{cluster=~\"$cluster\", namespace=~\"$namespace\"} == 0) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -257,7 +271,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -271,7 +287,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\"} > 0) or vector(0)",
+          "expr": "count(kube_deployment_status_replicas_unavailable{cluster=~\"$cluster\", namespace=~\"$namespace\"} > 0) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -323,7 +339,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -337,7 +355,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\"}[15m])) or vector(0)",
+          "expr": "sum(increase(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}[15m])) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -389,7 +407,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -403,7 +423,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(container_oom_events_total{namespace=~\"$namespace\"}[1h])) or vector(0)",
+          "expr": "sum(increase(container_oom_events_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}[1h])) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -451,7 +471,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -465,7 +487,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count((kube_statefulset_replicas{namespace=~\"$namespace\"} - kube_statefulset_status_replicas_ready{namespace=~\"$namespace\"}) > 0) or vector(0)",
+          "expr": "count((kube_statefulset_replicas{cluster=~\"$cluster\", namespace=~\"$namespace\"} - kube_statefulset_status_replicas_ready{cluster=~\"$cluster\", namespace=~\"$namespace\"}) > 0) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -513,7 +535,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -527,7 +551,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(kube_daemonset_status_number_unavailable{namespace=~\"$namespace\"}) or vector(0)",
+          "expr": "sum(kube_daemonset_status_number_unavailable{cluster=~\"$cluster\", namespace=~\"$namespace\"}) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -579,7 +603,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -593,7 +619,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(process_uptime_seconds{service_namespace=\"countly\"})",
+          "expr": "count(count by (service_name)(http_request_total{cluster=~\"$cluster\", service_namespace=\"countly\"}))",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -608,6 +634,287 @@
         "w": 24,
         "x": 0,
         "y": 5
+      },
+      "id": 7,
+      "panels": [],
+      "title": "Ingress Health",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 6
+      },
+      "id": 28,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(nginx_ingress_controller_upstream_server_response_latency_ms_count{cluster=~\"$cluster\", service!=\"countly-observability-grafana\"}[5m]))",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "Ingress Req/s",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.1
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 6
+      },
+      "id": 29,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(100 * sum(rate(nginx_ingress_controller_upstream_server_response_latency_ms_count{cluster=~\"$cluster\", service!=\"countly-observability-grafana\", code=~\"4..|5..\"}[5m])) / sum(rate(nginx_ingress_controller_upstream_server_response_latency_ms_count{cluster=~\"$cluster\", service!=\"countly-observability-grafana\"}[5m]))) or vector(0)",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "Error Rate %",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 500
+              },
+              {
+                "color": "red",
+                "value": 2000
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 6
+      },
+      "id": 30,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.90, sum by(le)(rate(nginx_ingress_controller_upstream_server_response_latency_ms_bucket{cluster=~\"$cluster\", service!=\"countly-observability-grafana\"}[5m])))",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "p90 Latency",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1000
+              },
+              {
+                "color": "red",
+                "value": 5000
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 6
+      },
+      "id": 31,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.99, sum by(le)(rate(nginx_ingress_controller_upstream_server_response_latency_ms_bucket{cluster=~\"$cluster\", service!=\"countly-observability-grafana\"}[5m])))",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "p99 Latency",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 10
       },
       "id": 2,
       "panels": [],
@@ -674,12 +981,15 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 6
+        "y": 11
       },
       "id": 100,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -695,7 +1005,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "kube_deployment_status_replicas_available{namespace=~\"$namespace\"} / kube_deployment_spec_replicas{namespace=~\"$namespace\"}",
+          "expr": "kube_deployment_status_replicas_available{cluster=~\"$cluster\", namespace=~\"$namespace\"} / kube_deployment_spec_replicas{cluster=~\"$cluster\", namespace=~\"$namespace\"}",
           "legendFormat": "{{deployment}}",
           "refId": "A"
         }
@@ -709,7 +1019,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 18
       },
       "id": 3,
       "panels": [],
@@ -776,12 +1086,15 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 19
       },
       "id": 101,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -797,7 +1110,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "kube_statefulset_status_replicas_ready{namespace=~\"$namespace\"} / kube_statefulset_replicas{namespace=~\"$namespace\"}",
+          "expr": "kube_statefulset_status_replicas_ready{cluster=~\"$cluster\", namespace=~\"$namespace\"} / kube_statefulset_replicas{cluster=~\"$cluster\", namespace=~\"$namespace\"}",
           "legendFormat": "{{statefulset}}",
           "refId": "A"
         }
@@ -865,12 +1178,15 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 19
       },
       "id": 102,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -886,7 +1202,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "kube_daemonset_status_number_ready{namespace=~\"$namespace\"} / kube_daemonset_status_desired_number_scheduled{namespace=~\"$namespace\"}",
+          "expr": "kube_daemonset_status_number_ready{cluster=~\"$cluster\", namespace=~\"$namespace\"} / kube_daemonset_status_desired_number_scheduled{cluster=~\"$cluster\", namespace=~\"$namespace\"}",
           "legendFormat": "{{daemonset}}",
           "refId": "A"
         }
@@ -900,7 +1216,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 26
       },
       "id": 4,
       "panels": [],
@@ -967,12 +1283,15 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 27
       },
       "id": 103,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -988,7 +1307,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (phase)(kube_pod_status_phase{namespace=~\"$namespace\"})",
+          "expr": "sum by (phase)(kube_pod_status_phase{cluster=~\"$cluster\", namespace=~\"$namespace\"})",
           "legendFormat": "{{phase}}",
           "refId": "A"
         }
@@ -1056,12 +1375,15 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 27
       },
       "id": 104,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1077,7 +1399,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (namespace, pod)(rate(kube_pod_container_status_restarts_total{namespace=~\"$namespace\"}[5m])) > 0",
+          "expr": "(sum by (namespace, pod)(rate(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}[5m])) > 0) or vector(0)",
           "legendFormat": "{{namespace}}/{{pod}}",
           "refId": "A"
         }
@@ -1091,7 +1413,204 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 29
+        "y": 37
+      },
+      "id": 8,
+      "panels": [],
+      "title": "Resource Pressure",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 38
+      },
+      "id": 32,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (namespace)(rate(container_cpu_usage_seconds_total{cluster=~\"$cluster\", namespace=~\"$namespace\",container!=\"\",image!=\"\"}[5m])) / sum by (namespace)(kube_pod_container_resource_limits{cluster=~\"$cluster\", namespace=~\"$namespace\",resource=\"cpu\",container!=\"\"})",
+          "legendFormat": "{{namespace}}",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage vs Limits",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 38
+      },
+      "id": 33,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (namespace)(container_memory_working_set_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\",container!=\"\",image!=\"\"}) / sum by (namespace)(kube_pod_container_resource_limits{cluster=~\"$cluster\", namespace=~\"$namespace\",resource=\"memory\",container!=\"\"})",
+          "legendFormat": "{{namespace}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Memory Usage vs Limits",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 43
       },
       "id": 5,
       "panels": [],
@@ -1157,12 +1676,15 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 30
+        "y": 44
       },
       "id": 105,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1178,7 +1700,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (namespace, pod)(rate(container_oom_events_total{namespace=~\"$namespace\"}[5m])) > 0",
+          "expr": "(sum by (namespace, pod)(rate(container_oom_events_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}[5m])) > 0) or vector(0)",
           "legendFormat": "{{namespace}}/{{pod}}",
           "refId": "A"
         }
@@ -1220,7 +1742,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 30
+        "y": 44
       },
       "id": 200,
       "options": {
@@ -1228,7 +1750,9 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": ["sum"],
+          "reducer": [
+            "sum"
+          ],
           "show": false
         },
         "showHeader": true
@@ -1240,7 +1764,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\"} > 0",
+          "expr": "kube_pod_container_status_last_terminated_reason{cluster=~\"$cluster\", namespace=~\"$namespace\"} > 0",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -1280,7 +1804,145 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 37
+        "y": 51
+      },
+      "id": 9,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic-by-name"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 52
+          },
+          "id": 34,
+          "options": {
+            "displayMode": "gradient",
+            "minVizHeight": 10,
+            "minVizWidth": 0,
+            "namePlacement": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true,
+            "sizing": "auto",
+            "valueMode": "color"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "topk(10, sum by (namespace, pod)(rate(container_cpu_usage_seconds_total{cluster=~\"$cluster\", namespace=~\"$namespace\",container!=\"\",image!=\"\"}[5m])))",
+              "legendFormat": "{{namespace}}/{{pod}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Top 10 CPU",
+          "type": "bargauge"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic-by-name"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 52
+          },
+          "id": 35,
+          "options": {
+            "displayMode": "gradient",
+            "minVizHeight": 10,
+            "minVizWidth": 0,
+            "namePlacement": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true,
+            "sizing": "auto",
+            "valueMode": "color"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "topk(10, sum by (namespace, pod)(container_memory_working_set_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\",container!=\"\",image!=\"\"}))",
+              "legendFormat": "{{namespace}}/{{pod}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Top 10 Memory",
+          "type": "bargauge"
+        }
+      ],
+      "title": "Top Resource Consumers",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 52
       },
       "id": 6,
       "panels": [
@@ -1321,7 +1983,11 @@
                 "properties": [
                   {
                     "id": "displayName",
-                    "value": "Uptime (s)"
+                    "value": "Memory"
+                  },
+                  {
+                    "id": "unit",
+                    "value": "bytes"
                   }
                 ]
               }
@@ -1331,7 +1997,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 38
+            "y": 53
           },
           "id": 300,
           "options": {
@@ -1339,7 +2005,9 @@
             "footer": {
               "countRows": false,
               "fields": "",
-              "reducer": ["sum"],
+              "reducer": [
+                "sum"
+              ],
               "show": false
             },
             "showHeader": true
@@ -1351,7 +2019,7 @@
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "process_uptime_seconds{service_namespace=\"countly\"}",
+              "expr": "sum by (service_name, k8s_pod_name)(process_memory_usage_bytes{cluster=~\"$cluster\", service_namespace=\"countly\"})",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -1379,7 +2047,7 @@
                   "Value": 3
                 },
                 "renameByName": {
-                  "Value": "Uptime (s)"
+                  "Value": "Memory"
                 }
               }
             }
@@ -1393,7 +2061,11 @@
   ],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["overview", "availability", "alerts"],
+  "tags": [
+    "overview",
+    "availability",
+    "alerts"
+  ],
   "templating": {
     "list": [
       {
@@ -1442,33 +2114,6 @@
         "options": [],
         "query": {
           "query": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(up{cluster=~\"$cluster\", namespace=~\"$namespace\"}, job)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Job",
-        "multi": true,
-        "name": "job",
-        "options": [],
-        "query": {
-          "query": "label_values(up{cluster=~\"$cluster\", namespace=~\"$namespace\"}, job)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,

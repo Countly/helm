@@ -54,7 +54,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["overview"],
+      "tags": [
+        "overview"
+      ],
       "targetBlank": false,
       "title": "Overview",
       "type": "dashboards"
@@ -64,7 +66,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["countly"],
+      "tags": [
+        "countly"
+      ],
       "targetBlank": false,
       "title": "Countly",
       "type": "dashboards"
@@ -74,7 +78,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["data"],
+      "tags": [
+        "data"
+      ],
       "targetBlank": false,
       "title": "Data Stores",
       "type": "dashboards"
@@ -84,7 +90,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["platform"],
+      "tags": [
+        "platform"
+      ],
       "targetBlank": false,
       "title": "Platform",
       "type": "dashboards"
@@ -94,7 +102,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["edge"],
+      "tags": [
+        "edge"
+      ],
       "targetBlank": false,
       "title": "Edge",
       "type": "dashboards"
@@ -104,29 +114,53 @@
   "panels": [
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
       "title": "ClickHouse Health",
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 50 },
-              { "color": "red", "value": 200 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 200
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 4, "w": 3, "x": 0, "y": 1 },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 1
+      },
       "id": 20,
       "options": {
         "colorMode": "background",
@@ -134,7 +168,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -143,8 +179,11 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(ClickHouseMetrics_Query{instance=~\"$instance\"})",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(ClickHouseMetrics_Query{cluster=~\"$cluster\", instance=~\"$instance\"})",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -153,24 +192,43 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 4294967296 },
-              { "color": "red", "value": 8589934592 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 4294967296
+              },
+              {
+                "color": "red",
+                "value": 8589934592
+              }
             ]
           },
           "unit": "bytes"
         },
         "overrides": []
       },
-      "gridPos": { "h": 4, "w": 3, "x": 3, "y": 1 },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 1
+      },
       "id": 21,
       "options": {
         "colorMode": "background",
@@ -178,7 +236,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -187,8 +247,11 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(ClickHouseMetrics_MemoryTracking{instance=~\"$instance\"})",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(ClickHouseMetrics_MemoryTracking{cluster=~\"$cluster\", instance=~\"$instance\"})",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -197,24 +260,43 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 70 },
-              { "color": "red", "value": 90 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
             ]
           },
           "unit": "percent"
         },
         "overrides": []
       },
-      "gridPos": { "h": 4, "w": 3, "x": 6, "y": 1 },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 1
+      },
       "id": 22,
       "options": {
         "colorMode": "background",
@@ -222,7 +304,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -231,8 +315,11 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "(ClickHouseAsyncMetrics_DiskUsed_default{instance=~\"$instance\"} / ClickHouseAsyncMetrics_DiskTotal_default{instance=~\"$instance\"}) * 100",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(ClickHouseAsyncMetrics_DiskUsed_default{cluster=~\"$cluster\", instance=~\"$instance\"} / ClickHouseAsyncMetrics_DiskTotal_default{cluster=~\"$cluster\", instance=~\"$instance\"}) * 100",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -241,22 +328,38 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "red", "value": 1 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 4, "w": 3, "x": 9, "y": 1 },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 9,
+        "y": 1
+      },
       "id": 23,
       "options": {
         "colorMode": "background",
@@ -264,7 +367,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -273,8 +378,11 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(ClickHouseMetrics_ReadonlyReplica{instance=~\"$instance\"}) or vector(0)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(ClickHouseMetrics_ReadonlyReplica{cluster=~\"$cluster\", instance=~\"$instance\"}) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -283,24 +391,43 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 30 },
-              { "color": "red", "value": 300 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 30
+              },
+              {
+                "color": "red",
+                "value": 300
+              }
             ]
           },
           "unit": "s"
         },
         "overrides": []
       },
-      "gridPos": { "h": 4, "w": 3, "x": 12, "y": 1 },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 12,
+        "y": 1
+      },
       "id": 24,
       "options": {
         "colorMode": "background",
@@ -308,7 +435,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -317,8 +446,11 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "max(ClickHouseAsyncMetrics_ReplicasMaxAbsoluteDelay{instance=~\"$instance\"})",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(ClickHouseAsyncMetrics_ReplicasMaxAbsoluteDelay{cluster=~\"$cluster\", instance=~\"$instance\"})",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -327,21 +459,34 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 4, "w": 3, "x": 15, "y": 1 },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 15,
+        "y": 1
+      },
       "id": 25,
       "options": {
         "colorMode": "background",
@@ -349,7 +494,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -358,8 +505,11 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(ClickHouseMetrics_TCPConnection{instance=~\"$instance\"})",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(ClickHouseMetrics_TCPConnection{cluster=~\"$cluster\", instance=~\"$instance\"})",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -368,23 +518,42 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 3000 },
-              { "color": "red", "value": 10000 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 3000
+              },
+              {
+                "color": "red",
+                "value": 10000
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 4, "w": 3, "x": 18, "y": 1 },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 18,
+        "y": 1
+      },
       "id": 26,
       "options": {
         "colorMode": "background",
@@ -392,7 +561,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -401,8 +572,11 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(ClickHouseMetrics_PartsActive{instance=~\"$instance\"})",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(ClickHouseMetrics_PartsActive{cluster=~\"$cluster\", instance=~\"$instance\"})",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -411,23 +585,42 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 10 },
-              { "color": "red", "value": 50 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 4, "w": 3, "x": 21, "y": 1 },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 21,
+        "y": 1
+      },
       "id": 27,
       "options": {
         "colorMode": "background",
@@ -435,7 +628,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -444,8 +639,11 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(ClickHouseMetrics_Merge{instance=~\"$instance\"})",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(ClickHouseMetrics_Merge{cluster=~\"$cluster\", instance=~\"$instance\"})",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -455,16 +653,26 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
       "id": 2,
       "title": "Queries",
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -474,42 +682,70 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           },
           "unit": "ops"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
       "id": 100,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(ClickHouseProfileEvents_Query{instance=~\"$instance\"}[5m])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(ClickHouseProfileEvents_Query{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -518,10 +754,15 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -531,42 +772,70 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           },
           "unit": "\u00b5s"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      },
       "id": 101,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(ClickHouseProfileEvents_QueryTimeMicroseconds{instance=~\"$instance\"}[5m]) / rate(ClickHouseProfileEvents_Query{instance=~\"$instance\"}[5m])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(ClickHouseProfileEvents_QueryTimeMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) / rate(ClickHouseProfileEvents_Query{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -576,16 +845,26 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
       "id": 3,
       "title": "Select & Insert",
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -595,47 +874,78 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
       "id": 102,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(ClickHouseProfileEvents_SelectQuery{instance=~\"$instance\"}[5m])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(ClickHouseProfileEvents_SelectQuery{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "legendFormat": "Queries/s",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(ClickHouseProfileEvents_SelectedRows{instance=~\"$instance\"}[5m])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(ClickHouseProfileEvents_SelectedRows{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "legendFormat": "Rows/s",
           "refId": "B"
         }
@@ -644,10 +954,15 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -657,47 +972,78 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
       "id": 103,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(ClickHouseProfileEvents_InsertQuery{instance=~\"$instance\"}[5m])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(ClickHouseProfileEvents_InsertQuery{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "legendFormat": "Queries/s",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(ClickHouseProfileEvents_InsertedRows{instance=~\"$instance\"}[5m])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(ClickHouseProfileEvents_InsertedRows{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "legendFormat": "Rows/s",
           "refId": "B"
         }
@@ -707,16 +1053,26 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
       "id": 4,
       "title": "Storage",
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -726,53 +1082,87 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
       "id": 104,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseMetrics_PartsActive{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseMetrics_PartsActive{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Active",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseMetrics_PartsOutdated{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseMetrics_PartsOutdated{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Outdated",
           "refId": "B"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseMetrics_PartsTemporary{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseMetrics_PartsTemporary{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Temporary",
           "refId": "C"
         }
@@ -781,10 +1171,15 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -794,41 +1189,69 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
       "id": 105,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseAsyncMetrics_MaxPartCountForPartition{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseAsyncMetrics_MaxPartCountForPartition{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -838,16 +1261,26 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
       "id": 5,
       "title": "Merges & Mutations",
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -857,47 +1290,78 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 33 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 33
+      },
       "id": 106,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseMetrics_Merge{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseMetrics_Merge{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Merges",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseMetrics_PartMutation{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseMetrics_PartMutation{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Mutations",
           "refId": "B"
         }
@@ -906,10 +1370,15 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -919,47 +1388,78 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 33 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 33
+      },
       "id": 107,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseMetrics_BackgroundMergesAndMutationsPoolTask{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseMetrics_BackgroundMergesAndMutationsPoolTask{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Tasks",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseMetrics_BackgroundMergesAndMutationsPoolSize{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseMetrics_BackgroundMergesAndMutationsPoolSize{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Pool Size",
           "refId": "B"
         }
@@ -969,16 +1469,26 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 41 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
       "id": 6,
       "title": "Memory & Disk",
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -988,48 +1498,79 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           },
           "unit": "bytes"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 42 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 42
+      },
       "id": 108,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseMetrics_MemoryTracking{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseMetrics_MemoryTracking{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Tracking",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseAsyncMetrics_MemoryResident{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseAsyncMetrics_MemoryResident{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Resident",
           "refId": "B"
         }
@@ -1038,10 +1579,15 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -1051,48 +1597,79 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           },
           "unit": "bytes"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 42 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 42
+      },
       "id": 109,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseAsyncMetrics_DiskUsed_default{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseAsyncMetrics_DiskUsed_default{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Used",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseAsyncMetrics_DiskTotal_default{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseAsyncMetrics_DiskTotal_default{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Total",
           "refId": "B"
         }
@@ -1102,16 +1679,26 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 50 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
       "id": 7,
       "title": "Caches",
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -1121,48 +1708,79 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           },
           "unit": "bytes"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 51 },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 51
+      },
       "id": 110,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseAsyncMetrics_FilesystemCacheBytes{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseAsyncMetrics_FilesystemCacheBytes{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Used",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseAsyncMetrics_FilesystemCacheCapacity{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseAsyncMetrics_FilesystemCacheCapacity{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Capacity",
           "refId": "B"
         }
@@ -1171,10 +1789,15 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -1184,42 +1807,70 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           },
           "unit": "bytes"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 51 },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 51
+      },
       "id": 111,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseMetrics_MarkCacheBytes{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseMetrics_MarkCacheBytes{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -1228,10 +1879,15 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -1241,47 +1897,78 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 51 },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 51
+      },
       "id": 112,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(ClickHouseProfileEvents_QueryCacheHits{instance=~\"$instance\"}[5m])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(ClickHouseProfileEvents_QueryCacheHits{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "legendFormat": "Hits/s",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(ClickHouseProfileEvents_QueryCacheMisses{instance=~\"$instance\"}[5m])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(ClickHouseProfileEvents_QueryCacheMisses{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "legendFormat": "Misses/s",
           "refId": "B"
         }
@@ -1291,16 +1978,26 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 59 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 59
+      },
       "id": 8,
       "title": "I/O & Network",
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -1310,48 +2007,79 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           },
           "unit": "\u00b5s"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 60 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 60
+      },
       "id": 113,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(ClickHouseProfileEvents_DiskReadElapsedMicroseconds{instance=~\"$instance\"}[5m])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(ClickHouseProfileEvents_DiskReadElapsedMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "legendFormat": "Read",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(ClickHouseProfileEvents_DiskWriteElapsedMicroseconds{instance=~\"$instance\"}[5m])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(ClickHouseProfileEvents_DiskWriteElapsedMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
           "legendFormat": "Write",
           "refId": "B"
         }
@@ -1360,10 +2088,15 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -1373,48 +2106,79 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           },
           "unit": "Bps"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 60 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 60
+      },
       "id": 114,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseMetrics_NetworkReceive{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseMetrics_NetworkReceive{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Receive",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseMetrics_NetworkSend{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseMetrics_NetworkSend{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Send",
           "refId": "B"
         }
@@ -1424,16 +2188,26 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 68 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 68
+      },
       "id": 9,
       "title": "Async Inserts & Replication",
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -1443,47 +2217,78 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 69 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 69
+      },
       "id": 115,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseMetrics_AsynchronousInsertQueueSize{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseMetrics_AsynchronousInsertQueueSize{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Queue Size",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseMetrics_DelayedInserts{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseMetrics_DelayedInserts{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Delayed",
           "refId": "B"
         }
@@ -1492,10 +2297,15 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
@@ -1505,63 +2315,354 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "showPoints": "never",
             "spanNulls": true,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null }
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 69 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 69
+      },
       "id": 116,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseAsyncMetrics_ReplicasSumQueueSize{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseAsyncMetrics_ReplicasSumQueueSize{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Sum Queue",
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "ClickHouseAsyncMetrics_ReplicasMaxQueueSize{instance=~\"$instance\"}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "ClickHouseAsyncMetrics_ReplicasMaxQueueSize{cluster=~\"$cluster\", instance=~\"$instance\"}",
           "legendFormat": "Max Queue",
           "refId": "B"
         }
       ],
       "title": "Replica Queue",
       "type": "timeseries"
+    },
+    {
+      "id": 10,
+      "title": "Query Insights",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 77
+      },
+      "panels": []
+    },
+    {
+      "id": 117,
+      "title": "Failed Queries/s",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "rate(ClickHouseProfileEvents_FailedQuery{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "refId": "A",
+          "legendFormat": "Failed"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "showPoints": "auto"
+          },
+          "unit": "ops",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 78
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 118,
+      "title": "Rejected Inserts/s",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "rate(ClickHouseProfileEvents_RejectedInserts{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "refId": "A",
+          "legendFormat": "Rejected"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "showPoints": "auto"
+          },
+          "unit": "ops",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 78
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 119,
+      "title": "Slow Reads",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "rate(ClickHouseProfileEvents_SlowRead{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "refId": "A",
+          "legendFormat": "Slow Reads/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "showPoints": "auto"
+          },
+          "unit": "ops",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 86
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 120,
+      "title": "Selected vs Inserted Rows",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "rate(ClickHouseProfileEvents_SelectedRows{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "refId": "A",
+          "legendFormat": "Selected"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "rate(ClickHouseProfileEvents_InsertedRows{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "refId": "B",
+          "legendFormat": "Inserted"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "showPoints": "auto"
+          },
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 86
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
     }
   ],
   "refresh": "1m",
   "schemaVersion": 39,
-  "tags": ["data", "clickhouse"],
+  "tags": [
+    "data",
+    "clickhouse"
+  ],
   "templating": {
     "list": [
       {
-        "current": { "selected": false, "text": "All", "value": "$__all" },
-        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
         "definition": "label_values(up, cluster)",
         "hide": 0,
         "includeAll": true,
@@ -1569,7 +2670,10 @@
         "multi": false,
         "name": "cluster",
         "options": [],
-        "query": { "query": "label_values(up, cluster)", "refId": "StandardVariableQuery" },
+        "query": {
+          "query": "label_values(up, cluster)",
+          "refId": "StandardVariableQuery"
+        },
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -1577,8 +2681,15 @@
         "type": "query"
       },
       {
-        "current": { "selected": false, "text": "All", "value": "$__all" },
-        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
         "definition": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)",
         "hide": 0,
         "includeAll": true,
@@ -1586,7 +2697,10 @@
         "multi": true,
         "name": "namespace",
         "options": [],
-        "query": { "query": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)", "refId": "StandardVariableQuery" },
+        "query": {
+          "query": "label_values(kube_pod_info{cluster=~\"$cluster\"}, namespace)",
+          "refId": "StandardVariableQuery"
+        },
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -1594,25 +2708,15 @@
         "type": "query"
       },
       {
-        "current": { "selected": false, "text": "All", "value": "$__all" },
-        "datasource": { "type": "prometheus", "uid": "prometheus" },
-        "definition": "label_values(up{cluster=~\"$cluster\", namespace=~\"$namespace\"}, job)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Job",
-        "multi": true,
-        "name": "job",
-        "options": [],
-        "query": { "query": "label_values(up{cluster=~\"$cluster\", namespace=~\"$namespace\"}, job)", "refId": "StandardVariableQuery" },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": { "selected": false, "text": "All", "value": "$__all" },
-        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
         "definition": "label_values(ClickHouseMetrics_Query, instance)",
         "hide": 0,
         "includeAll": true,
@@ -1620,7 +2724,10 @@
         "multi": true,
         "name": "instance",
         "options": [],
-        "query": { "query": "label_values(ClickHouseMetrics_Query, instance)", "refId": "StandardVariableQuery" },
+        "query": {
+          "query": "label_values(ClickHouseMetrics_Query{cluster=~\"$cluster\"}, instance)",
+          "refId": "StandardVariableQuery"
+        },
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -1628,8 +2735,15 @@
         "type": "query"
       },
       {
-        "current": { "selected": false, "text": "All", "value": "$__all" },
-        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
         "definition": "label_values(ClickHouseMetrics_Query, chi)",
         "hide": 0,
         "includeAll": true,
@@ -1637,7 +2751,10 @@
         "multi": false,
         "name": "chi",
         "options": [],
-        "query": { "query": "label_values(ClickHouseMetrics_Query, chi)", "refId": "StandardVariableQuery" },
+        "query": {
+          "query": "label_values(ClickHouseMetrics_Query{cluster=~\"$cluster\"}, chi)",
+          "refId": "StandardVariableQuery"
+        },
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -1646,7 +2763,10 @@
       }
     ]
   },
-  "time": { "from": "now-24h", "to": "now" },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
   "timepicker": {},
   "timezone": "",
   "title": "ClickHouse Server",

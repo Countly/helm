@@ -54,7 +54,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["overview"],
+      "tags": [
+        "overview"
+      ],
       "targetBlank": false,
       "title": "Overview",
       "type": "dashboards"
@@ -64,7 +66,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["countly"],
+      "tags": [
+        "countly"
+      ],
       "targetBlank": false,
       "title": "Countly",
       "type": "dashboards"
@@ -74,7 +78,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["data"],
+      "tags": [
+        "data"
+      ],
       "targetBlank": false,
       "title": "Data Stores",
       "type": "dashboards"
@@ -84,7 +90,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["platform"],
+      "tags": [
+        "platform"
+      ],
       "targetBlank": false,
       "title": "Platform",
       "type": "dashboards"
@@ -94,7 +102,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["edge"],
+      "tags": [
+        "edge"
+      ],
       "targetBlank": false,
       "title": "Edge",
       "type": "dashboards"
@@ -160,7 +170,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -173,7 +185,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_kafka_consumer_batches_total{result=\"success\"}[5m])) / sum(rate(countly_kafka_consumer_batches_total[5m]))",
+          "expr": "sum(rate(countly_kafka_consumer_batches_total{cluster=~\"$cluster\", result=\"success\"}[5m])) / sum(rate(countly_kafka_consumer_batches_total[5m]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -226,7 +238,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -239,7 +253,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_kafka_producer_batches_total{result=\"success\"}[5m])) / sum(rate(countly_kafka_producer_batches_total[5m]))",
+          "expr": "sum(rate(countly_kafka_producer_batches_total{cluster=~\"$cluster\", result=\"success\"}[5m])) / sum(rate(countly_kafka_producer_batches_total[5m]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -292,7 +306,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -305,7 +321,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_query_total{result=\"error\"}[5m])) / sum(rate(countly_query_total[5m]))",
+          "expr": "sum(rate(countly_query_total{cluster=~\"$cluster\", result=\"error\"}[5m])) / sum(rate(countly_query_total[5m])) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -358,7 +374,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -371,7 +389,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_event_sink_events_total{result=\"error\"}[5m])) / sum(rate(countly_event_sink_events_total[5m]))",
+          "expr": "sum(rate(countly_event_sink_events_total{cluster=~\"$cluster\", result=\"error\"}[5m])) / sum(rate(countly_event_sink_events_total[5m])) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -455,7 +473,10 @@
       "id": 100,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -471,7 +492,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (result)(rate(countly_kafka_consumer_batches_total{group_id=~\"$group_id\", topic=~\"$topic\"}[5m]))",
+          "expr": "sum by (result)(rate(countly_kafka_consumer_batches_total{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[5m]))",
           "legendFormat": "{{result}}",
           "refId": "A"
         }
@@ -542,7 +563,10 @@
       "id": 101,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -558,7 +582,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_consumer_batch_duration_seconds_bucket{group_id=~\"$group_id\", topic=~\"$topic\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_consumer_batch_duration_seconds_bucket{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[5m])) by (le))",
           "legendFormat": "Batch P95",
           "refId": "A"
         },
@@ -567,7 +591,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_consumer_handler_duration_seconds_bucket{group_id=~\"$group_id\", topic=~\"$topic\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_consumer_handler_duration_seconds_bucket{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[5m])) by (le))",
           "legendFormat": "Handler P95",
           "refId": "B"
         },
@@ -576,7 +600,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_consumer_commit_duration_seconds_bucket{group_id=~\"$group_id\", topic=~\"$topic\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_consumer_commit_duration_seconds_bucket{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[5m])) by (le))",
           "legendFormat": "Commit P95",
           "refId": "C"
         }
@@ -660,7 +684,10 @@
       "id": 102,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -676,7 +703,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_consumer_parse_duration_seconds_bucket{group_id=~\"$group_id\", topic=~\"$topic\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_consumer_parse_duration_seconds_bucket{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[5m])) by (le))",
           "legendFormat": "Parse P95",
           "refId": "A"
         }
@@ -747,7 +774,10 @@
       "id": 103,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -763,7 +793,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(countly_kafka_consumer_invalid_messages_total{group_id=~\"$group_id\", topic=~\"$topic\"}[5m])",
+          "expr": "rate(countly_kafka_consumer_invalid_messages_total{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[5m])",
           "legendFormat": "{{group_id}} {{topic}}",
           "refId": "A"
         }
@@ -834,7 +864,10 @@
       "id": 104,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -850,7 +883,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(countly_kafka_consumer_rebalances_total{group_id=~\"$group_id\"}[5m])",
+          "expr": "rate(countly_kafka_consumer_rebalances_total{cluster=~\"$cluster\", group_id=~\"$group_id\"}[5m])",
           "legendFormat": "{{group_id}}",
           "refId": "A"
         }
@@ -934,7 +967,10 @@
       "id": 105,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -950,7 +986,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (result)(rate(countly_kafka_producer_batches_total{topic=~\"$topic\"}[5m]))",
+          "expr": "sum by (result)(rate(countly_kafka_producer_batches_total{cluster=~\"$cluster\", topic=~\"$topic\"}[5m]))",
           "legendFormat": "{{result}}",
           "refId": "A"
         }
@@ -1021,7 +1057,10 @@
       "id": 106,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -1037,7 +1076,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_producer_batch_duration_seconds_bucket{topic=~\"$topic\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_producer_batch_duration_seconds_bucket{cluster=~\"$cluster\", topic=~\"$topic\"}[5m])) by (le))",
           "legendFormat": "Batch Duration P95",
           "refId": "A"
         }
@@ -1121,7 +1160,10 @@
       "id": 107,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -1137,7 +1179,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(countly_kafka_producer_timeouts_total[5m])",
+          "expr": "rate(countly_kafka_producer_timeouts_total{cluster=~\"$cluster\"}[5m])",
           "legendFormat": "Timeouts",
           "refId": "A"
         }
@@ -1208,7 +1250,10 @@
       "id": 108,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -1224,7 +1269,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(countly_kafka_producer_disconnects_total[5m])",
+          "expr": "rate(countly_kafka_producer_disconnects_total{cluster=~\"$cluster\"}[5m])",
           "legendFormat": "Disconnects",
           "refId": "A"
         }
@@ -1308,7 +1353,10 @@
       "id": 109,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -1324,7 +1372,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_event_sink_duration_seconds_bucket[5m])) by (le, sink))",
+          "expr": "histogram_quantile(0.95, sum(rate(countly_event_sink_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])) by (le, sink))",
           "legendFormat": "{{sink}}",
           "refId": "A"
         }
@@ -1395,7 +1443,10 @@
       "id": 110,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -1411,7 +1462,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (result)(rate(countly_event_sink_events_total[5m]))",
+          "expr": "sum by (result)(rate(countly_event_sink_events_total{cluster=~\"$cluster\"}[5m]))",
           "legendFormat": "{{result}}",
           "refId": "A"
         }
@@ -1482,7 +1533,10 @@
       "id": 111,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -1498,7 +1552,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_event_source_batch_wait_seconds_bucket{group_id=~\"$group_id\", topic=~\"$topic\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(countly_event_source_batch_wait_seconds_bucket{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[5m])) by (le))",
           "legendFormat": "Batch Wait P95",
           "refId": "A"
         }
@@ -1582,7 +1636,10 @@
       "id": 112,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -1598,7 +1655,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (result)(rate(countly_query_total[5m]))",
+          "expr": "sum by (result)(rate(countly_query_total{cluster=~\"$cluster\"}[5m]))",
           "legendFormat": "{{result}}",
           "refId": "A"
         }
@@ -1669,7 +1726,10 @@
       "id": 113,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -1685,7 +1745,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, query_name)(rate(countly_query_duration_seconds_bucket[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le, query_name)(rate(countly_query_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])))",
           "legendFormat": "{{query_name}}",
           "refId": "A"
         }
@@ -1769,7 +1829,10 @@
       "id": 114,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -1785,7 +1848,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (operation, result)(rate(countly_clickhouse_request_total[5m]))",
+          "expr": "sum by (operation, result)(rate(countly_clickhouse_request_total{cluster=~\"$cluster\"}[5m]))",
           "legendFormat": "{{operation}} {{result}}",
           "refId": "A"
         }
@@ -1856,7 +1919,10 @@
       "id": 115,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right"
         },
@@ -1872,18 +1938,204 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, operation)(rate(countly_clickhouse_request_duration_seconds_bucket[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le, operation)(rate(countly_clickhouse_request_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])))",
           "legendFormat": "{{operation}}",
           "refId": "A"
         }
       ],
       "title": "CH Request Duration P95",
       "type": "timeseries"
+    },
+    {
+      "id": 8,
+      "title": "Failures & Disconnects",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 68
+      },
+      "panels": []
+    },
+    {
+      "id": 116,
+      "title": "Consumer Invalid Msg Rate",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(rate(countly_kafka_consumer_invalid_messages_total{cluster=~\"$cluster\"}[5m])) or vector(0)",
+          "refId": "A",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.01
+              }
+            ]
+          },
+          "unit": "short",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 69
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 117,
+      "title": "Rebalance Rate",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(rate(countly_kafka_consumer_rebalances_total{cluster=~\"$cluster\"}[5m])) or vector(0)",
+          "refId": "A",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.01
+              }
+            ]
+          },
+          "unit": "short",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 69
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 118,
+      "title": "Producer Disconnect Rate",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(rate(countly_kafka_producer_disconnects_total{cluster=~\"$cluster\"}[5m])) or vector(0)",
+          "refId": "A",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.01
+              }
+            ]
+          },
+          "unit": "short",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 69
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
     }
   ],
   "refresh": "1m",
   "schemaVersion": 39,
-  "tags": ["countly", "kafka", "pipeline", "queries"],
+  "tags": [
+    "countly",
+    "kafka",
+    "pipeline",
+    "queries"
+  ],
   "templating": {
     "list": [
       {
@@ -1950,33 +2202,6 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(up{cluster=~\"$cluster\", namespace=~\"$namespace\"}, job)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Job",
-        "multi": true,
-        "name": "job",
-        "options": [],
-        "query": {
-          "query": "label_values(up{cluster=~\"$cluster\", namespace=~\"$namespace\"}, job)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
         "definition": "label_values(countly_kafka_consumer_batches_total{namespace=~\"$namespace\"}, service_name)",
         "hide": 0,
         "includeAll": true,
@@ -1985,7 +2210,7 @@
         "name": "service_name",
         "options": [],
         "query": {
-          "query": "label_values(countly_kafka_consumer_batches_total{namespace=~\"$namespace\"}, service_name)",
+          "query": "label_values(countly_kafka_consumer_batches_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}, service_name)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,
@@ -2012,7 +2237,7 @@
         "name": "group_id",
         "options": [],
         "query": {
-          "query": "label_values(countly_kafka_consumer_batches_total{service_name=~\"$service_name\"}, group_id)",
+          "query": "label_values(countly_kafka_consumer_batches_total{cluster=~\"$cluster\", service_name=~\"$service_name\"}, group_id)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,
@@ -2039,7 +2264,7 @@
         "name": "topic",
         "options": [],
         "query": {
-          "query": "label_values(countly_kafka_consumer_batches_total{service_name=~\"$service_name\"}, topic)",
+          "query": "label_values(countly_kafka_consumer_batches_total{cluster=~\"$cluster\", service_name=~\"$service_name\"}, topic)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,

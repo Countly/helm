@@ -28,7 +28,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["overview"],
+      "tags": [
+        "overview"
+      ],
       "targetBlank": false,
       "title": "Overview",
       "type": "dashboards"
@@ -38,7 +40,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["countly"],
+      "tags": [
+        "countly"
+      ],
       "targetBlank": false,
       "title": "Countly",
       "type": "dashboards"
@@ -48,7 +52,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["data"],
+      "tags": [
+        "data"
+      ],
       "targetBlank": false,
       "title": "Data Stores",
       "type": "dashboards"
@@ -58,7 +64,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["platform"],
+      "tags": [
+        "platform"
+      ],
       "targetBlank": false,
       "title": "Platform",
       "type": "dashboards"
@@ -68,7 +76,9 @@
       "icon": "external link",
       "includeVars": true,
       "keepTime": true,
-      "tags": ["edge"],
+      "tags": [
+        "edge"
+      ],
       "targetBlank": false,
       "title": "Edge",
       "type": "dashboards"
@@ -134,7 +144,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -148,7 +160,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "min((certmanager_certificate_expiration_timestamp_seconds - time()) / 86400)",
+          "expr": "min((certmanager_certificate_expiration_timestamp_seconds{cluster=~\"$cluster\"} - time()) / 86400)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -192,7 +204,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -206,7 +220,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(certmanager_certificate_ready_status{condition=\"True\"}) or vector(0)",
+          "expr": "sum(certmanager_certificate_ready_status{cluster=~\"$cluster\", condition=\"True\"}) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -258,7 +272,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -272,7 +288,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(controller_runtime_reconcile_errors_total[1h])) or vector(0)",
+          "expr": "sum(increase(controller_runtime_reconcile_errors_total{cluster=~\"$cluster\"}[1h])) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -320,7 +336,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -334,7 +352,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(strimzi_reconciliations_failed_total) or vector(0)",
+          "expr": "sum(strimzi_reconciliations_failed_total{cluster=~\"$cluster\"}) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -378,7 +396,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -392,7 +412,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(strimzi_resources) or vector(0)",
+          "expr": "sum(strimzi_resources{cluster=~\"$cluster\"}) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -444,7 +464,9 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -458,7 +480,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(workqueue_depth) or vector(0)",
+          "expr": "sum(workqueue_depth{cluster=~\"$cluster\"}) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -544,7 +566,10 @@
       "id": 100,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -560,7 +585,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(certmanager_certificate_expiration_timestamp_seconds - time()) / 86400",
+          "expr": "(certmanager_certificate_expiration_timestamp_seconds{cluster=~\"$cluster\"} - time()) / 86400",
           "legendFormat": "{{name}} ({{namespace}})",
           "refId": "A"
         }
@@ -632,7 +657,10 @@
       "id": 101,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -648,7 +676,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(controller_runtime_reconcile_errors_total{job=~\".*cert-manager.*\"}[5m])",
+          "expr": "rate(controller_runtime_reconcile_errors_total{cluster=~\"$cluster\", job=~\".*cert-manager.*\"}[5m])",
           "legendFormat": "{{controller}}",
           "refId": "A"
         }
@@ -734,7 +762,10 @@
       "id": 102,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -750,7 +781,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{job=~\".*cert-manager.*\"}[5m])) by (le, controller))",
+          "expr": "histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{cluster=~\"$cluster\", job=~\".*cert-manager.*\"}[5m])) by (le, controller))",
           "legendFormat": "{{controller}}",
           "refId": "A"
         }
@@ -823,7 +854,10 @@
       "id": 103,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -839,7 +873,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(controller_runtime_webhook_latency_seconds_bucket{job=~\".*cert-manager.*\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(controller_runtime_webhook_latency_seconds_bucket{cluster=~\"$cluster\", job=~\".*cert-manager.*\"}[5m])) by (le))",
           "legendFormat": "Webhook P95",
           "refId": "A"
         }
@@ -924,7 +958,10 @@
       "id": 104,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -940,7 +977,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(strimzi_reconciliations_total[5m])",
+          "expr": "rate(strimzi_reconciliations_total{cluster=~\"$cluster\"}[5m])",
           "legendFormat": "Total/s",
           "refId": "A"
         },
@@ -949,7 +986,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(strimzi_reconciliations_successful_total[5m])",
+          "expr": "rate(strimzi_reconciliations_successful_total{cluster=~\"$cluster\"}[5m])",
           "legendFormat": "Success/s",
           "refId": "B"
         },
@@ -958,7 +995,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(strimzi_reconciliations_failed_total[5m])",
+          "expr": "rate(strimzi_reconciliations_failed_total{cluster=~\"$cluster\"}[5m])",
           "legendFormat": "Failed/s",
           "refId": "C"
         }
@@ -1031,7 +1068,10 @@
       "id": 105,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1047,7 +1087,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(strimzi_reconciliations_duration_seconds_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(strimzi_reconciliations_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])) by (le))",
           "legendFormat": "P95",
           "refId": "A"
         }
@@ -1132,7 +1172,10 @@
       "id": 106,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1148,7 +1191,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "strimzi_resource_state",
+          "expr": "strimzi_resource_state{cluster=~\"$cluster\"}",
           "legendFormat": "{{kind}} {{name}} ({{namespace}})",
           "refId": "A"
         }
@@ -1221,7 +1264,10 @@
       "id": 107,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1237,7 +1283,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "strimzi_certificate_expiration_timestamp_ms",
+          "expr": "strimzi_certificate_expiration_timestamp_ms{cluster=~\"$cluster\"}",
           "legendFormat": "{{namespace}}",
           "refId": "A"
         }
@@ -1322,7 +1368,10 @@
       "id": 108,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1338,7 +1387,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(controller_runtime_reconcile_errors_total{job=~\".*clickhouse.*\"}[5m])",
+          "expr": "rate(controller_runtime_reconcile_errors_total{cluster=~\"$cluster\", job=~\".*clickhouse.*\"}[5m])",
           "legendFormat": "{{controller}}",
           "refId": "A"
         }
@@ -1410,7 +1459,10 @@
       "id": 109,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1426,7 +1478,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "controller_runtime_active_workers{job=~\".*clickhouse.*\"}",
+          "expr": "controller_runtime_active_workers{cluster=~\"$cluster\", job=~\".*clickhouse.*\"}",
           "legendFormat": "{{controller}}",
           "refId": "A"
         }
@@ -1511,7 +1563,10 @@
       "id": 110,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1527,7 +1582,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "workqueue_depth",
+          "expr": "workqueue_depth{cluster=~\"$cluster\"}",
           "legendFormat": "{{name}} ({{job}})",
           "refId": "A"
         }
@@ -1599,7 +1654,10 @@
       "id": 111,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull", "max"],
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
           "displayMode": "table",
           "placement": "right",
           "showLegend": true
@@ -1615,18 +1673,150 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(workqueue_retries_total[5m])",
+          "expr": "rate(workqueue_retries_total{cluster=~\"$cluster\"}[5m])",
           "legendFormat": "{{name}} ({{job}})",
           "refId": "A"
         }
       ],
       "title": "Workqueue Retries",
       "type": "timeseries"
+    },
+    {
+      "id": 8,
+      "title": "Strimzi Lifecycle",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "panels": []
+    },
+    {
+      "id": 112,
+      "title": "Auto Restarts",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "rate(strimzi_auto_restarts_total{cluster=~\"$cluster\"}[5m])",
+          "refId": "A",
+          "legendFormat": "{{kind}}/{{name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "showPoints": "auto"
+          },
+          "unit": "ops",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 55
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 113,
+      "title": "Strimzi Certificate Expiry (days)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "(strimzi_certificate_expiration_timestamp_ms{cluster=~\"$cluster\"} / 1000 - time()) / 86400",
+          "refId": "A",
+          "legendFormat": "{{kind}}/{{name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "showPoints": "auto"
+          },
+          "unit": "d",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 55
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
     }
   ],
   "refresh": "1m",
   "schemaVersion": 39,
-  "tags": ["edge", "controllers", "cert-manager", "strimzi"],
+  "tags": [
+    "edge",
+    "controllers",
+    "cert-manager",
+    "strimzi"
+  ],
   "templating": {
     "list": [
       {
@@ -1682,70 +1872,6 @@
         "skipUrlSync": false,
         "sort": 1,
         "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(up{cluster=~\"$cluster\", namespace=~\"$namespace\"}, job)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Job",
-        "multi": true,
-        "name": "job",
-        "options": [],
-        "query": {
-          "query": "label_values(up{cluster=~\"$cluster\", namespace=~\"$namespace\"}, job)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "hide": 0,
-        "includeAll": true,
-        "label": "Controller",
-        "multi": true,
-        "name": "controller",
-        "options": [
-          {
-            "selected": true,
-            "text": "All",
-            "value": "$__all"
-          },
-          {
-            "selected": false,
-            "text": "cert-manager",
-            "value": "cert-manager"
-          },
-          {
-            "selected": false,
-            "text": "strimzi",
-            "value": "strimzi"
-          },
-          {
-            "selected": false,
-            "text": "clickhouse-operator",
-            "value": "clickhouse-operator"
-          }
-        ],
-        "query": "cert-manager,strimzi,clickhouse-operator",
-        "skipUrlSync": false,
-        "type": "custom"
       }
     ]
   },
