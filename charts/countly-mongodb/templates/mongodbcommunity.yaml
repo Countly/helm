@@ -46,24 +46,6 @@ spec:
             - name: mongod
               resources:
                 {{- toYaml .Values.mongodb.resources | nindent 16 }}
-            {{- if .Values.exporter.enabled }}
-            - name: mongodb-exporter
-              image: {{ .Values.exporter.image }}
-              args:
-                {{- toYaml .Values.exporter.args | nindent 16 }}
-              ports:
-                - name: metrics
-                  containerPort: {{ .Values.exporter.port }}
-              resources:
-                {{- toYaml .Values.exporter.resources | nindent 16 }}
-              env:
-                - name: MONGODB_URI
-                  valueFrom:
-                    secretKeyRef:
-                      name: {{ include "countly-mongodb.fullname" . }}-{{ .Values.users.metrics.name }}-mongodb-conn
-                      key: connectionString.standard
-                      optional: true
-            {{- end }}
           {{- $scheduling := .Values.mongodb.scheduling | default dict }}
           {{- $globalScheduling := .Values.global.scheduling | default dict }}
           {{- $nodeSelector := merge ($scheduling.nodeSelector | default dict) ($globalScheduling.nodeSelector | default dict) }}

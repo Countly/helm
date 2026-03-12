@@ -1,0 +1,37 @@
+{{- if .Values.exporter.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "countly-mongodb.fullname" . }}-exporter
+  labels:
+    {{- include "countly-mongodb.labels" . | nindent 4 }}
+    app.kubernetes.io/component: exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "countly-mongodb.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: exporter
+  template:
+    metadata:
+      labels:
+        {{- include "countly-mongodb.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: exporter
+    spec:
+      containers:
+        - name: mongodb-exporter
+          image: {{ .Values.exporter.image }}
+          args:
+            {{- toYaml .Values.exporter.args | nindent 12 }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.exporter.port }}
+          resources:
+            {{- toYaml .Values.exporter.resources | nindent 12 }}
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "countly-mongodb.fullname" . }}-{{ .Values.users.metrics.name }}-mongodb-conn
+                  key: connectionString.standard
+{{- end }}

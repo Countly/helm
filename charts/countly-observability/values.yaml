@@ -182,6 +182,7 @@ tempo:
     ingestionBurstSizeBytes: 150000000
     maxTracesPerUser: 50000
     maxBytesPerTrace: 5000000
+    maxRecvMsgSizeMiB: 16
   scheduling:
     nodeSelector: {}
     tolerations: []

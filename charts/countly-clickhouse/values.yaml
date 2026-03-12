@@ -39,6 +39,16 @@ auth:
     # Use a long random password to mitigate offline guessing attacks.
     passwordSha256Hex: ""
 
+# --- OpenTelemetry Server-Side Tracing ---
+# When enabled, ClickHouse logs spans to system.opentelemetry_span_log for queries
+# that arrive with W3C traceparent headers (injected by ClickhouseClient.js).
+# A separate export bridge is needed to ship spans from this table to Tempo.
+opentelemetry:
+  enabled: false
+  spanLog:
+    ttlDays: 7
+    flushIntervalMs: 1000
+
 server:
   securityContext:
     runAsNonRoot: true

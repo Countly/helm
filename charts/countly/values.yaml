@@ -19,7 +19,7 @@ serviceAccount:
 
 image:
   repository: gcr.io/countly-dev-313620/countly-unified@sha256
-  tag: "10f94c1e4285488004e779b523157de16f981239b8d1509f9b586da8341b0ee4"
+  tag: "f81b39d4488c596f76a5c385d088a8998b7c1b20933366ad994f5315597ec48b"
   pullPolicy: IfNotPresent
 
 # Cross-namespace references
@@ -469,6 +469,7 @@ ingress:
     nginx.org/proxy-send-timeout: "120s"
     nginx.org/keepalive: "256"
     nginx.org/server-snippets: |
+      otel_trace on;
       proxy_set_header X-Forwarded-Proto $scheme;
       proxy_set_header X-Forwarded-Port $server_port;
       proxy_set_header X-Real-IP $remote_addr;
@@ -476,8 +477,7 @@ ingress:
       proxy_set_header Connection "";
       proxy_set_header X-Request-ID $request_id;
       proxy_set_header X-Request-Start $msec;
-      proxy_set_header traceparent $http_traceparent;
-      proxy_set_header tracestate $http_tracestate;
+      # traceparent/tracestate now handled by ngx_otel_module (otel-trace-context: propagate)
       client_header_timeout 30s;
     nginx.org/location-snippets: |
       proxy_request_buffering on;
