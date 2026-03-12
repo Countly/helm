@@ -2781,7 +2781,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(countly_kafka_consumer_batches_total{cluster=~\"$cluster\"}, service_name)",
+        "definition": "label_values({__name__=~\"countly_kafka_consumer_batches_total|countly_query_total\", cluster=~\"$cluster\"}, service_name)",
         "hide": 0,
         "includeAll": true,
         "label": "Service",
@@ -2789,7 +2789,7 @@
         "name": "service_name",
         "options": [],
         "query": {
-          "query": "label_values(countly_kafka_consumer_batches_total{cluster=~\"$cluster\"}, service_name)",
+          "query": "label_values({__name__=~\"countly_kafka_consumer_batches_total|countly_query_total\", cluster=~\"$cluster\"}, service_name)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,

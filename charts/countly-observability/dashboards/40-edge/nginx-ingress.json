@@ -1623,8 +1623,8 @@
       {
         "current": {
           "selected": true,
-          "text": "countly-ingestor",
-          "value": "countly-ingestor"
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": {
           "type": "prometheus",

@@ -4,7 +4,7 @@
 ingress:
   enabled: true
   className: nginx
-  hostname: countly.local
+  hostname: helm-test.count.ly
   annotations:
     nginx.org/client-max-body-size: "50m"
     nginx.org/proxy-buffering: "True"
@@ -19,16 +19,11 @@ ingress:
     nginx.org/keepalive: "256"
     nginx.org/server-snippets: |
       otel_trace on;
-      proxy_set_header X-Forwarded-Proto $scheme;
-      proxy_set_header X-Forwarded-Port $server_port;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Scheme $scheme;
-      proxy_set_header Connection "";
-      proxy_set_header X-Request-ID $request_id;
-      proxy_set_header X-Request-Start $msec;
-      # traceparent/tracestate now handled by ngx_otel_module (otel-trace-context: propagate)
+      otel_trace_context propagate;
       client_header_timeout 30s;
     nginx.org/location-snippets: |
+      proxy_set_header X-Request-ID $request_id;
+      proxy_set_header X-Request-Start $msec;
       proxy_request_buffering on;
       proxy_next_upstream error timeout http_502 http_503 http_504;
       proxy_next_upstream_timeout 30s;

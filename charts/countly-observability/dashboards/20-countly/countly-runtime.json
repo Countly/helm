@@ -2413,7 +2413,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "avg by (service_name)(db_client_connections_usage{cluster=~\"$cluster\", service_name=~\"$service_name\", state=\"used\"} / (db_client_connections_usage{cluster=~\"$cluster\", service_name=~\"$service_name\", state=\"used\"} + db_client_connections_usage{cluster=~\"$cluster\", service_name=~\"$service_name\", state=\"idle\"}) * 100)",
+          "expr": "avg by (service_name)(db_client_connections_usage{cluster=~\"$cluster\", service_name=~\"$service_name\", state=\"used\"} / ignoring(state) group_left clamp_min(sum without(state)(db_client_connections_usage{cluster=~\"$cluster\", service_name=~\"$service_name\"}), 1) * 100)",
           "refId": "A",
           "legendFormat": "{{service_name}}"
         }

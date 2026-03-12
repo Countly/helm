@@ -558,6 +558,62 @@ data:
       bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
     }
 
+    // ===== kubelet volume stats (all nodes) =====
+    discovery.relabel "kubelet_resource" {
+      targets = discovery.kubernetes.kubelet.targets
+
+      rule {
+        source_labels = ["__address__"]
+        regex         = "([^:]+):?(\\d+)?"
+        target_label  = "__address__"
+        replacement   = "$1:10250"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_node_name"]
+        target_label  = "node"
+      }
+
+      rule {
+        target_label = "__metrics_path__"
+        replacement  = "/metrics"
+      }
+
+      rule {
+        target_label = "__scheme__"
+        replacement  = "https"
+      }
+
+      rule {
+        target_label = "cluster"
+        replacement  = "{{ .Values.clusterName }}"
+      }
+    }
+
+    prometheus.relabel "kubelet_volume_filter" {
+      forward_to = [prometheus.remote_write.default.receiver]
+
+      rule {
+        source_labels = ["__name__"]
+        regex         = "kubelet_volume_stats_.*"
+        action        = "keep"
+      }
+    }
+
+    prometheus.scrape "kubelet_resource" {
+      targets         = discovery.relabel.kubelet_resource.output
+      forward_to      = [prometheus.relabel.kubelet_volume_filter.receiver]
+      job_name        = "kubelet"
+      scrape_interval = "{{ .Values.metrics.sampling.interval }}"
+      scrape_timeout  = "10s"
+
+      tls_config {
+        insecure_skip_verify = true
+      }
+
+      bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+    }
+
     // ===== cert-manager =====
     discovery.kubernetes "cert_manager" {
       role = "endpoints"

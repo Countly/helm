@@ -2039,7 +2039,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "clickhouse_kafka_connect_total{cluster=~\"$cluster\", attribute=\"MeanReceiveLag\"}",
+          "expr": "clickhouse_kafka_connect_gauge{cluster=~\"$cluster\", attribute=\"MeanReceiveLag\"}",
           "legendFormat": "Lag {{sinktask}}",
           "refId": "B"
         }
@@ -2074,7 +2074,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "clickhouse_kafka_connect_total{cluster=~\"$cluster\", attribute=\"MeanReceiveLag\"}",
+          "expr": "clickhouse_kafka_connect_gauge{cluster=~\"$cluster\", attribute=\"MeanReceiveLag\"}",
           "refId": "A",
           "legendFormat": "{{sinktask}}"
         }

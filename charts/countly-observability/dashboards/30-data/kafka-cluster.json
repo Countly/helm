@@ -822,12 +822,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (topic)(rate(kafka_server_brokertopicmetrics_messagesinpersec_total{cluster=~\"$cluster\", topic=~\"$topic\"}[5m]))",
+          "expr": "sum by (topic)(rate(kafka_log_log_size{cluster=~\"$cluster\", topic=~\"$topic\"}[$__rate_interval]))",
           "legendFormat": "{{topic}}",
           "refId": "A"
         }
       ],
-      "title": "Messages In",
+      "title": "Topic Data In Rate",
       "type": "timeseries"
     },
     {
@@ -2377,7 +2377,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "kafka_consumer_records_lag{cluster=~\"$cluster\"}",
+          "expr": "kafka_consumer_records_lag{}",
           "legendFormat": "{{client_id}} {{topic}}[{{partition}}]",
           "refId": "A"
         }
@@ -2466,7 +2466,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "kafka_consumer_records_lead{cluster=~\"$cluster\"}",
+          "expr": "kafka_consumer_records_lead{}",
           "legendFormat": "{{client_id}} {{topic}}[{{partition}}]",
           "refId": "A"
         }
@@ -2572,7 +2572,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (topic)(rate(kafka_server_brokertopicmetrics_bytesinpersec_total{cluster=~\"$cluster\", topic=~\"$topic\"}[5m]))",
+          "expr": "sum by (topic)(rate(kafka_log_log_size{cluster=~\"$cluster\", topic=~\"$topic\"}[$__rate_interval]))",
           "legendFormat": "{{topic}}",
           "range": true,
           "refId": "A"
@@ -2667,13 +2667,13 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (topic)(rate(kafka_server_brokertopicmetrics_bytesoutpersec_total{cluster=~\"$cluster\", topic=~\"$topic\"}[5m]))",
-          "legendFormat": "{{topic}}",
+          "expr": "sum(rate(kafka_server_brokertopicmetrics_bytesoutpersec_total{cluster=~\"$cluster\"}[$__rate_interval]))",
+          "legendFormat": "total",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Bytes Out by Topic",
+      "title": "Bytes Out Total",
       "type": "timeseries"
     },
     {

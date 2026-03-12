@@ -1561,9 +1561,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
+        "h": 14,
+        "w": 24,
+        "x": 0,
         "y": 46
       },
       "id": 500,
@@ -1590,7 +1590,7 @@
             "uid": "prometheus"
           },
           "expr": "kubelet_volume_stats_used_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\"} / kubelet_volume_stats_capacity_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\"} * 100",
-          "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}",
+          "legendFormat": "{{persistentvolumeclaim}}",
           "refId": "A"
         }
       ],
@@ -1603,7 +1603,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 54
+        "y": 60
       },
       "id": 7,
       "panels": [],
@@ -1644,7 +1644,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 55
+        "y": 61
       },
       "id": 300,
       "options": {
@@ -1733,7 +1733,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 63
+        "y": 69
       },
       "id": 301,
       "options": {
@@ -1798,7 +1798,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 79
+        "y": 85
       },
       "panels": []
     },
@@ -1845,7 +1845,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 80
+        "y": 86
       },
       "options": {
         "reduceOptions": {
@@ -1905,7 +1905,7 @@
         "h": 8,
         "w": 18,
         "x": 6,
-        "y": 80
+        "y": 86
       },
       "options": {
         "sortBy": [

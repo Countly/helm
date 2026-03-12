@@ -706,7 +706,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "100 * sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", http_status_code=~\"5..\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])) / clamp_min(sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])), 1e-10)",
+          "expr": "100 * (sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", http_status_code=~\"5..\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])) or sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])) * 0) / clamp_min(sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])), 1e-10)",
           "legendFormat": "{{service_name}}",
           "refId": "A"
         }

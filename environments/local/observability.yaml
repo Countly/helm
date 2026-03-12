@@ -16,8 +16,8 @@ ingress:
     # Must match the Countly chart's ClusterIssuer: <release-name>-ca-issuer
     cert-manager.io/cluster-issuer: countly-ca-issuer
   hosts:
-    - host: grafana.local
+    - host: obs-test.count.ly
   tls:
     - hosts:
-        - grafana.local
+        - obs-test.count.ly
       secretName: grafana-tls
