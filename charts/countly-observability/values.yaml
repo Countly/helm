@@ -258,7 +258,7 @@ grafana:
       memory: "2Gi"
   plugins:
     install: "grafana-pyroscope-datasource"
-  featureToggles: "tempoSearch,tempoBackendSearch,traceqlEditor"
+  featureToggles: "tempoSearch,tempoBackendSearch,traceqlEditor,exploreTraces"
   dashboards:
     enabled: true
     overview: true

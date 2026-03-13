@@ -60,10 +60,15 @@ data:
           tags:
             - key: service.name
               value: service
-            - key: job
+            - key: service.namespace
+              value: service_namespace
+            - key: http.method
+            - key: http.status_code
           queries:
             - name: 'Request rate'
               query: 'sum(rate(traces_spanmetrics_calls_total{$$__tags}[5m]))'
+            - name: 'Error rate'
+              query: 'sum(rate(traces_spanmetrics_calls_total{$$__tags,status_code="STATUS_CODE_ERROR"}[5m]))'
             - name: 'Latency (p95)'
               query: 'histogram_quantile(0.95, sum(rate(traces_spanmetrics_latency_bucket{$$__tags}[5m])) by (le))'
         {{- end }}

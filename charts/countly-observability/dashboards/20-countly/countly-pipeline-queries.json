@@ -25,6 +25,24 @@
       "id": "timeseries",
       "name": "Time series",
       "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "bargauge",
+      "name": "Bar gauge",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "tempo",
+      "name": "Tempo",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
     }
   ],
   "annotations": {
@@ -185,7 +203,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_kafka_consumer_batches_total{cluster=~\"$cluster\", result=\"success\"}[5m])) / sum(rate(countly_kafka_consumer_batches_total{cluster=~\"$cluster\"}[5m]))",
+          "expr": "sum(rate(countly_kafka_consumer_batches_total{cluster=~\"$cluster\", result=\"success\"}[$__rate_interval])) / sum(rate(countly_kafka_consumer_batches_total{cluster=~\"$cluster\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -253,7 +271,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_kafka_producer_batches_total{cluster=~\"$cluster\", result=\"success\"}[5m])) / sum(rate(countly_kafka_producer_batches_total{cluster=~\"$cluster\"}[5m]))",
+          "expr": "sum(rate(countly_kafka_producer_batches_total{cluster=~\"$cluster\", result=\"success\"}[$__rate_interval])) / sum(rate(countly_kafka_producer_batches_total{cluster=~\"$cluster\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -321,7 +339,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_query_total{cluster=~\"$cluster\", result=\"error\"}[5m])) / sum(rate(countly_query_total[5m])) or vector(0)",
+          "expr": "sum(rate(countly_query_total{cluster=~\"$cluster\", result=\"error\"}[$__rate_interval])) / sum(rate(countly_query_total[$__rate_interval])) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -389,7 +407,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_event_sink_events_total{cluster=~\"$cluster\", result=\"error\"}[5m])) / sum(rate(countly_event_sink_events_total[5m])) or vector(0)",
+          "expr": "sum(rate(countly_event_sink_events_total{cluster=~\"$cluster\", result=\"error\"}[$__rate_interval])) / sum(rate(countly_event_sink_events_total[$__rate_interval])) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -492,7 +510,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (result)(rate(countly_kafka_consumer_batches_total{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[5m]))",
+          "expr": "sum by (result)(rate(countly_kafka_consumer_batches_total{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[$__rate_interval]))",
           "legendFormat": "{{result}}",
           "refId": "A"
         }
@@ -582,8 +600,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_consumer_batch_duration_seconds_bucket{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[5m])) by (le))",
-          "legendFormat": "Batch P95",
+          "expr": "sum(rate(countly_kafka_consumer_batch_duration_seconds_sum{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[$__rate_interval])) / sum(rate(countly_kafka_consumer_batch_duration_seconds_count{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[$__rate_interval]))",
+          "legendFormat": "Batch Avg",
           "refId": "A"
         },
         {
@@ -591,8 +609,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_consumer_handler_duration_seconds_bucket{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[5m])) by (le))",
-          "legendFormat": "Handler P95",
+          "expr": "sum(rate(countly_kafka_consumer_handler_duration_seconds_sum{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[$__rate_interval])) / sum(rate(countly_kafka_consumer_handler_duration_seconds_count{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[$__rate_interval]))",
+          "legendFormat": "Handler Avg",
           "refId": "B"
         },
         {
@@ -600,12 +618,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_consumer_commit_duration_seconds_bucket{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[5m])) by (le))",
-          "legendFormat": "Commit P95",
+          "expr": "sum(rate(countly_kafka_consumer_commit_duration_seconds_sum{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[$__rate_interval])) / sum(rate(countly_kafka_consumer_commit_duration_seconds_count{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[$__rate_interval]))",
+          "legendFormat": "Commit Avg",
           "refId": "C"
         }
       ],
-      "title": "Consumer Batch Duration",
+      "title": "Consumer Batch Duration (Avg)",
       "type": "timeseries"
     },
     {
@@ -703,12 +721,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_consumer_parse_duration_seconds_bucket{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[5m])) by (le))",
-          "legendFormat": "Parse P95",
+          "expr": "sum(rate(countly_kafka_consumer_parse_duration_seconds_sum{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[$__rate_interval])) / sum(rate(countly_kafka_consumer_parse_duration_seconds_count{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[$__rate_interval]))",
+          "legendFormat": "Parse Avg",
           "refId": "A"
         }
       ],
-      "title": "Parse Duration P95",
+      "title": "Parse Duration Avg",
       "type": "timeseries"
     },
     {
@@ -793,7 +811,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (group_id, topic)(rate(countly_kafka_consumer_batches_total{cluster=~\"$cluster\", service_name=~\"$service_name\", group_id=~\"$group_id\", topic=~\"$topic\", result=\"error\"}[5m])) or vector(0)",
+          "expr": "sum by (group_id, topic)(rate(countly_kafka_consumer_batches_total{cluster=~\"$cluster\", service_name=~\"$service_name\", group_id=~\"$group_id\", topic=~\"$topic\", result=\"error\"}[$__rate_interval])) or vector(0)",
           "legendFormat": "{{group_id}} {{topic}}",
           "refId": "A"
         }
@@ -883,7 +901,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (group_id)(rate(countly_kafka_consumer_rebalances_total{cluster=~\"$cluster\", service_name=~\"$service_name\", group_id=~\"$group_id\"}[5m])) or vector(0)",
+          "expr": "sum by (group_id)(rate(countly_kafka_consumer_rebalances_total{cluster=~\"$cluster\", service_name=~\"$service_name\", group_id=~\"$group_id\"}[$__rate_interval])) or vector(0)",
           "legendFormat": "{{group_id}}",
           "refId": "A"
         }
@@ -959,7 +977,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -989,7 +1008,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (group_id, topic)(rate(countly_kafka_consumer_batch_messages_sum{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[5m]))",
+          "expr": "sum by (group_id, topic)(rate(countly_kafka_consumer_batch_messages_sum{cluster=~\"$cluster\", group_id=~\"$group_id\", topic=~\"$topic\"}[$__rate_interval]))",
           "legendFormat": "{{group_id}} / {{topic}}",
           "range": true,
           "refId": "A"
@@ -1093,7 +1112,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (result)(rate(countly_kafka_producer_batches_total{cluster=~\"$cluster\", topic=~\"$topic\"}[5m]))",
+          "expr": "sum by (result)(rate(countly_kafka_producer_batches_total{cluster=~\"$cluster\", topic=~\"$topic\"}[$__rate_interval]))",
           "legendFormat": "{{result}}",
           "refId": "A"
         }
@@ -1183,12 +1202,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_kafka_producer_batch_duration_seconds_bucket{cluster=~\"$cluster\", topic=~\"$topic\"}[5m])) by (le))",
-          "legendFormat": "Batch Duration P95",
+          "expr": "sum by (topic)(rate(countly_kafka_producer_batch_duration_seconds_sum{cluster=~\"$cluster\", topic=~\"$topic\"}[$__rate_interval])) / sum by (topic)(rate(countly_kafka_producer_batch_duration_seconds_count{cluster=~\"$cluster\", topic=~\"$topic\"}[$__rate_interval]))",
+          "legendFormat": "{{topic}}",
           "refId": "A"
         }
       ],
-      "title": "Producer Batch Duration P95",
+      "title": "Producer Batch Duration (Avg)",
       "type": "timeseries"
     },
     {
@@ -1286,7 +1305,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_kafka_producer_batches_total{cluster=~\"$cluster\", service_name=~\"$service_name\", result=\"error\"}[5m])) or vector(0)",
+          "expr": "sum(rate(countly_kafka_producer_batches_total{cluster=~\"$cluster\", service_name=~\"$service_name\", result=\"error\"}[$__rate_interval])) or vector(0)",
           "legendFormat": "Errors",
           "refId": "A"
         }
@@ -1376,7 +1395,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (service_name)(rate(http_timeout_total{cluster=~\"$cluster\", service_name=~\"$service_name\"}[5m])) or vector(0)",
+          "expr": "sum by (service_name)(rate(http_timeout_total{cluster=~\"$cluster\", service_name=~\"$service_name\"}[$__rate_interval])) or vector(0)",
           "legendFormat": "{{service_name}}",
           "refId": "A"
         }
@@ -1479,12 +1498,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_event_sink_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])) by (le, sink))",
+          "expr": "sum(rate(countly_event_sink_duration_seconds_sum{cluster=~\"$cluster\"}[$__rate_interval])) by (sink) / sum(rate(countly_event_sink_duration_seconds_count{cluster=~\"$cluster\"}[$__rate_interval])) by (sink)",
           "legendFormat": "{{sink}}",
           "refId": "A"
         }
       ],
-      "title": "Event Sink Duration P95",
+      "title": "Event Sink Duration Avg",
       "type": "timeseries"
     },
     {
@@ -1569,7 +1588,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (result)(rate(countly_event_sink_events_total{cluster=~\"$cluster\"}[5m]))",
+          "expr": "sum by (result)(rate(countly_event_sink_events_total{cluster=~\"$cluster\"}[$__rate_interval]))",
           "legendFormat": "{{result}}",
           "refId": "A"
         }
@@ -1659,12 +1678,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_event_source_batch_wait_seconds_bucket{cluster=~\"$cluster\", service_name=~\"$service_name\", group_id=~\"$group_id\"}[5m])) by (le)) or vector(0)",
-          "legendFormat": "Batch Wait P95",
+          "expr": "sum(rate(countly_event_source_batch_wait_seconds_sum{cluster=~\"$cluster\", service_name=~\"$service_name\", group_id=~\"$group_id\"}[$__rate_interval])) / sum(rate(countly_event_source_batch_wait_seconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", group_id=~\"$group_id\"}[$__rate_interval])) or vector(0)",
+          "legendFormat": "Batch Wait Avg",
           "refId": "A"
         }
       ],
-      "title": "Source Batch Wait P95",
+      "title": "Source Batch Wait Avg",
       "type": "timeseries"
     },
     {
@@ -1762,7 +1781,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (result)(rate(countly_query_total{cluster=~\"$cluster\"}[5m]))",
+          "expr": "sum by (result)(rate(countly_query_total{cluster=~\"$cluster\"}[$__rate_interval]))",
           "legendFormat": "{{result}}",
           "refId": "A"
         }
@@ -1832,18 +1851,20 @@
       },
       "id": 113,
       "options": {
-        "legend": {
+        "reduceOptions": {
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ],
-          "displayMode": "table",
-          "placement": "right"
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "minVizWidth": 8,
+        "minVizHeight": 16,
+        "valueMode": "color",
+        "namePlacement": "auto"
       },
       "pluginVersion": "10.0.0",
       "targets": [
@@ -1852,13 +1873,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, query_name)(rate(countly_query_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])))",
+          "expr": "sum by (query_name)(rate(countly_query_duration_seconds_sum{cluster=~\"$cluster\"}[$__rate_interval])) / sum by (query_name)(rate(countly_query_duration_seconds_count{cluster=~\"$cluster\"}[$__rate_interval]))",
           "legendFormat": "{{query_name}}",
           "refId": "A"
         }
       ],
-      "title": "Query Duration P95",
-      "type": "timeseries"
+      "title": "Avg Query Duration by Type",
+      "type": "bargauge"
     },
     {
       "datasource": {
@@ -1921,16 +1942,19 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 24,
         "x": 0,
         "y": 68
       },
       "id": 202,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
           "showLegend": true
         },
         "tooltip": {
@@ -1945,13 +1969,13 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum by (le, query_name)(rate(countly_query_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])))",
+          "expr": "sum by (query_name)(rate(countly_query_duration_seconds_count{cluster=~\"$cluster\"}[$__rate_interval]))",
           "legendFormat": "{{query_name}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Query Duration by Name",
+      "title": "Query Rate by Name",
       "type": "timeseries"
     },
     {
@@ -2016,16 +2040,19 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 68
+        "w": 24,
+        "x": 0,
+        "y": 76
       },
       "id": 203,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
           "showLegend": true
         },
         "tooltip": {
@@ -2040,7 +2067,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (query_name)(rate(countly_query_duration_seconds_sum{cluster=~\"$cluster\"}[5m])) / sum by (query_name)(rate(countly_query_duration_seconds_count{cluster=~\"$cluster\"}[5m]))",
+          "expr": "sum by (query_name)(rate(countly_query_duration_seconds_sum{cluster=~\"$cluster\"}[$__rate_interval])) / sum by (query_name)(rate(countly_query_duration_seconds_count{cluster=~\"$cluster\"}[$__rate_interval]))",
           "legendFormat": "{{query_name}}",
           "range": true,
           "refId": "A"
@@ -2113,14 +2140,17 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 76
+        "y": 84
       },
       "id": 204,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
           "showLegend": true
         },
         "tooltip": {
@@ -2135,13 +2165,13 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum by (le, query_name)(rate(countly_query_duration_seconds_bucket{cluster=~\"$cluster\", service_name=~\"$service_name\"}[5m])))",
-          "legendFormat": "{{query_name}}",
+          "expr": "sum by (query_name, service_name)(rate(countly_query_duration_seconds_sum{cluster=~\"$cluster\", service_name=~\"$service_name\"}[$__rate_interval])) / sum by (query_name, service_name)(rate(countly_query_duration_seconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\"}[$__rate_interval]))",
+          "legendFormat": "{{service_name}} / {{query_name}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Query Duration P95 by Name",
+      "title": "Avg Query Duration by Name & Service",
       "type": "timeseries"
     },
     {
@@ -2199,7 +2229,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -2207,7 +2238,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 84
+        "y": 92
       },
       "id": 205,
       "options": {
@@ -2229,7 +2260,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (query_name)(rate(countly_query_total{cluster=~\"$cluster\", service_name=~\"$service_name\", result=\"error\"}[5m])) or vector(0)",
+          "expr": "sum by (query_name)(rate(countly_query_total{cluster=~\"$cluster\", service_name=~\"$service_name\", result=\"error\"}[$__rate_interval])) or vector(0)",
           "legendFormat": "{{query_name}}",
           "range": true,
           "refId": "A"
@@ -2293,7 +2324,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "s"
         },
         "overrides": []
       },
@@ -2301,7 +2333,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 84
+        "y": 92
       },
       "id": 206,
       "options": {
@@ -2323,7 +2355,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum by (le, operation)(rate(countly_clickhouse_request_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])))",
+          "expr": "sum by (operation)(rate(countly_clickhouse_request_duration_seconds_sum{cluster=~\"$cluster\"}[$__rate_interval])) / sum by (operation)(rate(countly_clickhouse_request_duration_seconds_count{cluster=~\"$cluster\"}[$__rate_interval]))",
           "legendFormat": "{{operation}}",
           "range": true,
           "refId": "A"
@@ -2338,7 +2370,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 92
+        "y": 100
       },
       "id": 8,
       "panels": [],
@@ -2403,7 +2435,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 93
+        "y": 101
       },
       "id": 114,
       "options": {
@@ -2427,7 +2459,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (operation, result)(rate(countly_clickhouse_request_total{cluster=~\"$cluster\"}[5m]))",
+          "expr": "sum by (operation, result)(rate(countly_clickhouse_request_total{cluster=~\"$cluster\"}[$__rate_interval]))",
           "legendFormat": "{{operation}} {{result}}",
           "refId": "A"
         }
@@ -2493,7 +2525,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 93
+        "y": 101
       },
       "id": 115,
       "options": {
@@ -2517,12 +2549,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, operation)(rate(countly_clickhouse_request_duration_seconds_bucket{cluster=~\"$cluster\"}[5m])))",
-          "legendFormat": "{{operation}}",
+          "expr": "sum(rate(countly_clickhouse_request_duration_seconds_sum{cluster=~\"$cluster\"}[$__rate_interval])) / sum(rate(countly_clickhouse_request_duration_seconds_count{cluster=~\"$cluster\"}[$__rate_interval]))",
+          "legendFormat": "overall",
           "refId": "A"
         }
       ],
-      "title": "CH Request Duration P95",
+      "title": "CH Request Duration Avg (Overall)",
       "type": "timeseries"
     },
     {
@@ -2534,7 +2566,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 101
+        "y": 109
       },
       "panels": []
     },
@@ -2552,7 +2584,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_kafka_consumer_batches_total{cluster=~\"$cluster\", result=\"error\"}[5m])) or vector(0)",
+          "expr": "sum(rate(countly_kafka_consumer_batches_total{cluster=~\"$cluster\", result=\"error\"}[$__rate_interval])) or vector(0)",
           "refId": "A",
           "legendFormat": ""
         }
@@ -2581,7 +2613,7 @@
         "h": 4,
         "w": 8,
         "x": 0,
-        "y": 102
+        "y": 110
       },
       "options": {
         "reduceOptions": {
@@ -2608,7 +2640,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_kafka_consumer_rebalances_total{cluster=~\"$cluster\"}[5m])) or vector(0)",
+          "expr": "sum(rate(countly_kafka_consumer_rebalances_total{cluster=~\"$cluster\"}[$__rate_interval])) or vector(0)",
           "refId": "A",
           "legendFormat": ""
         }
@@ -2637,7 +2669,7 @@
         "h": 4,
         "w": 8,
         "x": 8,
-        "y": 102
+        "y": 110
       },
       "options": {
         "reduceOptions": {
@@ -2664,7 +2696,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(http_timeout_total{cluster=~\"$cluster\"}[5m])) or vector(0)",
+          "expr": "sum(rate(http_timeout_total{cluster=~\"$cluster\"}[$__rate_interval])) or vector(0)",
           "refId": "A",
           "legendFormat": ""
         }
@@ -2693,7 +2725,7 @@
         "h": 4,
         "w": 8,
         "x": 16,
-        "y": 102
+        "y": 110
       },
       "options": {
         "reduceOptions": {
@@ -2705,6 +2737,251 @@
         "graphMode": "none",
         "textMode": "auto"
       }
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 114
+      },
+      "id": 10,
+      "panels": [],
+      "title": "Slow Traces",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 115
+      },
+      "id": 207,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (service)(rate(traces_spanmetrics_latency_bucket{service=~\"countly-.*|kafka-connect\", le=\"+Inf\"}[$__rate_interval]) - ignoring(le) rate(traces_spanmetrics_latency_bucket{service=~\"countly-.*|kafka-connect\", le=\"1.024\"}[$__rate_interval]))",
+          "legendFormat": "{{service}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Slow Span Rate (>1s)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "tempo",
+        "uid": "tempo"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "traceDuration"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "displayName",
+                "value": "Duration"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rootServiceName"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Service"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rootTraceName"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Operation"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "traceID"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Trace ID"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "startTimeUnixNano"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Start Time"
+              },
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 123
+      },
+      "id": 208,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Duration"
+          }
+        ]
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "tempo"
+          },
+          "queryType": "traceql",
+          "query": "{resource.service.name =~ \"countly-api|countly-ingestor|countly-aggregator|countly-jobserver|countly-frontend|kafka-connect\" && duration > 1s}",
+          "tableType": "traces",
+          "limit": 20,
+          "refId": "A"
+        }
+      ],
+      "title": "Slowest Traces (>1s)",
+      "type": "table"
     }
   ],
   "refresh": "1m",

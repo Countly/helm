@@ -126,7 +126,8 @@
                 "value": 5
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -190,7 +191,8 @@
                 "value": 1
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -258,7 +260,8 @@
                 "value": 2
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -326,7 +329,8 @@
                 "value": 10
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -394,7 +398,8 @@
                 "value": 3
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -458,7 +463,8 @@
                 "value": 1
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -522,7 +528,8 @@
                 "value": 1
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -590,7 +597,8 @@
                 "value": 3
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -697,7 +705,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(nginx_ingress_controller_upstream_server_response_latency_ms_count{cluster=~\"$cluster\", service!=\"countly-observability-grafana\"}[5m]))",
+          "expr": "sum(rate(nginx_ingress_controller_upstream_server_response_latency_ms_count{cluster=~\"$cluster\", service!=\"countly-observability-grafana\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -766,7 +774,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(100 * sum(rate(nginx_ingress_controller_upstream_server_response_latency_ms_count{cluster=~\"$cluster\", service!=\"countly-observability-grafana\", code=~\"4..|5..\"}[5m])) / sum(rate(nginx_ingress_controller_upstream_server_response_latency_ms_count{cluster=~\"$cluster\", service!=\"countly-observability-grafana\"}[5m]))) or vector(0)",
+          "expr": "(100 * sum(rate(nginx_ingress_controller_upstream_server_response_latency_ms_count{cluster=~\"$cluster\", service!=\"countly-observability-grafana\", code=~\"4..|5..\"}[$__rate_interval])) / sum(rate(nginx_ingress_controller_upstream_server_response_latency_ms_count{cluster=~\"$cluster\", service!=\"countly-observability-grafana\"}[$__rate_interval]))) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -835,12 +843,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.90, sum by(le)(rate(nginx_ingress_controller_upstream_server_response_latency_ms_bucket{cluster=~\"$cluster\", service!=\"countly-observability-grafana\"}[5m])))",
+          "expr": "sum(rate(nginx_ingress_controller_upstream_server_response_latency_ms_sum{cluster=~\"$cluster\", service!=\"countly-observability-grafana\"}[$__rate_interval])) / sum(rate(nginx_ingress_controller_upstream_server_response_latency_ms_count{cluster=~\"$cluster\", service!=\"countly-observability-grafana\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "p90 Latency",
+      "title": "Avg Latency",
       "type": "stat"
     },
     {
@@ -904,12 +912,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.99, sum by(le)(rate(nginx_ingress_controller_upstream_server_response_latency_ms_bucket{cluster=~\"$cluster\", service!=\"countly-observability-grafana\"}[5m])))",
+          "expr": "sum(rate(nginx_ingress_controller_upstream_server_response_latency_ms_sum{cluster=~\"$cluster\", service!=\"countly-observability-grafana\"}[$__rate_interval])) / sum(rate(nginx_ingress_controller_upstream_server_response_latency_ms_count{cluster=~\"$cluster\", service!=\"countly-observability-grafana\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "p99 Latency",
+      "title": "Avg Latency",
       "type": "stat"
     },
     {
@@ -1453,7 +1461,7 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -1485,7 +1493,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(sum by (namespace, pod)(rate(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}[5m])) > 0)",
+          "expr": "(sum by (namespace, pod)(rate(kube_pod_container_status_restarts_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) > 0)",
           "legendFormat": "{{namespace}}/{{pod}}",
           "refId": "A"
         }
@@ -1590,7 +1598,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (namespace)(rate(container_cpu_usage_seconds_total{cluster=~\"$cluster\", namespace=~\"$namespace\",container!=\"\",image!=\"\"}[5m])) / sum by (namespace)(kube_pod_container_resource_limits{cluster=~\"$cluster\", namespace=~\"$namespace\",resource=\"cpu\",container!=\"\"})",
+          "expr": "sum by (namespace)(rate(container_cpu_usage_seconds_total{cluster=~\"$cluster\", namespace=~\"$namespace\",container!=\"\",image!=\"\"}[$__rate_interval])) / sum by (namespace)(kube_pod_container_resource_limits{cluster=~\"$cluster\", namespace=~\"$namespace\",resource=\"cpu\",container!=\"\"})",
           "legendFormat": "{{namespace}}",
           "refId": "A"
         }
@@ -1754,7 +1762,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -1820,7 +1829,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -1951,7 +1961,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "topk(10, sum by (namespace, pod)(rate(container_cpu_usage_seconds_total{cluster=~\"$cluster\", namespace=~\"$namespace\",container!=\"\",image!=\"\"}[5m])))",
+          "expr": "topk(10, sum by (namespace, pod)(rate(container_cpu_usage_seconds_total{cluster=~\"$cluster\", namespace=~\"$namespace\",container!=\"\",image!=\"\"}[$__rate_interval])))",
           "legendFormat": "{{namespace}}/{{pod}}",
           "refId": "A"
         }

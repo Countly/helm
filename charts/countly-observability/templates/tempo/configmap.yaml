@@ -44,6 +44,30 @@ data:
     {{- if .Values.metrics.enabled }}
     metrics_generator:
       processor:
+        service_graphs:
+          dimensions:
+            - service.namespace
+            - deployment.environment
+          peer_attributes:
+            - db.system
+            - messaging.system
+            - server.address
+            - peer.service
+          enable_client_server_prefix: true
+          enable_messaging_system_latency_histogram: true
+          enable_virtual_node_label: true
+          max_items: 50000
+          wait: 30s
+        span_metrics:
+          dimensions:
+            - service.namespace
+            - http.method
+            - http.route
+            - http.status_code
+            - rpc.method
+            - db.system
+            - messaging.system
+          enable_target_info: true
         local_blocks:
           max_live_traces: 100000
           flush_check_period: 10s

@@ -16,7 +16,7 @@ loki:
     limits: { cpu: "500m", memory: "1Gi" }
 
 tempo:
-  retention: "7d"
+  retention: "168h"
   storage:
     size: 20Gi
   resources:

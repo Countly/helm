@@ -163,7 +163,8 @@
                 "value": 900
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -332,7 +333,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(mongodb_ss_opcounters{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]))",
+          "expr": "sum(rate(mongodb_ss_opcounters{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -367,7 +368,8 @@
                 "value": 500
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -467,7 +469,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m]), 1)",
+          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[$__rate_interval]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[$__rate_interval]), 1)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -535,7 +537,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m]), 1)",
+          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[$__rate_interval]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[$__rate_interval]), 1)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -570,7 +572,8 @@
                 "value": 50
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -670,7 +673,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_queryExecutor_collectionScans_total{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_queryExecutor_collectionScans_total{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -739,7 +742,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -771,7 +775,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_opcounters{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_opcounters{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "{{type}}",
           "refId": "A"
         }
@@ -828,7 +832,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -860,7 +865,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_opcountersRepl{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_opcountersRepl{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "repl {{type}}",
           "refId": "A"
         }
@@ -962,7 +967,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m]), 1)",
+          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[$__rate_interval]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[$__rate_interval]), 1)",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -1052,7 +1057,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m]), 1)",
+          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[$__rate_interval]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[$__rate_interval]), 1)",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -1121,7 +1126,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -1210,7 +1216,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -1311,7 +1318,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -1343,7 +1351,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_queryExecutor_collectionScans_total{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_queryExecutor_collectionScans_total{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Total",
           "refId": "A"
         },
@@ -1352,7 +1360,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_queryExecutor_collectionScans_nonTailable{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_queryExecutor_collectionScans_nonTailable{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Non-Tailable",
           "refId": "B"
         }
@@ -1409,7 +1417,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -1441,7 +1450,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_queryExecutor_scanned{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) / rate(mongodb_ss_metrics_queryExecutor_scannedObjects{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_queryExecutor_scanned{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]) / rate(mongodb_ss_metrics_queryExecutor_scannedObjects{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Scanned/Objects Ratio",
           "refId": "A"
         }
@@ -1729,7 +1738,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -1761,7 +1771,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_lessThan1Second{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_lessThan1Second{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "refId": "A",
           "legendFormat": "< 1s"
         },
@@ -1770,7 +1780,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_lessThan15Seconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_lessThan15Seconds{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "refId": "B",
           "legendFormat": "< 15s"
         },
@@ -1779,7 +1789,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_lessThan1Minute{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_lessThan1Minute{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "refId": "C",
           "legendFormat": "< 1m"
         },
@@ -1788,7 +1798,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_lessThan10Minutes{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_lessThan10Minutes{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "refId": "D",
           "legendFormat": "< 10m"
         },
@@ -1797,7 +1807,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_greaterThanOrEqual10Minutes{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_cursor_lifespan_greaterThanOrEqual10Minutes{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "refId": "E",
           "legendFormat": ">= 10m"
         }
@@ -1854,7 +1864,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -1886,7 +1897,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_query_sort_spillToDisk{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_query_sort_spillToDisk{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -1921,7 +1932,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "topk(10, rate(mongodb_top_queries_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]))",
+          "expr": "topk(10, rate(mongodb_top_queries_time{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]))",
           "refId": "A",
           "legendFormat": "{{database}}.{{collection}}"
         }
@@ -1971,7 +1982,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "topk(10, rate(mongodb_top_insert_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) + rate(mongodb_top_update_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) + rate(mongodb_top_remove_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]))",
+          "expr": "topk(10, rate(mongodb_top_insert_time{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]) + rate(mongodb_top_update_time{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]) + rate(mongodb_top_remove_time{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]))",
           "refId": "A",
           "legendFormat": "{{database}}.{{collection}}"
         }
@@ -2021,7 +2032,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "topk(10, rate(mongodb_top_queries_count{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]))",
+          "expr": "topk(10, rate(mongodb_top_queries_count{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]))",
           "refId": "A",
           "legendFormat": "{{database}}.{{collection}}"
         }
@@ -2071,7 +2082,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "topk(10, rate(mongodb_top_insert_count{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) + rate(mongodb_top_update_count{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) + rate(mongodb_top_remove_count{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]))",
+          "expr": "topk(10, rate(mongodb_top_insert_count{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]) + rate(mongodb_top_update_count{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]) + rate(mongodb_top_remove_count{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]))",
           "refId": "A",
           "legendFormat": "{{database}}.{{collection}}"
         }
@@ -2135,7 +2146,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_metrics_queryExecutor_collectionScans_total{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_queryExecutor_collectionScans_total{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Collection Scans/s",
           "range": true,
           "refId": "A"
@@ -2146,7 +2157,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_metrics_queryExecutor_collectionScans_nonTailable{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_queryExecutor_collectionScans_nonTailable{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Non-Tailable Scans/s",
           "range": true,
           "refId": "B"
@@ -2157,7 +2168,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_metrics_query_sort_spillToDisk{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_query_sort_spillToDisk{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Sort Spill to Disk/s",
           "range": true,
           "refId": "C"
@@ -2216,7 +2227,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[5m]), 1)",
+          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[$__rate_interval]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"reads\", instance=~\"$instance\"}[$__rate_interval]), 1)",
           "legendFormat": "Read Latency",
           "range": true,
           "refId": "A"
@@ -2227,7 +2238,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[5m]), 1)",
+          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[$__rate_interval]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"writes\", instance=~\"$instance\"}[$__rate_interval]), 1)",
           "legendFormat": "Write Latency",
           "range": true,
           "refId": "B"
@@ -2238,7 +2249,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"commands\", instance=~\"$instance\"}[5m]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"commands\", instance=~\"$instance\"}[5m]), 1)",
+          "expr": "rate(mongodb_ss_opLatencies_latency{cluster=~\"$cluster\", op_type=\"commands\", instance=~\"$instance\"}[$__rate_interval]) / clamp_min(rate(mongodb_ss_opLatencies_ops{cluster=~\"$cluster\", op_type=\"commands\", instance=~\"$instance\"}[$__rate_interval]), 1)",
           "legendFormat": "Command Latency",
           "range": true,
           "refId": "C"
@@ -2309,7 +2320,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_document{cluster=~\"$cluster\", instance=~\"$instance\", doc_op_type=\"inserted\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_document{cluster=~\"$cluster\", instance=~\"$instance\", doc_op_type=\"inserted\"}[$__rate_interval])",
           "refId": "A",
           "legendFormat": "Inserted"
         },
@@ -2318,7 +2329,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_document{cluster=~\"$cluster\", instance=~\"$instance\", doc_op_type=\"updated\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_document{cluster=~\"$cluster\", instance=~\"$instance\", doc_op_type=\"updated\"}[$__rate_interval])",
           "refId": "B",
           "legendFormat": "Updated"
         },
@@ -2327,7 +2338,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_document{cluster=~\"$cluster\", instance=~\"$instance\", doc_op_type=\"deleted\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_document{cluster=~\"$cluster\", instance=~\"$instance\", doc_op_type=\"deleted\"}[$__rate_interval])",
           "refId": "C",
           "legendFormat": "Deleted"
         },
@@ -2336,7 +2347,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_metrics_document{cluster=~\"$cluster\", instance=~\"$instance\", doc_op_type=\"returned\"}[5m])",
+          "expr": "rate(mongodb_ss_metrics_document{cluster=~\"$cluster\", instance=~\"$instance\", doc_op_type=\"returned\"}[$__rate_interval])",
           "refId": "D",
           "legendFormat": "Returned"
         }
@@ -2406,7 +2417,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_extra_info_page_faults{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_extra_info_page_faults{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "refId": "A",
           "legendFormat": "Page Faults/s"
         }
@@ -2476,7 +2487,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_asserts{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_asserts{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "refId": "A",
           "legendFormat": "{{type}}"
         }
@@ -2533,7 +2544,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(mongodb_ss_network_numRequests{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_network_numRequests{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "refId": "A",
           "legendFormat": "Requests/s"
         }
@@ -2644,7 +2655,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "\u00b5s"
         },
         "overrides": []
       },
@@ -2674,7 +2686,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "topk(10, rate(mongodb_top_queries_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]))",
+          "expr": "topk(10, rate(mongodb_top_queries_time{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]))",
           "legendFormat": "{{collection}}",
           "range": true,
           "refId": "A"
@@ -2738,7 +2750,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "\u00b5s"
         },
         "overrides": []
       },
@@ -2768,7 +2781,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "topk(10, rate(mongodb_top_insert_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) + rate(mongodb_top_update_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) + rate(mongodb_top_remove_time{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]))",
+          "expr": "topk(10, rate(mongodb_top_insert_time{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]) + rate(mongodb_top_update_time{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]) + rate(mongodb_top_remove_time{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]))",
           "legendFormat": "{{collection}}",
           "range": true,
           "refId": "A"
@@ -3003,7 +3016,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_wt_cache_pages_read_into_cache{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_wt_cache_pages_read_into_cache{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Pages Read",
           "range": true,
           "refId": "A"
@@ -3014,7 +3027,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_wt_cache_pages_written_from_cache{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_wt_cache_pages_written_from_cache{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Pages Written",
           "range": true,
           "refId": "B"
@@ -3105,7 +3118,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_wt_txn_transaction_begins{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_wt_txn_transaction_begins{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Begins",
           "range": true,
           "refId": "A"
@@ -3116,7 +3129,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_wt_txn_transactions_committed{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_wt_txn_transactions_committed{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Committed",
           "range": true,
           "refId": "B"
@@ -3127,7 +3140,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_wt_txn_transactions_rolled_back{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_wt_txn_transactions_rolled_back{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Rolled Back",
           "range": true,
           "refId": "C"
@@ -3320,7 +3333,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_wt_log_log_sync_operations{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_wt_log_log_sync_operations{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Sync Ops",
           "range": true,
           "refId": "A"
@@ -3331,7 +3344,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_wt_log_log_write_operations{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_wt_log_log_write_operations{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Write Ops",
           "range": true,
           "refId": "B"
@@ -3422,7 +3435,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_wt_cursor_cursor_search_calls{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_wt_cursor_cursor_search_calls{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Search",
           "range": true,
           "refId": "A"
@@ -3433,7 +3446,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_wt_cursor_cursor_insert_calls{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_wt_cursor_cursor_insert_calls{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Insert",
           "range": true,
           "refId": "B"
@@ -3444,7 +3457,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_wt_cursor_cursor_update_calls{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_wt_cursor_cursor_update_calls{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Update",
           "range": true,
           "refId": "C"
@@ -3455,7 +3468,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(mongodb_ss_wt_cursor_cursor_remove_calls{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(mongodb_ss_wt_cursor_cursor_remove_calls{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Remove",
           "range": true,
           "refId": "D"

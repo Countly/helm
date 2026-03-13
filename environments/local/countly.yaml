@@ -33,9 +33,9 @@ ingress:
   tls:
     mode: selfSigned
 
-# Updated image with metrics.js fix + explicit kafkajs instrumentation
+# Updated image with OTel trace correlation fixes (requestHook, responseHook, NodeSDK)
 image:
-  tag: "f81b39d4488c596f76a5c385d088a8998b7c1b20933366ad994f5315597ec48b"
+  tag: "469da06592a8abc6ea9f5b77564a09540564bb6828d821025cc5af5e8b5100c6"
 
 # Local: single replica for all components
 api:

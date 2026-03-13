@@ -189,7 +189,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m]))",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -257,7 +257,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "100 * sum(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", http_status_code=~\"5..\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])) / clamp_min(sum(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])), 1e-10) or vector(0)",
+          "expr": "100 * sum(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", http_status_code=~\"5..\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])) / clamp_min(sum(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])), 1e-10) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -325,12 +325,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_http_server_duration_milliseconds_bucket{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])) by (le))",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_sum{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])) / sum(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval]))",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "P95 Latency",
+      "title": "Avg Latency",
       "type": "stat"
     },
     {
@@ -385,7 +385,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "100 * sum(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", http_status_code=~\"4..\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])) / clamp_min(sum(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])), 1e-10) or vector(0)",
+          "expr": "100 * sum(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", http_status_code=~\"4..\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])) / clamp_min(sum(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])), 1e-10) or vector(0)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -453,7 +453,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_http_server_duration_milliseconds_sum{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])) / clamp_min(sum(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])), 1e-10)",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_sum{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])) / clamp_min(sum(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])), 1e-10)",
           "legendFormat": "__auto",
           "refId": "A"
         }
@@ -616,7 +616,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m]))",
+          "expr": "sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval]))",
           "legendFormat": "{{service_name}}",
           "refId": "A"
         }
@@ -706,7 +706,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "100 * (sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", http_status_code=~\"5..\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])) or sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])) * 0) / clamp_min(sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])), 1e-10)",
+          "expr": "100 * (sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", http_status_code=~\"5..\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])) or sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])) * 0) / clamp_min(sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])), 1e-10)",
           "legendFormat": "{{service_name}}",
           "refId": "A"
         }
@@ -796,12 +796,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, service_name)(rate(countly_http_server_duration_milliseconds_bucket{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])))",
+          "expr": "sum by (service_name)(rate(countly_http_server_duration_milliseconds_sum{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])) / sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval]))",
           "legendFormat": "{{service_name}}",
           "refId": "A"
         }
       ],
-      "title": "P95 Latency by Service",
+      "title": "Avg Latency by Service",
       "type": "timeseries"
     },
     {
@@ -899,7 +899,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (http_status_code)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m]))",
+          "expr": "sum by (http_status_code)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval]))",
           "legendFormat": "{{http_status_code}}",
           "refId": "A"
         }
@@ -989,7 +989,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (http_request_method)(rate(countly_http_server_duration_milliseconds_sum{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])) / clamp_min(sum by (http_request_method)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])), 1e-10)",
+          "expr": "sum by (http_request_method)(rate(countly_http_server_duration_milliseconds_sum{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])) / clamp_min(sum by (http_request_method)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])), 1e-10)",
           "legendFormat": "{{http_request_method}}",
           "refId": "A"
         }
@@ -1092,7 +1092,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (http_request_method)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m]))",
+          "expr": "sum by (http_request_method)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval]))",
           "legendFormat": "{{http_request_method}}",
           "refId": "A"
         }
@@ -1182,7 +1182,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (url_path)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", http_status_code=~\"[45]..\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m]))",
+          "expr": "sum by (url_path)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", http_status_code=~\"[45]..\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval]))",
           "legendFormat": "{{url_path}}",
           "refId": "A"
         }
@@ -1253,7 +1253,7 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "ms"
         },
         "overrides": []
       },
@@ -1285,21 +1285,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.50, sum(rate(countly_http_server_duration_milliseconds_bucket{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])) by (le))",
-          "legendFormat": "P50",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_sum{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])) / sum(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval]))",
+          "legendFormat": "Avg",
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_http_server_duration_milliseconds_bucket{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])) by (le))",
-          "legendFormat": "P95",
-          "refId": "B"
         }
       ],
-      "title": "P50 vs P95 Latency",
+      "title": "Avg Latency",
       "type": "timeseries"
     },
     {
@@ -1384,12 +1375,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, service_name)(rate(countly_http_server_duration_milliseconds_bucket{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])))",
+          "expr": "sum by (service_name)(rate(countly_http_server_duration_milliseconds_sum{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])) / sum by (service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval]))",
           "legendFormat": "{{service_name}}",
           "refId": "A"
         }
       ],
-      "title": "P95 Latency by Service",
+      "title": "Avg Latency by Service",
       "type": "timeseries"
     },
     {
@@ -1407,7 +1398,7 @@
     },
     {
       "id": 109,
-      "title": "Top 10 Slowest Routes P95",
+      "title": "Top 10 Slowest Routes Avg",
       "type": "bargauge",
       "datasource": {
         "type": "prometheus",
@@ -1419,7 +1410,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "topk(10, histogram_quantile(0.95, sum by (le, url_path)(rate(countly_http_server_duration_milliseconds_bucket{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m]))))",
+          "expr": "topk(10, sum by (url_path)(rate(countly_http_server_duration_milliseconds_sum{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])) / sum by (url_path)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])))",
           "refId": "A",
           "legendFormat": "{{url_path}}"
         }
@@ -1469,7 +1460,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "topk(10, sum by (url_path)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])))",
+          "expr": "topk(10, sum by (url_path)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])))",
           "refId": "A",
           "legendFormat": "{{url_path}}"
         }
@@ -1544,7 +1535,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "cps"
         },
         "overrides": [
           {
@@ -1593,7 +1585,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "topk(20, sum by (url_path, http_status_code, service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", http_status_code=~\"[45]..\", url_path!~\"/v1/(logs|metrics|traces)\"}[5m])))",
+          "expr": "topk(20, sum by (url_path, http_status_code, service_name)(rate(countly_http_server_duration_milliseconds_count{cluster=~\"$cluster\", service_name=~\"$service_name\", http_status_code=~\"[45]..\", url_path!~\"/v1/(logs|metrics|traces)\"}[$__rate_interval])))",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",

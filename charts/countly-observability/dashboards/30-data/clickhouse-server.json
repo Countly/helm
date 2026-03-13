@@ -151,7 +151,8 @@
                 "value": 200
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -350,7 +351,8 @@
                 "value": 1
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -477,7 +479,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -544,7 +547,8 @@
                 "value": 10000
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -611,7 +615,8 @@
                 "value": 50
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -745,7 +750,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_Query{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_Query{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -803,7 +808,7 @@
               }
             ]
           },
-          "unit": "\u00b5s"
+          "unit": "µs"
         },
         "overrides": []
       },
@@ -835,7 +840,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_QueryTimeMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) / (rate(ClickHouseProfileEvents_Query{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) > 0)",
+          "expr": "rate(ClickHouseProfileEvents_QueryTimeMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]) / (rate(ClickHouseProfileEvents_Query{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]) > 0)",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -904,7 +909,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -936,7 +942,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_SelectQuery{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_SelectQuery{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Queries/s",
           "refId": "A"
         },
@@ -945,7 +951,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_SelectedRows{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_SelectedRows{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Rows/s",
           "refId": "B"
         }
@@ -1002,7 +1008,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -1034,7 +1041,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_InsertQuery{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_InsertQuery{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Queries/s",
           "refId": "A"
         },
@@ -1043,7 +1050,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_InsertedRows{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_InsertedRows{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Rows/s",
           "refId": "B"
         }
@@ -1112,7 +1119,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -1219,7 +1227,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -1320,7 +1329,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -1418,7 +1428,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -1927,7 +1938,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -1959,7 +1971,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_QueryCacheHits{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_QueryCacheHits{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Hits/s",
           "refId": "A"
         },
@@ -1968,7 +1980,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_QueryCacheMisses{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_QueryCacheMisses{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Misses/s",
           "refId": "B"
         }
@@ -2038,7 +2050,7 @@
               }
             ]
           },
-          "unit": "\u00b5s"
+          "unit": "µs"
         },
         "overrides": []
       },
@@ -2070,7 +2082,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_DiskReadElapsedMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_DiskReadElapsedMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Read",
           "refId": "A"
         },
@@ -2079,7 +2091,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_DiskWriteElapsedMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_DiskWriteElapsedMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "legendFormat": "Write",
           "refId": "B"
         }
@@ -2247,7 +2259,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -2345,7 +2358,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -2421,7 +2435,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_FailedQuery{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_FailedQuery{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "refId": "A",
           "legendFormat": "Failed"
         }
@@ -2478,7 +2492,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_RejectedInserts{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_RejectedInserts{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "refId": "A",
           "legendFormat": "Rejected"
         }
@@ -2535,7 +2549,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_SlowRead{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_SlowRead{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "refId": "A",
           "legendFormat": "Slow Reads/s"
         }
@@ -2592,7 +2606,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_SelectedRows{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_SelectedRows{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "refId": "A",
           "legendFormat": "Selected"
         },
@@ -2601,7 +2615,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(ClickHouseProfileEvents_InsertedRows{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])",
+          "expr": "rate(ClickHouseProfileEvents_InsertedRows{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
           "refId": "B",
           "legendFormat": "Inserted"
         }
@@ -2644,110 +2658,750 @@
         }
       }
     },
-    { "id": 300, "title": "Connections & Threads", "type": "row", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 94 }, "panels": [] },
     {
-      "id": 301, "title": "HTTP & TCP Connections", "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "id": 300,
+      "title": "Connections & Threads",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 94
+      },
+      "panels": []
+    },
+    {
+      "id": 301,
+      "title": "HTTP & TCP Connections",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseMetrics_TCPConnection{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "TCP {{instance}}", "range": true, "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseMetrics_HTTPConnection{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "HTTP {{instance}}", "range": true, "refId": "B" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseMetrics_MySQLConnection{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "MySQL {{instance}}", "range": true, "refId": "C" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "ClickHouseMetrics_TCPConnection{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "legendFormat": "TCP {{instance}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "ClickHouseMetrics_HTTPConnection{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "legendFormat": "HTTP {{instance}}",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "ClickHouseMetrics_MySQLConnection{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "legendFormat": "MySQL {{instance}}",
+          "range": true,
+          "refId": "C"
+        }
       ],
-      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 95 },
-      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 95
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
     },
     {
-      "id": 302, "title": "Thread Pool", "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "id": 302,
+      "title": "Thread Pool",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseMetrics_GlobalThreadActive{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "Active {{instance}}", "range": true, "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseMetrics_GlobalThread{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "Total {{instance}}", "range": true, "refId": "B" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "ClickHouseMetrics_GlobalThreadActive{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "legendFormat": "Active {{instance}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "ClickHouseMetrics_GlobalThread{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "legendFormat": "Total {{instance}}",
+          "range": true,
+          "refId": "B"
+        }
       ],
-      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 95 },
-      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 95
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
     },
-    { "id": 303, "title": "Query Performance Detail", "type": "row", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 103 }, "panels": [] },
     {
-      "id": 304, "title": "Select vs Insert Query Time", "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "id": 303,
+      "title": "Query Performance Detail",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 103
+      },
+      "panels": []
+    },
+    {
+      "id": 304,
+      "title": "Select vs Insert Query Time",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "rate(ClickHouseProfileEvents_SelectQueryTimeMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) / 1e6", "legendFormat": "Select Time (s/s) {{instance}}", "range": true, "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "rate(ClickHouseProfileEvents_InsertQueryTimeMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) / 1e6", "legendFormat": "Insert Time (s/s) {{instance}}", "range": true, "refId": "B" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(ClickHouseProfileEvents_SelectQueryTimeMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]) / 1e6",
+          "legendFormat": "Select Time (s/s) {{instance}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(ClickHouseProfileEvents_InsertQueryTimeMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]) / 1e6",
+          "legendFormat": "Insert Time (s/s) {{instance}}",
+          "range": true,
+          "refId": "B"
+        }
       ],
-      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "unit": "s", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 104 },
-      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 104
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
     },
     {
-      "id": 305, "title": "Read/Write Throughput", "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "id": 305,
+      "title": "Read/Write Throughput",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "rate(ClickHouseProfileEvents_ReadCompressedBytes{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])", "legendFormat": "Read Compressed {{instance}}", "range": true, "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "rate(ClickHouseProfileEvents_CompressedReadBufferBytes{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])", "legendFormat": "Read Uncompressed {{instance}}", "range": true, "refId": "B" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(ClickHouseProfileEvents_ReadCompressedBytes{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
+          "legendFormat": "Read Compressed {{instance}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(ClickHouseProfileEvents_CompressedReadBufferBytes{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
+          "legendFormat": "Read Uncompressed {{instance}}",
+          "range": true,
+          "refId": "B"
+        }
       ],
-      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "unit": "Bps", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 104 },
-      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "unit": "Bps",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 104
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
     },
-    { "id": 306, "title": "ZooKeeper / Keeper", "type": "row", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 112 }, "panels": [] },
     {
-      "id": 307, "title": "ZooKeeper Operations", "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "rate(ClickHouseProfileEvents_ZooKeeperTransactions{cluster=~\"$cluster\", instance=~\"$instance\"}[5m])", "legendFormat": "{{instance}}", "range": true, "refId": "A" }],
-      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "unit": "ops", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 113 },
-      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+      "id": 306,
+      "title": "ZooKeeper / Keeper",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 112
+      },
+      "panels": []
     },
     {
-      "id": 308, "title": "ZooKeeper Wait Time", "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "rate(ClickHouseProfileEvents_ZooKeeperWaitMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[5m]) / 1e6", "legendFormat": "{{instance}}", "range": true, "refId": "A" }],
-      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "unit": "s", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 113 },
-      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
-    },
-    { "id": 309, "title": "OS / System", "type": "row", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 121 }, "panels": [] },
-    {
-      "id": 310, "title": "Load Average", "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "id": 307,
+      "title": "ZooKeeper Operations",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseAsyncMetrics_LoadAverage1{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "1min {{instance}}", "range": true, "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseAsyncMetrics_LoadAverage5{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "5min {{instance}}", "range": true, "refId": "B" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseAsyncMetrics_LoadAverage15{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "15min {{instance}}", "range": true, "refId": "C" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(ClickHouseProfileEvents_ZooKeeperTransactions{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval])",
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "A"
+        }
       ],
-      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 122 },
-      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "unit": "ops",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 113
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
     },
     {
-      "id": 311, "title": "Uptime", "type": "stat",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseAsyncMetrics_Uptime{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "{{instance}}", "range": true, "refId": "A" }],
-      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "unit": "s", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 122 },
-      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" }
-    },
-    { "id": 312, "title": "Replication Detail", "type": "row", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 130 }, "panels": [] },
-    {
-      "id": 313, "title": "Replication Delay", "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseAsyncMetrics_ReplicasMaxAbsoluteDelay{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "{{instance}}", "range": true, "refId": "A" }],
-      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "unit": "s", "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 131 },
-      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
-    },
-    {
-      "id": 314, "title": "Replication Queue", "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "id": 308,
+      "title": "ZooKeeper Wait Time",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseAsyncMetrics_ReplicasSumQueueSize{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "Sum Queue {{instance}}", "range": true, "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "editorMode": "code", "expr": "ClickHouseAsyncMetrics_ReplicasMaxQueueSize{cluster=~\"$cluster\", instance=~\"$instance\"}", "legendFormat": "Max Queue {{instance}}", "range": true, "refId": "B" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(ClickHouseProfileEvents_ZooKeeperWaitMicroseconds{cluster=~\"$cluster\", instance=~\"$instance\"}[$__rate_interval]) / 1e6",
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "A"
+        }
       ],
-      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 131 },
-      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 113
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 309,
+      "title": "OS / System",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 121
+      },
+      "panels": []
+    },
+    {
+      "id": 310,
+      "title": "Load Average",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "ClickHouseAsyncMetrics_LoadAverage1{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "legendFormat": "1min {{instance}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "ClickHouseAsyncMetrics_LoadAverage5{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "legendFormat": "5min {{instance}}",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "ClickHouseAsyncMetrics_LoadAverage15{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "legendFormat": "15min {{instance}}",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 122
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 311,
+      "title": "Uptime",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "ClickHouseAsyncMetrics_Uptime{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 122
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 312,
+      "title": "Replication Detail",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 130
+      },
+      "panels": []
+    },
+    {
+      "id": 313,
+      "title": "Replication Delay",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "ClickHouseAsyncMetrics_ReplicasMaxAbsoluteDelay{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 131
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 314,
+      "title": "Replication Queue",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "ClickHouseAsyncMetrics_ReplicasSumQueueSize{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "legendFormat": "Sum Queue {{instance}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "ClickHouseAsyncMetrics_ReplicasMaxQueueSize{cluster=~\"$cluster\", instance=~\"$instance\"}",
+          "legendFormat": "Max Queue {{instance}}",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 131
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
     }
   ],
   "refresh": "1m",
