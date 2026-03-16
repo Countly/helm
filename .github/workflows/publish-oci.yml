@@ -168,30 +168,3 @@ jobs:
           subject-name: ${{ matrix.artifact.name }}
           subject-digest: ${{ matrix.artifact.digest }}
           push-to-registry: true
-
-  tag:
-    name: Tag Chart Versions
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: [publish, attest]
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          fetch-depth: 0
-
-      - name: Create chart version tags
-        run: |
-          for chart_dir in charts/*/; do
-            chart_name=$(basename "${chart_dir}")
-            chart_version=$(yq '.version' "${chart_dir}/Chart.yaml")
-            tag="${chart_name}-v${chart_version}"
-            if git rev-parse "${tag}" >/dev/null 2>&1; then
-              echo "Tag ${tag} already exists, skipping."
-            else
-              echo "Creating tag ${tag}..."
-              git tag "${tag}"
-              git push origin "${tag}"
-            fi
-          done
