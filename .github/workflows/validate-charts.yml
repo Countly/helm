@@ -60,9 +60,14 @@ jobs:
           for chart in charts/*/; do
             chart_name=$(basename "${chart}")
             echo "::group::Rendering ${chart_name}..."
-            # countly chart requires secrets to render; skip strict rendering for it
+            # countly chart requires secrets — provide dummy values for template validation
             if [ "${chart_name}" = "countly" ]; then
-              echo "Skipping countly (requires secrets for template rendering)"
+              helm template test-release "${chart}" \
+                --set secrets.common.countlyEncryptionKey=test \
+                --set secrets.common.countlyTokenSecret=test \
+                --set secrets.clickhouse.password=test \
+                --set secrets.mongodb.password=test \
+                > /dev/null || exit_code=1
             else
               helm template test-release "${chart}" > /dev/null || exit_code=1
             fi
@@ -93,13 +98,15 @@ jobs:
             done
           done
 
-          # Observability profiles — must have observability.yaml at minimum
+          # Observability profiles — helmfile references observability.yaml, countly.yaml, kafka.yaml per mode
           for mode in disabled full external external-grafana; do
-            path="profiles/observability/${mode}/observability.yaml"
-            if [ ! -f "${path}" ]; then
-              echo "::error::Missing observability profile: ${path}"
-              exit_code=1
-            fi
+            for file in observability.yaml countly.yaml kafka.yaml; do
+              path="profiles/observability/${mode}/${file}"
+              if [ ! -f "${path}" ]; then
+                echo "::error::Missing observability profile: ${path}"
+                exit_code=1
+              fi
+            done
           done
 
           # Kafka-connect profiles
@@ -146,7 +153,7 @@ jobs:
         run: |
           for chart in charts/*/Chart.yaml; do
             chart_name=$(basename "$(dirname "${chart}")")
-            version=$(grep '^version:' "${chart}" | awk '{print $2}')
+            version=$(grep '^version:' "${chart}" | awk '{print $2}' | tr -d '"'"'"')
             if [ -z "${version}" ]; then
               echo "::error::Missing version in ${chart}"
               exit 1

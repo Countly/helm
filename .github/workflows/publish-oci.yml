@@ -62,7 +62,10 @@ jobs:
         uses: anchore/sbom-action/download-syft@57aae528053a48a3f6235f2d9461b05fbcb7366d # v0.23.1
 
       - name: Login to GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${REGISTRY} -u ${{ github.actor }} --password-stdin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_ACTOR: ${{ github.actor }}
+        run: echo "${GITHUB_TOKEN}" | helm registry login ${REGISTRY} -u "${GH_ACTOR}" --password-stdin
 
       - name: Package, push, sign, and attach SBOM
         id: publish
@@ -88,11 +91,17 @@ jobs:
             # Push with retry (transient GHCR failures)
             max_retries=3
             push_output=""
+            push_success=false
             for attempt in $(seq 1 $max_retries); do
-              push_output=$(helm push "${pkg}" "oci://${REGISTRY_PATH}" 2>&1) && break
+              push_output=$(helm push "${pkg}" "oci://${REGISTRY_PATH}" 2>&1) && { push_success=true; break; }
               echo "Push attempt ${attempt}/${max_retries} failed, retrying in 5s..."
               sleep 5
             done
+            if [ "${push_success}" != "true" ]; then
+              echo "ERROR: helm push failed for ${chart_name} after ${max_retries} attempts"
+              echo "${push_output}"
+              exit 1
+            fi
             echo "${push_output}"
             digest=$(echo "${push_output}" | grep -oE 'sha256:[a-f0-9]{64}' | tail -1)
 
@@ -113,11 +122,8 @@ jobs:
             echo "Generating SBOM for ${chart_name}..."
             syft dir:"${chart_dir}" -o cyclonedx-json="${sbom_file}"
 
-            # Attach SBOM to the OCI artifact
-            cosign attach sbom --sbom "${sbom_file}" "${ref}"
-
-            # Sign the SBOM attachment
-            cosign sign --yes --attachment sbom "${ref}"
+            # Attest SBOM as signed in-toto attestation (replaces deprecated cosign attach sbom)
+            cosign attest --yes --predicate "${sbom_file}" --type cyclonedx "${ref}"
 
             echo "::endgroup::"
 

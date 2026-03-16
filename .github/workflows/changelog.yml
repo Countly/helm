@@ -11,19 +11,21 @@ on:
       since_tag:
         description: 'Generate changelog since this tag (default: latest release tag)'
         required: false
+        type: string
 
 concurrency:
   group: changelog
   cancel-in-progress: true
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   changelog:
     name: Generate Changelog
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -33,7 +35,7 @@ jobs:
       - name: Determine base tag
         id: base
         run: |
-          # Use environment variable to avoid injection via ${{ }}
+          # Use environment variable to avoid direct expression injection
           SINCE_TAG="${INPUT_SINCE_TAG}"
           if [ -n "${SINCE_TAG}" ]; then
             echo "tag=${SINCE_TAG}" >> "$GITHUB_OUTPUT"
@@ -46,8 +48,9 @@ jobs:
 
       - name: Generate changelog
         id: generate
+        env:
+          BASE_TAG: ${{ steps.base.outputs.tag }}
         run: |
-          BASE_TAG="${{ steps.base.outputs.tag }}"
           if [ -n "${BASE_TAG}" ]; then
             RANGE="${BASE_TAG}..HEAD"
             echo "Generating changelog since ${BASE_TAG}"
@@ -62,6 +65,16 @@ jobs:
           FIXED=""
           DOCS=""
           REMOVED=""
+
+          # Helper: append entry to a category variable without leading newline
+          append_entry() {
+            local current="$1" entry="$2"
+            if [ -z "${current}" ]; then
+              echo "${entry}"
+            else
+              echo "${current}\n${entry}"
+            fi
+          }
 
           while IFS= read -r line; do
             # Skip empty lines
@@ -90,26 +103,26 @@ jobs:
             case "${msg}" in
               feat:*|feat\(*|add:*|add\(*)
                 clean_msg=$(echo "${msg}" | sed 's/^[a-z]*\([^)]*\)\?: *//')
-                ADDED="${ADDED}\n- ${scope}${clean_msg}"
+                ADDED=$(append_entry "${ADDED}" "- ${scope}${clean_msg}")
                 ;;
               fix:*|fix\(*)
                 clean_msg=$(echo "${msg}" | sed 's/^[a-z]*\([^)]*\)\?: *//')
-                FIXED="${FIXED}\n- ${scope}${clean_msg}"
+                FIXED=$(append_entry "${FIXED}" "- ${scope}${clean_msg}")
                 ;;
               docs:*|docs\(*)
                 clean_msg=$(echo "${msg}" | sed 's/^[a-z]*\([^)]*\)\?: *//')
-                DOCS="${DOCS}\n- ${scope}${clean_msg}"
+                DOCS=$(append_entry "${DOCS}" "- ${scope}${clean_msg}")
                 ;;
               remove:*|deprecate:*)
                 clean_msg=$(echo "${msg}" | sed 's/^[a-z]*\([^)]*\)\?: *//')
-                REMOVED="${REMOVED}\n- ${scope}${clean_msg}"
+                REMOVED=$(append_entry "${REMOVED}" "- ${scope}${clean_msg}")
                 ;;
               refactor:*|refactor\(*|chore:*|chore\(*)
                 clean_msg=$(echo "${msg}" | sed 's/^[a-z]*\([^)]*\)\?: *//')
-                CHANGED="${CHANGED}\n- ${scope}${clean_msg}"
+                CHANGED=$(append_entry "${CHANGED}" "- ${scope}${clean_msg}")
                 ;;
               *)
-                CHANGED="${CHANGED}\n- ${scope}${msg}"
+                CHANGED=$(append_entry "${CHANGED}" "- ${scope}${msg}")
                 ;;
             esac
           done <<< "$(git log --format='%h %s' ${RANGE} --no-merges)"
