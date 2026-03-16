@@ -50,13 +50,14 @@ kubectl get pods -n ingress-nginx
 
 ## Configuration Model
 
-Each chart layers four values files in order:
+Each chart layers values files in order:
 
 ```
-environments/local/global.yaml          # Global settings (profile selection)
-profiles/local/<chart>.yaml             # Sizing (resources, replicas, HA)
-environments/local/<chart>.yaml         # Environment choices (ingress, OTEL, etc.)
-environments/local/secrets-<chart>.yaml # Credentials (gitignored)
+environments/local/global.yaml                    # Global settings (profile selectors)
+profiles/sizing/local/<chart>.yaml                # Sizing (resources, replicas, HA)
+profiles/<dimension>/<value>/<chart>.yaml          # Optional dimension profiles
+environments/local/<chart>.yaml                   # Environment choices (ingress, OTEL, etc.)
+environments/local/secrets-<chart>.yaml           # Credentials (gitignored)
 ```
 
 ## Install Charts
@@ -70,7 +71,7 @@ helm install countly-mongodb ./charts/countly-mongodb \
   -n mongodb --create-namespace \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
-  -f profiles/local/mongodb.yaml \
+  -f profiles/sizing/local/mongodb.yaml \
   -f environments/local/mongodb.yaml \
   -f environments/local/secrets-mongodb.yaml
 ```
@@ -82,7 +83,7 @@ helm install countly-clickhouse ./charts/countly-clickhouse \
   -n clickhouse --create-namespace \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
-  -f profiles/local/clickhouse.yaml \
+  -f profiles/sizing/local/clickhouse.yaml \
   -f environments/local/clickhouse.yaml \
   -f environments/local/secrets-clickhouse.yaml
 ```
@@ -94,7 +95,7 @@ helm install countly-kafka ./charts/countly-kafka \
   -n kafka --create-namespace \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
-  -f profiles/local/kafka.yaml \
+  -f profiles/sizing/local/kafka.yaml \
   -f environments/local/kafka.yaml \
   -f environments/local/secrets-kafka.yaml
 ```
@@ -106,7 +107,7 @@ helm install countly ./charts/countly \
   -n countly --create-namespace \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
-  -f profiles/local/countly.yaml \
+  -f profiles/sizing/local/countly.yaml \
   -f environments/local/countly.yaml \
   -f environments/local/secrets-countly.yaml
 ```
@@ -118,7 +119,7 @@ helm install countly-observability ./charts/countly-observability \
   -n observability --create-namespace \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
-  -f profiles/local/observability.yaml \
+  -f profiles/sizing/local/observability.yaml \
   -f environments/local/observability.yaml \
   -f environments/local/secrets-observability.yaml
 ```
@@ -158,7 +159,7 @@ Note: PVCs and operator-managed resources with `helm.sh/resource-policy: keep` a
 
 ```
 environments/local/
-  global.yaml               # profile: local
+  global.yaml               # sizing: local
   countly.yaml              # Ingress (countly.local, selfSigned TLS) + OTEL config
   mongodb.yaml              # Empty stub (no local-specific overrides)
   clickhouse.yaml           # ServiceMonitor disabled (no Prometheus Operator CRD)

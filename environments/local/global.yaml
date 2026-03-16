@@ -1,2 +1,6 @@
 global:
-  profile: local
+  sizing: local
+  security: open
+  tls: selfSigned
+  observability: full
+  kafkaConnect: balanced

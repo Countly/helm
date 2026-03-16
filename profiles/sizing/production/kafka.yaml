@@ -1,4 +1,14 @@
 # Profile: production — Kafka chart sizing
+#
+# IMPORTANT: This profile requires a minimum of 3 Kafka brokers.
+# If you override brokers.replicas to fewer than 3, you MUST also override:
+#   brokers.config.min.insync.replicas (default 2)
+#   brokers.config.offsets.topic.replication.factor (default 3)
+#   brokers.config.transaction.state.log.replication.factor (default 3)
+#   brokers.config.transaction.state.log.min.isr (default 2)
+#   kafkaConnect.workerConfig.config.storage.replication.factor (default 2)
+#   kafkaConnect.workerConfig.offset.storage.replication.factor (default 2)
+#   kafkaConnect.workerConfig.status.storage.replication.factor (default 2)
 
 brokers:
   replicas: 3

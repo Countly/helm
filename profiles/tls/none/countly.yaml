@@ -1,0 +1,9 @@
+# TLS Profile: None (HTTP only)
+# No TLS — plain HTTP ingress.
+ingress:
+  tls:
+    mode: http
+
+config:
+  frontend:
+    COUNTLY_CONFIG__WEB_SECURE_COOKIES: "false"

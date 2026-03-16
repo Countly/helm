@@ -34,9 +34,21 @@ spec:
     spec:
       serviceAccountName: {{ include "obs.fullname" . }}-alloy
       {{- include "obs.scheduling" (dict "values" .Values.alloyOtlp "global" .Values.global "component" "alloy-otlp" "fullname" (include "obs.fullname" .)) | nindent 6 }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: alloy
         image: {{ include "obs.image" (dict "global" .Values.global "image" .Values.alloyOtlp.image) }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: [ALL]
         args:
           - run
           - /etc/alloy/config.alloy

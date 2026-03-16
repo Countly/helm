@@ -1,0 +1,11 @@
+# TLS Profile: Self-Signed
+# cert-manager generates a self-signed CA and issues a certificate.
+# Browsers will show a security warning. Suitable for development/internal use.
+# Requires cert-manager to be installed (see docs/PREREQUISITES.md).
+ingress:
+  tls:
+    mode: selfSigned
+
+config:
+  frontend:
+    COUNTLY_CONFIG__WEB_SECURE_COOKIES: "true"

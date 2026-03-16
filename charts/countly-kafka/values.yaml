@@ -2,7 +2,7 @@ global:
   imageRegistry: ""
   imagePullSecrets: []
   storageClass: ""
-  profile: small
+  sizing: small
   scheduling:
     nodeSelector: {}
     tolerations: []

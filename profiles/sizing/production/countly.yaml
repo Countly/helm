@@ -58,6 +58,3 @@ jobserver:
     requests: { cpu: "1", memory: "3Gi" }
     limits: { cpu: "1", memory: "3Gi" }
 
-config:
-  frontend:
-    COUNTLY_CONFIG__WEB_SECURE_COOKIES: "true"

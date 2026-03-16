@@ -9,38 +9,32 @@
 # =============================================================================
 
 global:
-  # Sizing profile: local | small | production
-  profile: production
+  # --- Profile Selectors ---
+  sizing: production              # local | small | production
+  observability: full             # disabled | full | external-grafana | external
+  kafkaConnect: balanced          # throughput | balanced | low-latency
+  tls: letsencrypt                # none | letsencrypt | provided | selfSigned
+  security: open                  # open | hardened
 
-  # Private registry (leave empty for default public images)
-  imageRegistry: ""
+  # --- Registry & Storage ---
+  imageRegistry: ""               # Private registry prefix (leave empty for public images)
+  storageClass: ""                # Default storage class for all PVCs (leave empty for cluster default)
+  imagePullSecrets: []            # Docker config secrets for private registries
 
-  # Default storage class for all PVCs (leave empty for cluster default)
-  storageClass: ""
-
-  # Image pull secrets for private registries
-  imagePullSecrets: []
-
-# --- Ingress & TLS ---
+# --- Ingress ---
 ingress:
-  hostname: analytics.example.com        # CHANGEME: Your Countly hostname
+  hostname: analytics.example.com
   className: nginx
-  tls:
-    mode: letsencrypt                     # http | letsencrypt | existingSecret | selfSigned
-    clusterIssuer: letsencrypt-prod       # Used with mode=letsencrypt
-    secretName: ""                        # Used with mode=existingSecret; auto-derived if empty
 
 # --- Backing Service Modes ---
 backingServices:
   mongodb:
-    mode: bundled                         # bundled | external
+    mode: bundled                 # bundled | external
   clickhouse:
-    mode: bundled                         # bundled | external
+    mode: bundled                 # bundled | external
   kafka:
-    mode: bundled                         # bundled | external
+    mode: bundled                 # bundled | external
 
 # --- Observability ---
-# Set to "disabled" to skip installing the observability chart entirely.
-# Other modes (full|hybrid|external) are set in observability.yaml.
-observability:
-  mode: full                              # full | hybrid | external | disabled
+# The chart mode is derived from global.observability above.
+# Set global.observability to: disabled | full | external-grafana | external

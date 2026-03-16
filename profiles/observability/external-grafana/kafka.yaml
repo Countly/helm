@@ -1,0 +1,5 @@
+# Observability Profile: External Grafana
+# Kafka Connect OTEL instrumentation enabled — backends in-cluster, Grafana external.
+kafkaConnect:
+  otel:
+    enabled: true

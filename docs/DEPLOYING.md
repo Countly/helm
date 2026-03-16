@@ -23,14 +23,15 @@ Edit `environments/my-deployment/global.yaml`:
 
 ```yaml
 global:
-  profile: production               # Sizing: local | small | production
-  storageClass: gp3                  # Your cluster's storage class
+  sizing: production                # Sizing: local | small | production
+  observability: full               # Observability: disabled | full | external-grafana | external
+  kafkaConnect: balanced            # Kafka Connect: throughput | balanced | low-latency
+  tls: letsencrypt                  # TLS: none | letsencrypt | provided | selfSigned
+  security: hardened                # Security: open | hardened
+  storageClass: gp3                 # Your cluster's storage class
 
 ingress:
   hostname: analytics.example.com   # Your domain
-  tls:
-    mode: letsencrypt               # TLS strategy
-    clusterIssuer: letsencrypt-prod
 ```
 
 See [DEPLOYMENT-MODES.md](DEPLOYMENT-MODES.md) for all mode options.
@@ -98,3 +99,23 @@ helmfile -e my-deployment destroy
 ```
 
 Note: PVCs are not deleted by default. Clean up manually if needed.
+
+## Troubleshooting
+
+### Kafka startup: UNKNOWN_TOPIC_OR_PARTITION errors
+
+On a fresh deployment, Countly pods (aggregator, ingestor) may log `UNKNOWN_TOPIC_OR_PARTITION` errors for the first 2-5 minutes. This is expected behavior:
+
+- `auto.create.topics.enable` is `false` by default for safety.
+- Kafka topics are created by the Countly application during its initialization cycle, which depends on Kafka Connect being ready.
+- The consumers retry every 30 seconds and self-heal once topics are available.
+- The startup probe allows up to 5 minutes (failureThreshold=30, periodSeconds=10) for the app to become ready.
+
+No action is needed — the errors are transient and resolve automatically.
+
+### GKE: kube-state-metrics duplicate timestamp warnings
+
+On GKE clusters, Alloy-Metrics may log `Error on ingesting samples with different value but same timestamp` for kube-state-metrics. This is caused by GKE's managed kube-state-metrics (in `gke-managed-cim` namespace) producing the same metrics as the observability chart's kube-state-metrics. The data loss is cosmetic (duplicate samples are dropped). To resolve, either:
+
+- Disable the chart's kube-state-metrics: set `kubeStateMetrics.enabled: false` in your observability values.
+- Or accept the warnings — core metrics are unaffected.

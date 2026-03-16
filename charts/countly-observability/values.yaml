@@ -136,7 +136,7 @@ loki:
       cpu: "1"
       memory: "2Gi"
   config:
-    maxStreamsPerUser: 10000
+    maxStreamsPerUser: 30000
     maxLineSize: 256000
     ingestionRateMb: 64
     ingestionBurstSizeMb: 128

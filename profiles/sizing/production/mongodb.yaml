@@ -7,3 +7,7 @@ mongodb:
     limits: { cpu: "4", memory: "8Gi" }
   persistence:
     size: 500Gi
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1

@@ -56,7 +56,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: {{ $component }}
-          image: "{{ if $root.Values.global.imageRegistry }}{{ $root.Values.global.imageRegistry }}/{{ end }}{{ $root.Values.image.repository }}:{{ $root.Values.image.tag }}"
+          image: "{{ if $root.Values.global.imageRegistry }}{{ $root.Values.global.imageRegistry }}/{{ end }}{{ $root.Values.image.repository }}{{ if $root.Values.image.digest }}@{{ $root.Values.image.digest }}{{ else }}:{{ $root.Values.image.tag | default $root.Chart.AppVersion }}{{ end }}"
           imagePullPolicy: {{ $root.Values.image.pullPolicy }}
           securityContext:
             runAsNonRoot: true
@@ -147,7 +147,7 @@ spec:
             - name: OTEL_SERVICE_NAME
               value: "countly-{{ $component }}"
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: "service.name=countly-{{ $component }},service.namespace={{ $root.Release.Namespace }},deployment.environment={{ $root.Values.global.profile | default "production" }}"
+              value: "service.name=countly-{{ $component }},service.namespace={{ $root.Release.Namespace }},deployment.environment={{ $root.Values.global.sizing | default "production" }}"
             {{- if $values.extraEnv }}
             {{- toYaml $values.extraEnv | nindent 12 }}
             {{- end }}

@@ -1,0 +1,5 @@
+# Observability Profile: External
+# Kafka Connect OTEL instrumentation enabled — traces forwarded to external collector.
+kafkaConnect:
+  otel:
+    enabled: true

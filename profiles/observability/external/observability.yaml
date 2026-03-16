@@ -1,0 +1,27 @@
+# Observability Profile: External
+# Only collectors (Alloy) are deployed in-cluster.
+# All data is forwarded to external backends (Prometheus, Loki, Tempo, Pyroscope).
+#
+# You MUST set the external endpoint URLs in your environment's observability.yaml:
+#   prometheus.external.remoteWriteUrl
+#   loki.external.pushUrl
+#   tempo.external.otlpGrpcEndpoint
+#   pyroscope.external.ingestUrl
+mode: "external"
+
+metrics:
+  enabled: true
+traces:
+  enabled: true
+logs:
+  enabled: true
+profiling:
+  enabled: true
+
+grafana:
+  enabled: false
+
+kubeStateMetrics:
+  enabled: false
+nodeExporter:
+  enabled: false

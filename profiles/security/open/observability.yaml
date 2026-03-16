@@ -1,0 +1,4 @@
+# Security Profile: Open
+# Network policies disabled — all traffic allowed between namespaces.
+networkPolicy:
+  enabled: false

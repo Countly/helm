@@ -1,0 +1,6 @@
+# Observability Profile: External
+# Countly OTEL instrumentation enabled — traces forwarded to external collector.
+config:
+  otel:
+    OTEL_ENABLED: "true"
+    PYROSCOPE_ENABLED: "false"

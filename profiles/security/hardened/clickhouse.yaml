@@ -1,0 +1,10 @@
+# Security Profile: Hardened
+# Network policies enabled — Countly, Kafka, and observability namespaces allowed.
+networkPolicy:
+  enabled: true
+  allowedNamespaces:
+    - countly
+    - kafka
+  allowMonitoring: true
+  monitoringNamespaceSelector:
+    kubernetes.io/metadata.name: observability

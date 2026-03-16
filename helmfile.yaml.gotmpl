@@ -6,12 +6,12 @@ environments:
   reference:
     values:
       - environments/reference/global.yaml
-  customer-small:
+  example-small:
     values:
-      - environments/customer-small/global.yaml
-  customer-production:
+      - environments/example-small/global.yaml
+  example-production:
     values:
-      - environments/customer-production/global.yaml
+      - environments/example-production/global.yaml
 ---
 
 repositories: []
@@ -30,7 +30,8 @@ releases:
     namespace: mongodb
     values:
       - environments/{{ .Environment.Name }}/global.yaml
-      - profiles/{{ .Values | get "global.profile" "small" }}/mongodb.yaml
+      - profiles/sizing/{{ .Values | get "global.sizing" "small" }}/mongodb.yaml
+      - profiles/security/{{ .Values | get "global.security" "open" }}/mongodb.yaml
       - environments/{{ .Environment.Name }}/mongodb.yaml
       - environments/{{ .Environment.Name }}/secrets-mongodb.yaml
 
@@ -40,7 +41,8 @@ releases:
     namespace: clickhouse
     values:
       - environments/{{ .Environment.Name }}/global.yaml
-      - profiles/{{ .Values | get "global.profile" "small" }}/clickhouse.yaml
+      - profiles/sizing/{{ .Values | get "global.sizing" "small" }}/clickhouse.yaml
+      - profiles/security/{{ .Values | get "global.security" "open" }}/clickhouse.yaml
       - environments/{{ .Environment.Name }}/clickhouse.yaml
       - environments/{{ .Environment.Name }}/secrets-clickhouse.yaml
 
@@ -50,7 +52,10 @@ releases:
     namespace: kafka
     values:
       - environments/{{ .Environment.Name }}/global.yaml
-      - profiles/{{ .Values | get "global.profile" "small" }}/kafka.yaml
+      - profiles/sizing/{{ .Values | get "global.sizing" "small" }}/kafka.yaml
+      - profiles/kafka-connect/{{ .Values | get "global.kafkaConnect" "balanced" }}/kafka.yaml
+      - profiles/observability/{{ .Values | get "global.observability" "full" }}/kafka.yaml
+      - profiles/security/{{ .Values | get "global.security" "open" }}/kafka.yaml
       - environments/{{ .Environment.Name }}/kafka.yaml
       - environments/{{ .Environment.Name }}/secrets-kafka.yaml
     needs:
@@ -62,7 +67,10 @@ releases:
     namespace: countly
     values:
       - environments/{{ .Environment.Name }}/global.yaml
-      - profiles/{{ .Values | get "global.profile" "small" }}/countly.yaml
+      - profiles/sizing/{{ .Values | get "global.sizing" "small" }}/countly.yaml
+      - profiles/tls/{{ .Values | get "global.tls" "none" }}/countly.yaml
+      - profiles/observability/{{ .Values | get "global.observability" "full" }}/countly.yaml
+      - profiles/security/{{ .Values | get "global.security" "open" }}/countly.yaml
       - environments/{{ .Environment.Name }}/countly.yaml
       - environments/{{ .Environment.Name }}/secrets-countly.yaml
     needs:
@@ -70,16 +78,16 @@ releases:
       - clickhouse/countly-clickhouse
       - kafka/countly-kafka
 
+  {{- $obsProfile := .Values | get "global.observability" "full" }}
   - name: countly-observability
-    installed: {{ ne (.Values | get "observability.mode" "") "disabled" }}
+    installed: {{ ne $obsProfile "disabled" }}
     chart: ./charts/countly-observability
     namespace: observability
-    set:
-      - name: mode
-        value: {{ .Values | get "observability.mode" "full" }}
     values:
       - environments/{{ .Environment.Name }}/global.yaml
-      - profiles/{{ .Values | get "global.profile" "small" }}/observability.yaml
+      - profiles/sizing/{{ .Values | get "global.sizing" "small" }}/observability.yaml
+      - profiles/observability/{{ .Values | get "global.observability" "full" }}/observability.yaml
+      - profiles/security/{{ .Values | get "global.security" "open" }}/observability.yaml
       - environments/{{ .Environment.Name }}/observability.yaml
       - environments/{{ .Environment.Name }}/secrets-observability.yaml
     needs:

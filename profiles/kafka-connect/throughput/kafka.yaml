@@ -1,0 +1,31 @@
+# Kafka Connect Profile: Throughput
+# Optimized for large deployments with high event volumes.
+# Uses large ClickHouse batches to minimize write frequency and reduce ClickHouse load.
+# Trade-off: Higher memory usage, higher end-to-end latency.
+kafkaConnect:
+  resources:
+    requests:
+      cpu: "2"
+      memory: "12Gi"
+    limits:
+      cpu: "4"
+      memory: "12Gi"
+  jvmOptions:
+    xms: "8g"
+    xmx: "8g"
+  env:
+    KAFKA_CONSUMER_FETCH_MIN_BYTES: "52428800"
+    KAFKA_CONSUMER_FETCH_MAX_WAIT_MS: "120000"
+    KAFKA_CONSUMER_MAX_POLL_RECORDS: "500000"
+    KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES: "268435456"
+    KAFKA_CONSUMER_FETCH_MAX_BYTES: "1073741824"
+    CLICKHOUSE_SETTINGS: >-
+      async_insert=1,
+      wait_for_async_insert=1,
+      async_insert_use_adaptive_busy_timeout=1,
+      async_insert_busy_timeout_ms=15000,
+      async_insert_max_data_size=536870912,
+      async_insert_max_query_number=128,
+      min_insert_block_size_rows=500000,
+      min_insert_block_size_bytes=536870912,
+      max_partitions_per_insert_block=500

@@ -11,10 +11,12 @@ This directory is a complete starting point for a new Countly deployment.
 
 2. Edit `global.yaml`:
    - Set `ingress.hostname` to your domain
-   - Choose a `global.profile` (local, small, production)
-   - Choose `ingress.tls.mode` (letsencrypt, existingSecret, selfSigned, http)
+   - Choose `global.sizing`: `local`, `small`, or `production`
+   - Choose `global.tls`: `none`, `letsencrypt`, `provided`, or `selfSigned`
+   - Choose `global.observability`: `disabled`, `full`, `external-grafana`, or `external`
+   - Choose `global.kafkaConnect`: `throughput`, `balanced`, or `low-latency`
+   - Choose `global.security`: `open` or `hardened`
    - Choose backing service modes (bundled or external)
-   - Choose observability mode (full, hybrid, external, disabled)
 
 3. Fill in required secrets in the chart-specific files:
    - `countly.yaml` → `secrets.common.*` and `secrets.clickhouse.password`, `secrets.mongodb.password`
@@ -51,12 +53,17 @@ For production, choose one of:
 
 | File | Purpose |
 |------|---------|
-| `global.yaml` | Profile, ingress, TLS, backing services, observability mode |
-| `countly.yaml` | Countly app secrets, OTEL config, network policy |
-| `mongodb.yaml` | MongoDB user passwords |
-| `clickhouse.yaml` | ClickHouse authentication |
-| `kafka.yaml` | Kafka Connect credentials |
-| `observability.yaml` | Observability signal toggles, external endpoints, storage |
-| `secrets.example.yaml` | Complete secrets reference (DO NOT COMMIT with real values) |
+| `global.yaml` | Profile selectors, ingress, backing service modes |
+| `countly.yaml` | All Countly chart values (components, config, ingress, network policy) |
+| `mongodb.yaml` | MongoDB chart values (replica set, resources, exporter) |
+| `clickhouse.yaml` | ClickHouse chart values (topology, auth, keeper) |
+| `kafka.yaml` | Kafka chart values (brokers, controllers, connect, connectors) |
+| `observability.yaml` | Observability chart values (signals, backends, Grafana, Alloy) |
+| `secrets-countly.yaml` | Countly secrets (encryption keys, DB passwords) |
+| `secrets-mongodb.yaml` | MongoDB user passwords |
+| `secrets-clickhouse.yaml` | ClickHouse auth password |
+| `secrets-kafka.yaml` | Kafka Connect ClickHouse password |
+| `secrets-observability.yaml` | Observability secrets (external backend creds if needed) |
+| `secrets.example.yaml` | Combined secrets reference (all charts in one file) |
 | `secrets.sops.example.yaml` | SOPS encryption guide |
-| `external-secrets.example.yaml` | ESO configuration guide |
+| `external-secrets.example.yaml` | External Secrets Operator guide |

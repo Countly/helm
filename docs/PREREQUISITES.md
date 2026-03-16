@@ -58,11 +58,11 @@ helm repo add nginx-stable https://helm.nginx.com/stable
 helm repo update
 helm upgrade --install nginx-ingress nginx-stable/nginx-ingress \
   --version 2.1.0 \
-  -f k8s/ingress/f5-nginx-values.yaml \
+  -f nginx-ingress-values.yaml \
   --create-namespace -n ingress-nginx
 ```
 
-Configuration is in `k8s/ingress/f5-nginx-values.yaml` — includes global ConfigMap (worker tuning, buffers, timeouts, OTEL), HPA, resources, and Prometheus metrics.
+Configuration is in `nginx-ingress-values.yaml` — includes global ConfigMap (worker tuning, buffers, timeouts, OTEL), HPA, resources, and Prometheus metrics.
 
 ## Verification
 

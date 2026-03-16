@@ -1,0 +1,12 @@
+# TLS Profile: Let's Encrypt
+# Automated TLS via cert-manager with Let's Encrypt.
+# Requires cert-manager to be installed (see docs/PREREQUISITES.md).
+# Set ingress.hostname in your environment's global.yaml.
+ingress:
+  tls:
+    mode: letsencrypt
+    clusterIssuer: letsencrypt-prod
+
+config:
+  frontend:
+    COUNTLY_CONFIG__WEB_SECURE_COOKIES: "true"

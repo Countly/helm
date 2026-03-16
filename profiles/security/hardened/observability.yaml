@@ -1,0 +1,4 @@
+# Security Profile: Hardened
+# Network policies enabled — cross-component communication restricted.
+networkPolicy:
+  enabled: true

@@ -35,7 +35,7 @@ ingress:
 
 # Updated image with OTel trace correlation fixes (requestHook, responseHook, NodeSDK)
 image:
-  tag: "469da06592a8abc6ea9f5b77564a09540564bb6828d821025cc5af5e8b5100c6"
+  digest: "sha256:469da06592a8abc6ea9f5b77564a09540564bb6828d821025cc5af5e8b5100c6"
 
 # Local: single replica for all components
 api:

@@ -8,6 +8,9 @@ overlay-secrets.yaml
 *-secrets.yaml
 secrets-*.yaml
 
+# Exception: reference environment templates (contain no real secrets)
+!environments/reference/secrets-*.yaml
+
 # Helmfile state
 helmfile.lock
 .helmfile/

@@ -1,0 +1,6 @@
+# Security Profile: Hardened
+# Network policies enabled — only ingress controller can reach Countly pods.
+networkPolicy:
+  enabled: true
+  ingressNamespaceSelector:
+    kubernetes.io/metadata.name: ingress-nginx

@@ -1,0 +1,155 @@
+name: Validate Charts
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'charts/**'
+      - 'profiles/**'
+      - 'environments/**'
+      - 'helmfile.yaml.gotmpl'
+
+concurrency:
+  group: validate-${{ github.head_ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  lint:
+    name: Lint Charts
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install Helm
+        uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
+        with:
+          version: v3.17.0
+
+      - name: Lint all charts
+        run: |
+          exit_code=0
+          for chart in charts/*/; do
+            echo "::group::Linting $(basename "${chart}")..."
+            helm lint "${chart}" --strict || exit_code=1
+            echo "::endgroup::"
+          done
+          exit $exit_code
+
+  template:
+    name: Template Render
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install Helm
+        uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
+        with:
+          version: v3.17.0
+
+      - name: Template render all charts
+        run: |
+          exit_code=0
+          for chart in charts/*/; do
+            chart_name=$(basename "${chart}")
+            echo "::group::Rendering ${chart_name}..."
+            # countly chart requires secrets to render; skip strict rendering for it
+            if [ "${chart_name}" = "countly" ]; then
+              echo "Skipping countly (requires secrets for template rendering)"
+            else
+              helm template test-release "${chart}" > /dev/null || exit_code=1
+            fi
+            echo "::endgroup::"
+          done
+          exit $exit_code
+
+  profile-validate:
+    name: Validate Profiles
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Validate profile paths
+        run: |
+          exit_code=0
+
+          # Sizing profiles — every chart should have a file for each size
+          for size in local small production; do
+            for chart in countly mongodb clickhouse kafka observability; do
+              path="profiles/sizing/${size}/${chart}.yaml"
+              if [ ! -f "${path}" ]; then
+                echo "::warning::Missing sizing profile: ${path}"
+              fi
+            done
+          done
+
+          # Observability profiles — must have observability.yaml at minimum
+          for mode in disabled full external external-grafana; do
+            path="profiles/observability/${mode}/observability.yaml"
+            if [ ! -f "${path}" ]; then
+              echo "::error::Missing observability profile: ${path}"
+              exit_code=1
+            fi
+          done
+
+          # Kafka-connect profiles
+          for mode in throughput balanced low-latency; do
+            path="profiles/kafka-connect/${mode}/kafka.yaml"
+            if [ ! -f "${path}" ]; then
+              echo "::error::Missing kafka-connect profile: ${path}"
+              exit_code=1
+            fi
+          done
+
+          # TLS profiles
+          for mode in none letsencrypt provided selfSigned; do
+            path="profiles/tls/${mode}/countly.yaml"
+            if [ ! -f "${path}" ]; then
+              echo "::error::Missing TLS profile: ${path}"
+              exit_code=1
+            fi
+          done
+
+          # Security profiles
+          for mode in open hardened; do
+            for chart in countly mongodb clickhouse kafka observability; do
+              path="profiles/security/${mode}/${chart}.yaml"
+              if [ ! -f "${path}" ]; then
+                echo "::error::Missing security profile: ${path}"
+                exit_code=1
+              fi
+            done
+          done
+
+          exit $exit_code
+
+  version-check:
+    name: Version Consistency
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Check Chart.yaml versions
+        run: |
+          for chart in charts/*/Chart.yaml; do
+            chart_name=$(basename "$(dirname "${chart}")")
+            version=$(grep '^version:' "${chart}" | awk '{print $2}')
+            if [ -z "${version}" ]; then
+              echo "::error::Missing version in ${chart}"
+              exit 1
+            fi
+            echo "${chart_name}: v${version}"
+          done

@@ -1,11 +1,39 @@
+{{- /* ===== Broker config vs replica count validations ===== */}}
+{{- $brokerCount := int .Values.brokers.replicas }}
 {{- $rf := index .Values.brokers.config "default.replication.factor" | default 1 }}
-{{- if gt (int $rf) (int .Values.brokers.replicas) }}
-{{- fail (printf "default.replication.factor (%d) cannot exceed broker replicas (%d)" (int $rf) (int .Values.brokers.replicas)) }}
+{{- if gt (int $rf) $brokerCount }}
+{{- fail (printf "default.replication.factor (%d) cannot exceed broker replicas (%d)" (int $rf) $brokerCount) }}
+{{- end }}
+{{- $minIsr := index .Values.brokers.config "min.insync.replicas" | default 1 }}
+{{- if gt (int $minIsr) $brokerCount }}
+{{- fail (printf "min.insync.replicas (%d) cannot exceed broker replicas (%d)" (int $minIsr) $brokerCount) }}
+{{- end }}
+{{- $offsetsRf := index .Values.brokers.config "offsets.topic.replication.factor" | default 1 }}
+{{- if gt (int $offsetsRf) $brokerCount }}
+{{- fail (printf "offsets.topic.replication.factor (%d) cannot exceed broker replicas (%d)" (int $offsetsRf) $brokerCount) }}
+{{- end }}
+{{- $txnRf := index .Values.brokers.config "transaction.state.log.replication.factor" | default 1 }}
+{{- if gt (int $txnRf) $brokerCount }}
+{{- fail (printf "transaction.state.log.replication.factor (%d) cannot exceed broker replicas (%d)" (int $txnRf) $brokerCount) }}
+{{- end }}
+{{- if hasKey .Values.brokers.config "transaction.state.log.min.isr" }}
+{{- $txnMinIsr := index .Values.brokers.config "transaction.state.log.min.isr" }}
+{{- if gt (int $txnMinIsr) $brokerCount }}
+{{- fail (printf "transaction.state.log.min.isr (%d) cannot exceed broker replicas (%d)" (int $txnMinIsr) $brokerCount) }}
+{{- end }}
 {{- end }}
 {{- if .Values.kafkaConnect.enabled }}
 {{- $connectRf := index .Values.kafkaConnect.workerConfig "config.storage.replication.factor" | default 1 }}
-{{- if gt (int $connectRf) (int .Values.brokers.replicas) }}
-{{- fail (printf "kafkaConnect config.storage.replication.factor (%d) cannot exceed broker replicas (%d)" (int $connectRf) (int .Values.brokers.replicas)) }}
+{{- if gt (int $connectRf) $brokerCount }}
+{{- fail (printf "kafkaConnect config.storage.replication.factor (%d) cannot exceed broker replicas (%d)" (int $connectRf) $brokerCount) }}
+{{- end }}
+{{- $offsetRf := index .Values.kafkaConnect.workerConfig "offset.storage.replication.factor" | default 1 }}
+{{- if gt (int $offsetRf) $brokerCount }}
+{{- fail (printf "kafkaConnect offset.storage.replication.factor (%d) cannot exceed broker replicas (%d)" (int $offsetRf) $brokerCount) }}
+{{- end }}
+{{- $statusRf := index .Values.kafkaConnect.workerConfig "status.storage.replication.factor" | default 1 }}
+{{- if gt (int $statusRf) $brokerCount }}
+{{- fail (printf "kafkaConnect status.storage.replication.factor (%d) cannot exceed broker replicas (%d)" (int $statusRf) $brokerCount) }}
 {{- end }}
 {{- end }}
 ---

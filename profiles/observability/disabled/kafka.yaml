@@ -1,0 +1,4 @@
+# Observability Profile: Disabled — Kafka chart overrides
+kafkaConnect:
+  otel:
+    enabled: false

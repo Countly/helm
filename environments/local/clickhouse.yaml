@@ -1,5 +1,5 @@
 # Local environment — ClickHouse chart overrides (non-sizing)
-# Profile defaults come from profiles/local/clickhouse.yaml
+# Profile defaults come from profiles/sizing/local/clickhouse.yaml
 # Secrets come from secrets-clickhouse.yaml
 
 # Enable server-side OpenTelemetry span logging

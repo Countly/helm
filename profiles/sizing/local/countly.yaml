@@ -41,3 +41,8 @@ jobserver:
   resources:
     requests: { cpu: "500m", memory: "1Gi" }
     limits: { cpu: "500m", memory: "1.5Gi" }
+
+# Match single-broker Kafka cluster (RF=1)
+config:
+  kafka:
+    COUNTLY_CONFIG__KAFKA_REPLICATIONFACTOR: "1"

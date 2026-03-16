@@ -1,16 +1,203 @@
 # =============================================================================
-# ClickHouse Chart — Customer Overrides
+# ClickHouse Chart — Comprehensive Reference Configuration
 # =============================================================================
-# Profile defaults (shards, replicas, resources) come from profiles/<profile>/clickhouse.yaml.
+# Every configurable key from charts/countly-clickhouse/values.yaml is listed here.
+# Override only what differs from the profile defaults in your environment.
+# =============================================================================
 
-# --- Authentication ---
+# --- Global Settings (inherited from helmfile globals) ---
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+  sizing: small                           # local | small | production
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+createNamespace: false
+
+# --- Operator API Version ---
+clickhouseOperator:
+  apiVersion: clickhouse.com/v1alpha1
+
+# =============================================================================
+# Cluster Topology
+# =============================================================================
+version: "26.2"
+shards: 1
+replicas: 2
+
+# =============================================================================
+# Images
+# =============================================================================
+image:
+  server: clickhouse/clickhouse-server
+  keeper: clickhouse/clickhouse-keeper
+
+# =============================================================================
+# Database
+# =============================================================================
+database: countly_drill
+
+# =============================================================================
+# Authentication
+# =============================================================================
 auth:
+  # --- Default User Password ---
   defaultUserPassword:
+    existingSecret: ""                    # Use an existing secret instead of creating one
+    secretName: clickhouse-default-password
+    key: password
     password: ""                          # REQUIRED: ClickHouse default user password
 
-# --- Admin User (optional) ---
-# auth:
-#   adminUser:
-#     enabled: false
-#     username: admin
-#     passwordSha256Hex: ""              # echo -n 'password' | sha256sum | cut -d' ' -f1
+  # --- Admin User (optional, separate from default) ---
+  adminUser:
+    enabled: false
+    # Precomputed SHA256 hex of the admin password (64 hex chars).
+    # Generate: echo -n 'your_password' | sha256sum | cut -d' ' -f1
+    passwordSha256Hex: ""
+
+# =============================================================================
+# OpenTelemetry Server-Side Tracing
+# =============================================================================
+# When enabled, ClickHouse logs spans to system.opentelemetry_span_log for
+# queries arriving with W3C traceparent headers.
+opentelemetry:
+  enabled: false
+  spanLog:
+    ttlDays: 7
+    flushIntervalMs: 1000
+
+# =============================================================================
+# Server
+# =============================================================================
+server:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
+    fsGroup: 101
+
+  resources:
+    requests:
+      cpu: "1"
+      memory: "4Gi"
+    limits:
+      cpu: "2"
+      memory: "8Gi"
+
+  persistence:
+    storageClass: ""
+    size: 50Gi
+
+  settings:
+    maxConnections: 4096
+    extraConfig: ""                       # Raw XML injected into server config
+    extraUsersConfig: ""                  # Raw XML injected into users config
+    prometheus:
+      enabled: true
+      port: 9363
+      endpoint: /metrics
+
+  # --- Scheduling ---
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    topologySpreadConstraints: []
+    antiAffinity:
+      enabled: true
+      type: preferred                     # preferred | required
+      topologyKey: kubernetes.io/hostname
+      weight: 100
+
+# =============================================================================
+# Keeper (ClickHouse Keeper for replication coordination)
+# =============================================================================
+keeper:
+  replicas: 1
+
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
+    fsGroup: 101
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+
+  persistence:
+    storageClass: ""
+    size: 5Gi
+
+  settings:
+    prometheus:
+      enabled: true
+      port: 9090
+      endpoint: /metrics
+
+  # --- Scheduling ---
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    antiAffinity:
+      enabled: true
+      type: preferred
+      topologyKey: kubernetes.io/hostname
+      weight: 100
+
+# =============================================================================
+# Pod Disruption Budgets
+# =============================================================================
+podDisruptionBudget:
+  server:
+    enabled: false
+    maxUnavailable: 1
+  keeper:
+    enabled: false
+    maxUnavailable: 1
+
+# =============================================================================
+# Network Policy
+# =============================================================================
+networkPolicy:
+  enabled: false
+  allowedNamespaces:
+    - countly
+    - kafka
+  allowMonitoring: false
+  monitoringNamespaceSelector:
+    kubernetes.io/metadata.name: monitoring
+  additionalIngress: []
+  # additionalIngress:
+  #   - from:
+  #       - namespaceSelector:
+  #           matchLabels:
+  #             kubernetes.io/metadata.name: my-analytics-namespace
+  #     ports:
+  #       - port: 8123
+  #         protocol: TCP
+
+# =============================================================================
+# Service Monitor (Prometheus Operator CRD)
+# =============================================================================
+serviceMonitor:
+  enabled: false
+  interval: "15s"
+  serviceType: headless                   # headless = per-pod scraping, clusterIP = any-pod
+
+# =============================================================================
+# Secrets
+# =============================================================================
+secrets:
+  keep: true                              # Retain secrets on helm uninstall

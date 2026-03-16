@@ -2,7 +2,7 @@ global:
   imageRegistry: ""
   imagePullSecrets: []
   storageClass: ""
-  profile: small
+  sizing: small
   scheduling:
     nodeSelector: {}
     tolerations: []
@@ -18,8 +18,9 @@ serviceAccount:
   annotations: {}
 
 image:
-  repository: gcr.io/countly-dev-313620/countly-unified@sha256
-  tag: "f81b39d4488c596f76a5c385d088a8998b7c1b20933366ad994f5315597ec48b"
+  repository: gcr.io/countly-dev-313620/countly-unified
+  digest: "sha256:f81b39d4488c596f76a5c385d088a8998b7c1b20933366ad994f5315597ec48b"
+  tag: "26.01"
   pullPolicy: IfNotPresent
 
 # Cross-namespace references

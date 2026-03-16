@@ -9,16 +9,17 @@
         "imageRegistry": { "type": "string" },
         "imagePullSecrets": { "type": "array" },
         "storageClass": { "type": "string" },
-        "profile": { "type": "string", "enum": ["local", "small", "production"] },
+        "sizing": { "type": "string", "enum": ["local", "small", "production"] },
         "scheduling": { "type": "object" }
       }
     },
     "image": {
       "type": "object",
-      "required": ["repository", "tag"],
+      "required": ["repository"],
       "properties": {
         "repository": { "type": "string", "minLength": 1 },
-        "tag": { "type": "string", "minLength": 1 },
+        "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "Image digest (takes precedence over tag when set)" },
+        "tag": { "type": "string", "description": "Image tag (used as fallback when digest is empty)" },
         "pullPolicy": { "type": "string", "enum": ["Always", "IfNotPresent", "Never"] }
       }
     },

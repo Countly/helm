@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": ["full", "hybrid", "external", "disabled"]
+    },
+    "clusterName": { "type": "string", "minLength": 1 },
+    "global": { "type": "object" },
+    "createNamespace": { "type": "boolean" },
+    "countlyNamespace": { "type": "string", "description": "Namespace where Countly is deployed" },
+    "clickhouseNamespace": { "type": "string", "description": "Namespace where ClickHouse is deployed" },
+    "kafkaNamespace": { "type": "string", "description": "Namespace where Kafka is deployed" },
+    "mongodbNamespace": { "type": "string", "description": "Namespace where MongoDB is deployed" },
+    "namespaces": { "type": "object" },
+    "nginxIngress": { "type": "object" },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "sampling": { "type": "object" }
+      }
+    },
+    "traces": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "sampling": { "type": "object" }
+      }
+    },
+    "logs": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "sampling": { "type": "object" }
+      }
+    },
+    "profiling": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" }
+      }
+    },
+    "prometheus": {
+      "type": "object",
+      "properties": {
+        "image": { "type": "object" },
+        "retention": { "type": "object" },
+        "storage": {
+          "type": "object",
+          "properties": {
+            "size": { "type": "string", "pattern": "^[0-9]+(Mi|Gi|Ti)$" }
+          }
+        },
+        "resources": { "type": "object" },
+        "external": { "type": "object" }
+      }
+    },
+    "loki": {
+      "type": "object",
+      "properties": {
+        "image": { "type": "object" },
+        "retention": { "type": "string" },
+        "storage": {
+          "type": "object",
+          "properties": {
+            "backend": { "type": "string", "enum": ["filesystem", "s3", "gcs", "azure"] },
+            "size": { "type": "string", "pattern": "^[0-9]+(Mi|Gi|Ti)$" }
+          }
+        },
+        "resources": { "type": "object" },
+        "external": { "type": "object" }
+      }
+    },
+    "tempo": {
+      "type": "object",
+      "properties": {
+        "image": { "type": "object" },
+        "retention": { "type": "string" },
+        "storage": {
+          "type": "object",
+          "properties": {
+            "backend": { "type": "string", "enum": ["local", "s3", "gcs", "azure"] },
+            "size": { "type": "string", "pattern": "^[0-9]+(Mi|Gi|Ti)$" }
+          }
+        },
+        "resources": { "type": "object" },
+        "external": { "type": "object" }
+      }
+    },
+    "pyroscope": {
+      "type": "object",
+      "properties": {
+        "image": { "type": "object" },
+        "retention": { "type": "string" },
+        "storage": {
+          "type": "object",
+          "properties": {
+            "backend": { "type": "string", "enum": ["filesystem", "s3", "gcs", "azure", "swift"] },
+            "size": { "type": "string", "pattern": "^[0-9]+(Mi|Gi|Ti)$" }
+          }
+        },
+        "resources": { "type": "object" },
+        "external": { "type": "object" }
+      }
+    },
+    "grafana": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "image": { "type": "object" },
+        "admin": { "type": "object" },
+        "persistence": { "type": "object" },
+        "resources": { "type": "object" },
+        "dashboards": { "type": "object" }
+      }
+    },
+    "alloy": {
+      "type": "object",
+      "properties": {
+        "image": { "type": "object" },
+        "resources": { "type": "object" }
+      }
+    },
+    "alloyOtlp": {
+      "type": "object",
+      "properties": {
+        "image": { "type": "object" },
+        "replicas": { "type": "integer", "minimum": 1 },
+        "resources": { "type": "object" }
+      }
+    },
+    "alloyMetrics": {
+      "type": "object",
+      "properties": {
+        "image": { "type": "object" },
+        "replicas": { "type": "integer", "minimum": 1 },
+        "resources": { "type": "object" }
+      }
+    },
+    "kubeStateMetrics": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "image": { "type": "object" }
+      }
+    },
+    "nodeExporter": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "image": { "type": "object" }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "className": { "type": "string" }
+      }
+    },
+    "networkPolicy": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" }
+      }
+    }
+  }
+}

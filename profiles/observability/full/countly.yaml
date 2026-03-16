@@ -1,0 +1,6 @@
+# Observability Profile: Full — Countly chart overrides
+# Enables OpenTelemetry tracing and continuous profiling in the application.
+config:
+  otel:
+    OTEL_ENABLED: "true"
+    PYROSCOPE_ENABLED: "true"

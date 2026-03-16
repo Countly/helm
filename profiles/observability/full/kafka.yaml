@@ -1,0 +1,5 @@
+# Observability Profile: Full — Kafka chart overrides
+# Enables OpenTelemetry Java Agent on Kafka Connect workers.
+kafkaConnect:
+  otel:
+    enabled: true

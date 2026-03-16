@@ -1,0 +1,22 @@
+# Observability Profile: Full
+# All backends deployed in-cluster with Grafana for local dashboarding.
+mode: "full"
+
+metrics:
+  enabled: true
+traces:
+  enabled: true
+logs:
+  enabled: true
+profiling:
+  enabled: true
+
+grafana:
+  enabled: true
+  dashboards:
+    enabled: true
+
+kubeStateMetrics:
+  enabled: true
+nodeExporter:
+  enabled: true

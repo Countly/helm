@@ -1,0 +1,6 @@
+# Observability Profile: Disabled — Countly chart overrides
+# Disables OpenTelemetry and profiling in the application.
+config:
+  otel:
+    OTEL_ENABLED: "false"
+    PYROSCOPE_ENABLED: "false"

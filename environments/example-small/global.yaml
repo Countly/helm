@@ -1,17 +1,16 @@
 # Example: Small deployment (development/staging)
 
 global:
-  profile: small
+  sizing: small
+  security: open
+  tls: none
+  observability: full
+  kafkaConnect: balanced
 
 ingress:
   hostname: analytics-dev.example.com
-  tls:
-    mode: http
 
 backingServices:
   mongodb:   { mode: bundled }
   clickhouse: { mode: bundled }
   kafka:     { mode: bundled }
-
-observability:
-  mode: full

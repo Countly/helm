@@ -1,0 +1,4 @@
+# Observability Profile: Disabled
+# No observability components deployed.
+# The observability chart is skipped entirely via helmfile (installed: false).
+mode: "disabled"

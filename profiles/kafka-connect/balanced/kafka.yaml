@@ -1,0 +1,30 @@
+# Kafka Connect Profile: Balanced
+# Default profile — good balance between throughput and latency.
+# Suitable for most deployments.
+kafkaConnect:
+  resources:
+    requests:
+      cpu: "2"
+      memory: "8Gi"
+    limits:
+      cpu: "4"
+      memory: "8Gi"
+  jvmOptions:
+    xms: "5g"
+    xmx: "5g"
+  env:
+    KAFKA_CONSUMER_FETCH_MIN_BYTES: "33554432"
+    KAFKA_CONSUMER_FETCH_MAX_WAIT_MS: "60000"
+    KAFKA_CONSUMER_MAX_POLL_RECORDS: "250000"
+    KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES: "134217728"
+    KAFKA_CONSUMER_FETCH_MAX_BYTES: "536870912"
+    CLICKHOUSE_SETTINGS: >-
+      async_insert=1,
+      wait_for_async_insert=1,
+      async_insert_use_adaptive_busy_timeout=1,
+      async_insert_busy_timeout_ms=10000,
+      async_insert_max_data_size=268435456,
+      async_insert_max_query_number=64,
+      min_insert_block_size_rows=250000,
+      min_insert_block_size_bytes=268435456,
+      max_partitions_per_insert_block=500

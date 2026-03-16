@@ -489,8 +489,8 @@ data:
       targets         = discovery.relabel.node_exporter.output
       forward_to      = [prometheus.relabel.node_exporter_relabel.receiver]
       job_name        = "node-exporter"
-      scrape_interval = "30s"
-      scrape_timeout  = "25s"
+      scrape_interval = "60s"
+      scrape_timeout  = "55s"
     }
 
     prometheus.relabel "node_exporter_relabel" {
@@ -504,6 +504,12 @@ data:
       rule {
         source_labels = ["__name__", "mountpoint"]
         regex         = "node_filesystem.*;/var/lib/kubelet/.*"
+        action        = "drop"
+      }
+      // Drop high-cardinality metrics that inflate payload
+      rule {
+        source_labels = ["__name__"]
+        regex         = "node_nf_conntrack_.*|node_xfs_.*|node_btrfs_.*|node_softnet_.*"
         action        = "drop"
       }
     }

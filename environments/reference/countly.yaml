@@ -1,45 +1,570 @@
 # =============================================================================
-# Countly Chart — Customer Overrides
+# Countly Chart — Comprehensive Reference Configuration
 # =============================================================================
-# Override only what differs from the profile defaults.
-# Profile defaults (replicas, resources, HPA) come from profiles/<profile>/countly.yaml.
+# Every configurable key from charts/countly/values.yaml is listed here.
+# Override only what differs from the profile defaults in your environment.
+# =============================================================================
 
-# --- Secrets ---
-# Choose one of three secret modes:
-#   values          — provide secrets directly in this file (default)
-#   existingSecret  — reference pre-created Kubernetes secrets
-#   externalSecret  — use External Secrets Operator (ESO)
+# --- Global Settings (inherited from helmfile globals) ---
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+  sizing: small                           # local | small | production
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
 
+nameOverride: ""
+fullnameOverride: ""
+
+createNamespace: false
+
+# --- Service Account ---
+serviceAccount:
+  create: true
+  name: ""                                # Auto-derived from release name if empty
+  annotations: {}
+
+# --- Image ---
+image:
+  repository: gcr.io/countly-dev-313620/countly-unified
+  digest: "sha256:f81b39d4488c596f76a5c385d088a8998b7c1b20933366ad994f5315597ec48b"
+  tag: "26.01"                                # Fallback when digest is empty
+  pullPolicy: IfNotPresent
+
+# --- Cross-Namespace References ---
+clickhouseNamespace: clickhouse
+kafkaNamespace: kafka
+mongodbNamespace: mongodb
+
+# =============================================================================
+# Component: API
+# =============================================================================
+api:
+  enabled: true
+  replicaCount: 1
+  command: ["npm", "run", "start:api"]
+  port: 3001
+  healthCheck:
+    path: /o/ping
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 120
+  terminationGracePeriodSeconds: 120
+  resources:
+    requests:
+      cpu: "1"
+      memory: "3.5Gi"
+    limits:
+      cpu: "1"
+      memory: "4Gi"
+  hpa:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 6
+    metrics:
+      cpu:
+        averageUtilization: 70
+      memory:
+        averageUtilization: 80
+    behavior: {}
+  pdb:
+    enabled: false
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    topologySpreadConstraints: []
+    antiAffinity:
+      enabled: true
+      type: preferred                     # preferred | required
+      topologyKey: kubernetes.io/hostname
+      weight: 100                         # 1-100, only used with type=preferred
+  extraEnv: []
+  extraEnvFrom: []
+
+# =============================================================================
+# Component: Frontend
+# =============================================================================
+frontend:
+  enabled: true
+  replicaCount: 1
+  command: ["npm", "run", "start:frontend"]
+  port: 6001
+  healthCheck:
+    path: /ping
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+  terminationGracePeriodSeconds: 30
+  resources:
+    requests:
+      cpu: "1"
+      memory: "2.5Gi"
+    limits:
+      cpu: "1"
+      memory: "3Gi"
+  hpa:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 1
+    metrics:
+      cpu:
+        averageUtilization: 80
+      memory: {}
+    behavior: {}
+  pdb:
+    enabled: false
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    topologySpreadConstraints: []
+    antiAffinity:
+      enabled: true
+      type: preferred
+      topologyKey: kubernetes.io/hostname
+      weight: 100
+  extraEnv: []
+  extraEnvFrom: []
+
+# =============================================================================
+# Component: Ingestor
+# =============================================================================
+ingestor:
+  enabled: true
+  replicaCount: 1
+  command: ["npm", "run", "start:ingestor"]
+  port: 3010
+  healthCheck:
+    path: /o/ping
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 120
+  terminationGracePeriodSeconds: 120
+  resources:
+    requests:
+      cpu: "1"
+      memory: "3Gi"
+    limits:
+      cpu: "1"
+      memory: "3Gi"
+  hpa:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 12
+    metrics:
+      cpu:
+        averageUtilization: 65
+      memory:
+        averageUtilization: 75
+    behavior: {}
+  pdb:
+    enabled: false
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    topologySpreadConstraints: []
+    antiAffinity:
+      enabled: true
+      type: preferred
+      topologyKey: kubernetes.io/hostname
+      weight: 100
+  extraEnv: []
+  extraEnvFrom: []
+
+# =============================================================================
+# Component: Aggregator
+# =============================================================================
+aggregator:
+  enabled: true
+  replicaCount: 4
+  command: ["npm", "run", "start:aggregator"]
+  port: 0                                 # No HTTP port exposed
+  healthCheck: {}                         # No HTTP health check (no port)
+  terminationGracePeriodSeconds: 60
+  resources:
+    requests:
+      cpu: "1"
+      memory: "3.5Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  hpa:
+    enabled: true
+    minReplicas: 4
+    maxReplicas: 8
+    metrics:
+      cpu:
+        averageUtilization: 65
+      memory:
+        averageUtilization: 65
+    behavior:
+      scaleUp:
+        stabilizationWindowSeconds: 0
+        policies:
+          - type: Percent
+            value: 100
+            periodSeconds: 15
+      scaleDown:
+        stabilizationWindowSeconds: 300
+        policies:
+          - type: Percent
+            value: 10
+            periodSeconds: 60
+  pdb:
+    enabled: true
+    minAvailable: 1
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    topologySpreadConstraints: []
+    antiAffinity:
+      enabled: true
+      type: preferred
+      topologyKey: kubernetes.io/hostname
+      weight: 100
+  extraEnv: []
+  extraEnvFrom: []
+
+# =============================================================================
+# Component: Job Server
+# =============================================================================
+jobserver:
+  enabled: true
+  replicaCount: 1
+  command: ["npm", "run", "start:jobserver"]
+  port: 3020
+  healthCheck:
+    path: /o/ping
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+  terminationGracePeriodSeconds: 30
+  resources:
+    requests:
+      cpu: "1"
+      memory: "3Gi"
+    limits:
+      cpu: "1"
+      memory: "3Gi"
+  hpa:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 1
+    metrics:
+      cpu:
+        averageUtilization: 80
+      memory:
+        averageUtilization: 85
+    behavior: {}
+  pdb:
+    enabled: false
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    topologySpreadConstraints: []
+    antiAffinity:
+      enabled: false
+  extraEnv: []
+  extraEnvFrom: []
+
+# =============================================================================
+# Configuration (ConfigMaps)
+# =============================================================================
+config:
+  # --- Common (shared by all components) ---
+  common:
+    NODE_ENV: production
+    COUNTLY_PLUGINS: "mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crash-analytics,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides,heatmaps,retention_segments,formulas,funnels,cohorts,ab-testing,performance-monitoring,config-transfer,data-migration,two-factor-auth,blocking,concurrent_users,revenue,activity-map,flows,surveys,event-timeline,drill,multi,active_users,ip-blocker,kafka,clickhouse"
+    COUNTLY_CONFIG__FILESTORAGE: gridfs
+    COUNTLY_CONFIG__DRILL_EVENTS_DRIVER: clickhouse
+    COUNTLY_CONFIG__SHARED_CONNECTION: "true"
+    COUNTLY_CONFIG__DATABASE_ADAPTERPREFERENCE: '["clickhouse","mongodb"]'
+    COUNTLY_CONFIG__DATABASE_ADAPTERS_MONGODB_ENABLED: "true"
+    COUNTLY_CONFIG__DATABASE_ADAPTERS_CLICKHOUSE_ENABLED: "true"
+    COUNTLY_CONFIG__DATABASE_FAILONCONNECTIONERROR: "true"
+    COUNTLY_CONFIG__EVENTSINK_SINKS: '["kafka"]'
+    COUNTLY_CONFIG__RELOADCONFIGAFTER: "10000"
+
+  # --- API ---
+  api:
+    COUNTLY_CONTAINER: api
+    COUNTLY_CONFIG__API_PORT: "3001"
+    COUNTLY_CONFIG__API_HOST: "0.0.0.0"
+    COUNTLY_CONFIG__API_MAX_SOCKETS: "1024"
+    COUNTLY_CONFIG__API_MAX_UPLOAD_FILE_SIZE: "209715200"     # 200 MiB
+    COUNTLY_CONFIG__API_TIMEOUT: "120000"                     # ms
+
+  # --- Frontend ---
+  frontend:
+    COUNTLY_CONTAINER: frontend
+    COUNTLY_CONFIG__WEB_PORT: "6001"
+    COUNTLY_CONFIG__WEB_HOST: "0.0.0.0"
+    COUNTLY_CONFIG__WEB_SECURE_COOKIES: "false"
+    COUNTLY_CONFIG__COOKIE_MAXAGE: "86400000"                 # 24 hours in ms
+
+  # --- Ingestor ---
+  ingestor:
+    COUNTLY_CONTAINER: ingestor
+    COUNTLY_CONFIG__INGESTOR_PORT: "3010"
+    COUNTLY_CONFIG__INGESTOR_HOST: "0.0.0.0"
+
+  # --- Aggregator ---
+  aggregator:
+    COUNTLY_CONTAINER: aggregator
+    UV_THREADPOOL_SIZE: "6"
+
+  # --- Job Server ---
+  jobserver:
+    COUNTLY_CONTAINER: jobserver
+    COUNTLY_CONFIG__JOBSERVER_PORT: "3020"
+    COUNTLY_CONFIG__JOBSERVER_HOST: "0.0.0.0"
+
+  # --- ClickHouse Connection ---
+  clickhouse:
+    COUNTLY_CONFIG__CLICKHOUSE_QUERYOPTIONS_MAX_EXECUTION_TIME: "600"
+    COUNTLY_CONFIG__CLICKHOUSE_REQUEST_TIMEOUT: "1200000"     # ms
+    COUNTLY_CONFIG__CLICKHOUSE_MAX_OPEN_CONNECTIONS: "10"
+    COUNTLY_CONFIG__CLICKHOUSE_APPLICATION: countly_drill
+    COUNTLY_CONFIG__CLICKHOUSE_COMPRESSION_REQUEST: "false"
+    COUNTLY_CONFIG__CLICKHOUSE_COMPRESSION_RESPONSE: "false"
+    COUNTLY_CONFIG__CLICKHOUSE_KEEP_ALIVE_ENABLED: "true"
+    COUNTLY_CONFIG__CLICKHOUSE_KEEP_ALIVE_IDLE_SOCKET_TTL: "10000"
+    COUNTLY_CONFIG__CLICKHOUSE_CLUSTER_NAME: countly_cluster
+    COUNTLY_CONFIG__CLICKHOUSE_CLUSTER_SHARDS: "false"
+    COUNTLY_CONFIG__CLICKHOUSE_CLUSTER_REPLICAS: "false"
+    COUNTLY_CONFIG__CLICKHOUSE_CLUSTER_ISCLOUD: "false"
+    COUNTLY_CONFIG__CLICKHOUSE_REPLICATION_COORDINATORTYPE: keeper
+    COUNTLY_CONFIG__CLICKHOUSE_REPLICATION_ZKPATH: "/clickhouse/tables/{shard}/{database}/{table}"
+    COUNTLY_CONFIG__CLICKHOUSE_REPLICATION_REPLICANAME: "{replica}"
+    COUNTLY_CONFIG__CLICKHOUSE_PARALLELREPLICAS_ENABLED: "false"
+    COUNTLY_CONFIG__CLICKHOUSE_PARALLELREPLICAS_MAXPARALLELREPLICAS: "2"
+    COUNTLY_CONFIG__CLICKHOUSE_DISTRIBUTED_WRITETHROUGH: "true"
+    COUNTLY_CONFIG__CLICKHOUSE_DISTRIBUTED_INSERTDISTRIBUTEDSYNC: "true"
+    COUNTLY_CONFIG__CLICKHOUSE_DICTIONARY_NATIVEPORT: "9000"
+    COUNTLY_CONFIG__CLICKHOUSE_DICTIONARY_SECURE: "false"
+    COUNTLY_CONFIG__CLICKHOUSE_IDENTITY_DAYSOLD: "30"
+    COUNTLY_CONFIG__CLICKHOUSE_IDENTITY_LIFETIME_MIN: "60"
+    COUNTLY_CONFIG__CLICKHOUSE_IDENTITY_LIFETIME_MAX: "120"
+
+  # --- Kafka Connection ---
+  kafka:
+    COUNTLY_CONFIG__KAFKA_ENABLED: "true"
+    COUNTLY_CONFIG__KAFKA_DRILLEVENTSTOPIC: drill-events
+    COUNTLY_CONFIG__KAFKA_CLUSTER_NAME: cly-kafka
+    COUNTLY_CONFIG__KAFKA_PARTITIONS: "100"
+    COUNTLY_CONFIG__KAFKA_REPLICATIONFACTOR: "2"
+    COUNTLY_CONFIG__KAFKA_RETENTIONMS: "604800000"            # 7 days in ms
+    COUNTLY_CONFIG__KAFKA_ENABLETRANSACTIONS: "false"
+    COUNTLY_CONFIG__KAFKA_TRANSACTIONTIMEOUT: "60000"
+    COUNTLY_CONFIG__KAFKA_RDKAFKA_CLIENTID: countly-app
+    COUNTLY_CONFIG__KAFKA_RDKAFKA_REQUESTTIMEOUTMS: "20000"
+    COUNTLY_CONFIG__KAFKA_RDKAFKA_CONNECTIONTIMEOUTMS: "8000"
+    COUNTLY_CONFIG__KAFKA_RDKAFKA_LINGERMS: "10"
+    COUNTLY_CONFIG__KAFKA_RDKAFKA_RETRIES: "5"
+    COUNTLY_CONFIG__KAFKA_RDKAFKA_ACKS: "-1"                  # -1 = all ISR replicas must acknowledge
+    COUNTLY_CONFIG__KAFKA_CONSUMER_FETCHMINBYTES: "1024000"
+    COUNTLY_CONFIG__KAFKA_CONSUMER_FETCHMAXWAITMS: "1200"
+    COUNTLY_CONFIG__KAFKA_CONSUMER_SESSIONTIMEOUTMS: "120000"
+    COUNTLY_CONFIG__KAFKA_CONSUMER_HEARTBEATINTERVALMS: "20000"
+    COUNTLY_CONFIG__KAFKA_CONSUMER_AUTOOFFSETRESET: earliest
+    COUNTLY_CONFIG__KAFKA_CONSUMER_ENABLEAUTOCOMMIT: "false"
+    COUNTLY_CONFIG__KAFKA_CONSUMER_MAXPOLLINTERVALMS: "600000"
+    COUNTLY_CONFIG__KAFKA_CONNECTCONSUMERGROUPID: "connect-ch"
+
+  # --- OpenTelemetry ---
+  otel:
+    OTEL_ENABLED: "false"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4318"
+    OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+    OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
+    OTEL_TRACES_SAMPLER_ARG: "1.0"                            # 0.0-1.0, fraction of traces to sample
+    PYROSCOPE_ENABLED: "false"
+
+# --- Node.js Options (injected into configmap per component) ---
+nodeOptions:
+  api: "--max-old-space-size=3072 --max-semi-space-size=256"
+  frontend: "--max-old-space-size=2048"
+  ingestor: "--max-old-space-size=2048 --max-semi-space-size=256"
+  aggregator: "--max-old-space-size=3072 --max-semi-space-size=128"
+  jobserver: "--max-old-space-size=2048 --max-semi-space-size=256"
+
+# =============================================================================
+# Backing Service Modes
+# =============================================================================
+# When mode=external, the corresponding chart is not deployed and connection
+# details below are used instead.
+
+backingServices:
+  mongodb:
+    mode: bundled                         # bundled | external
+    host: ""
+    port: "27017"
+    connectionString: ""                  # If set, used as-is (bypasses host/port/user/pass)
+    username: "app"
+    password: ""
+    database: "admin"
+    replicaSet: ""
+    existingSecret: ""
+    # --- External MongoDB Atlas example ---
+    # mode: external
+    # connectionString: "mongodb+srv://user:pass@cluster0.example.mongodb.net/admin?retryWrites=true&w=majority"
+
+  clickhouse:
+    mode: bundled                         # bundled | external
+    host: ""
+    port: "8123"
+    tls: "false"
+    username: "default"
+    password: ""
+    database: "countly_drill"
+    existingSecret: ""
+    # --- External ClickHouse Cloud example ---
+    # mode: external
+    # host: "abc123.us-east-1.aws.clickhouse.cloud"
+    # port: "8443"
+    # tls: "true"
+
+  kafka:
+    mode: bundled                         # bundled | external
+    brokers: ""                           # Comma-separated broker list
+    securityProtocol: "PLAINTEXT"         # PLAINTEXT | SSL | SASL_PLAINTEXT | SASL_SSL
+    saslMechanism: ""
+    saslUsername: ""
+    saslPassword: ""
+    existingSecret: ""
+    # --- External Confluent Cloud example ---
+    # mode: external
+    # brokers: "pkc-12345.us-east-1.aws.confluent.cloud:9092"
+    # securityProtocol: "SASL_SSL"
+    # saslMechanism: "PLAIN"
+
+# =============================================================================
+# Secrets
+# =============================================================================
 secrets:
-  mode: values
+  mode: values                            # values | existingSecret | externalSecret
+  keep: true                              # Retain secrets on helm uninstall
+  rotationId: ""                          # Change to force secret re-creation
 
   common:
+    existingSecret: ""
     encryptionReportsKey: ""              # REQUIRED: min 8 chars
     webSessionSecret: ""                  # REQUIRED: min 8 chars
     passwordSecret: ""                    # REQUIRED: min 8 chars
 
   clickhouse:
-    password: ""                          # REQUIRED: must match countly-clickhouse chart
+    existingSecret: ""
+    username: ""
+    password: ""
+    database: ""
+
+  kafka:
+    existingSecret: ""
+    securityProtocol: ""
+    saslMechanism: ""
+    saslUsername: ""
+    saslPassword: ""
 
   mongodb:
-    password: ""                          # REQUIRED: must match countly-mongodb chart
+    existingSecret: ""
+    key: "connectionString.standard"      # Key within the secret to read
+    password: ""                          # REQUIRED on first install (must match users.app.password in countly-mongodb)
 
-# --- Network Policy ---
-# networkPolicy:
-#   enabled: true
+  # --- ExternalSecret configuration (used only when mode=externalSecret) ---
+  externalSecret:
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: ""
+      kind: ClusterSecretStore
+    remoteRefs:
+      common:
+        encryptionReportsKey: ""
+        webSessionSecret: ""
+        passwordSecret: ""
+      clickhouse:
+        url: ""
+        username: ""
+        password: ""
+        database: ""
+      kafka:
+        brokers: ""
+        securityProtocol: ""
+        saslMechanism: ""
+        saslUsername: ""
+        saslPassword: ""
+      mongodb:
+        connectionString: ""
 
-# --- OTEL Integration (optional) ---
-# config:
-#   otel:
-#     OTEL_ENABLED: "true"
-#     OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4318"
-#     PYROSCOPE_ENABLED: "true"
-#     PYROSCOPE_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:9999"
+# =============================================================================
+# Network Policy
+# =============================================================================
+networkPolicy:
+  enabled: false
+  ingressNamespaceSelector:
+    kubernetes.io/metadata.name: ingress-nginx
+  additionalIngress: []
+  # additionalIngress:
+  #   - from:
+  #       - namespaceSelector:
+  #           matchLabels:
+  #             kubernetes.io/metadata.name: my-custom-namespace
+  #     ports:
+  #       - port: 3001
+  #         protocol: TCP
 
-# --- Component Tuning (optional, beyond profile defaults) ---
-# api:
-#   hpa:
-#     maxReplicas: 10
-# ingestor:
-#   hpa:
-#     maxReplicas: 20
+# =============================================================================
+# Ingress
+# =============================================================================
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    # F5 NGINX Ingress Controller (OSS) annotations
+    nginx.org/client-max-body-size: "50m"
+    nginx.org/proxy-buffering: "True"
+    nginx.org/proxy-buffer-size: "256k"
+    nginx.org/proxy-buffers: "16 256k"
+    nginx.org/proxy-busy-buffers-size: "512k"
+    nginx.org/proxy-max-temp-file-size: "2048m"
+    nginx.org/client-body-buffer-size: "2m"
+    nginx.org/proxy-connect-timeout: "60s"
+    nginx.org/proxy-read-timeout: "120s"
+    nginx.org/proxy-send-timeout: "120s"
+    nginx.org/keepalive: "256"
+    nginx.org/server-snippets: |
+      otel_trace on;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Port $server_port;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Scheme $scheme;
+      proxy_set_header Connection "";
+      proxy_set_header X-Request-ID $request_id;
+      proxy_set_header X-Request-Start $msec;
+      # traceparent/tracestate now handled by ngx_otel_module (otel-trace-context: propagate)
+      client_header_timeout 30s;
+    nginx.org/location-snippets: |
+      proxy_request_buffering on;
+      proxy_next_upstream error timeout http_502 http_503 http_504;
+      proxy_next_upstream_timeout 30s;
+      proxy_next_upstream_tries 3;
+      proxy_temp_file_write_size 1m;
+      client_body_timeout 120s;
+  hostname: countly.example.com
+  tls:
+    # TLS mode: letsencrypt | existingSecret | selfSigned | http
+    #   http:            No TLS
+    #   letsencrypt:     cert-manager + Let's Encrypt (recommended for production)
+    #   existingSecret:  Bring your own TLS secret
+    #   selfSigned:      cert-manager self-signed CA (for development)
+    mode: http
+    clusterIssuer: letsencrypt-prod       # Used with mode=letsencrypt
+    secretName: ""                        # Auto-derived if empty: <fullname>-tls
+    selfSigned:
+      issuerName: ""                      # Auto-derived if empty: <fullname>-ca-issuer
+      caSecretName: ""                    # Auto-derived if empty: <fullname>-ca-keypair

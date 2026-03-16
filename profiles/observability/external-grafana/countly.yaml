@@ -1,0 +1,6 @@
+# Observability Profile: External Grafana
+# Countly OTEL instrumentation enabled — backends in-cluster, Grafana external.
+config:
+  otel:
+    OTEL_ENABLED: "true"
+    PYROSCOPE_ENABLED: "true"

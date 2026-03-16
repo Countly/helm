@@ -1,7 +1,11 @@
 # Example: Production deployment with Let's Encrypt TLS
 
 global:
-  profile: production
+  sizing: production
+  security: hardened
+  tls: letsencrypt
+  observability: full
+  kafkaConnect: balanced
   storageClass: gp3
 
 ingress:
@@ -14,6 +18,3 @@ backingServices:
   mongodb:   { mode: bundled }
   clickhouse: { mode: bundled }
   kafka:     { mode: bundled }
-
-observability:
-  mode: full

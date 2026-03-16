@@ -78,6 +78,11 @@ data:
     loki.process "pods" {
       forward_to = [loki.write.default.receiver]
 
+      // 0. Drop high-cardinality labels to reduce Loki stream count
+      stage.label_drop {
+        values = ["filename"]
+      }
+
       // 1. Strip CRI prelude (stdout/stderr wrappers)
       stage.cri {}
 
