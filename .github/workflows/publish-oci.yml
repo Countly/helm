@@ -12,7 +12,7 @@ permissions: {}
 
 env:
   REGISTRY: ghcr.io
-  REGISTRY_PATH: ghcr.io/countly
+  REGISTRY_PATH: ghcr.io/countly/helm
 
 jobs:
   lint:
@@ -65,7 +65,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_ACTOR: ${{ github.actor }}
-        run: echo "${GITHUB_TOKEN}" | helm registry login ${REGISTRY} -u "${GH_ACTOR}" --password-stdin
+        run: |
+          echo "${GITHUB_TOKEN}" | helm registry login ${REGISTRY} -u "${GH_ACTOR}" --password-stdin
+          echo "${GITHUB_TOKEN}" | cosign login ${REGISTRY} -u "${GH_ACTOR}" --password-stdin
 
       - name: Package, push, sign, and attach SBOM
         id: publish
