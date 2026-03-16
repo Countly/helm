@@ -157,7 +157,7 @@ jobs:
     permissions:
       id-token: write
       attestations: write
-      packages: read
+      packages: write
     strategy:
       matrix:
         artifact: ${{ fromJSON(needs.publish.outputs.artifacts) }}
