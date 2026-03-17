@@ -42,7 +42,7 @@ jobs:
     timeout-minutes: 10
     needs: lint
     permissions:
-      contents: read
+      contents: write
       packages: write
       id-token: write
     outputs:
@@ -137,17 +137,42 @@ jobs:
           artifacts+="]"
           echo "artifacts=${artifacts}" >> "$GITHUB_OUTPUT"
 
-      - name: Summary
+      - name: Summary and release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          echo "## Published Charts" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "All charts are signed with Cosign (keyless/Sigstore) and include SBOM attestations." >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
+          # Build chart listing
+          chart_list=""
           for chart_dir in charts/*/; do
             chart_name=$(basename "${chart_dir}")
             chart_version=$(yq '.version' "${chart_dir}/Chart.yaml")
-            echo "- \`oci://${REGISTRY_PATH}/${chart_name}:${chart_version}\` — signed + SBOM" >> "$GITHUB_STEP_SUMMARY"
+            chart_list="${chart_list}
+          - \`oci://${REGISTRY_PATH}/${chart_name}:${chart_version}\` — signed + SBOM"
           done
+
+          # Write job summary
+          {
+            echo "## Published Charts"
+            echo ""
+            echo "All charts are signed with Cosign (keyless/Sigstore) and include SBOM attestations."
+            echo "${chart_list}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Append OCI chart links to release notes
+          existing_body=$(gh release view "${RELEASE_TAG}" --json body -q '.body')
+          {
+            echo "${existing_body}"
+            echo ""
+            echo "## OCI Charts"
+            echo ""
+            echo "All charts are signed with [Cosign](https://docs.sigstore.dev/cosign/overview/) (keyless/Sigstore) and include SBOM attestations."
+            echo ""
+            echo '```bash'
+            echo "helm pull oci://${REGISTRY_PATH}/<chart-name> --version <version>"
+            echo '```'
+            echo "${chart_list}"
+          } | gh release edit "${RELEASE_TAG}" --notes-file -
 
   attest:
     name: Provenance Attestation
