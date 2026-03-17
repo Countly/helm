@@ -143,7 +143,7 @@ jobs:
           for chart_dir in charts/*/; do
             chart_name=$(basename "${chart_dir}")
             chart_list="${chart_list}
-          - \`oci://${REGISTRY_PATH}/${chart_name}:${chart_version}\` — signed + SBOM"
+          - \`oci://${REGISTRY_PATH}/${chart_name}:${chart_version}\`"
           done
 
           # Write job summary
