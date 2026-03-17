@@ -71,24 +71,29 @@ jobs:
 
       - name: Package, push, sign, and attach SBOM
         id: publish
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           mkdir -p /tmp/helm-packages
           artifacts="["
           first=true
 
+          # Derive chart version from release tag (strip leading 'v' if present)
+          chart_version="${RELEASE_TAG#v}"
+          if [ -z "${chart_version}" ]; then
+            echo "ERROR: Could not derive version from release tag '${RELEASE_TAG}'"
+            exit 1
+          fi
+          echo "Publishing charts at version: ${chart_version}"
+
           for chart_dir in charts/*/; do
             chart_name=$(basename "${chart_dir}")
-            chart_version=$(yq '.version' "${chart_dir}/Chart.yaml")
-            if [ -z "${chart_version}" ] || [ "${chart_version}" = "null" ]; then
-              echo "ERROR: Could not read version from ${chart_dir}/Chart.yaml"
-              exit 1
-            fi
 
             pkg="/tmp/helm-packages/${chart_name}-${chart_version}.tgz"
             echo "::group::${chart_name}:${chart_version}"
 
-            # Package
-            helm package "${chart_dir}" --destination /tmp/helm-packages/
+            # Package with version from release tag (includes prerelease suffix)
+            helm package "${chart_dir}" --version "${chart_version}" --destination /tmp/helm-packages/
 
             # Push with retry (transient GHCR failures)
             max_retries=3
@@ -142,11 +147,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
+          chart_version="${RELEASE_TAG#v}"
+
           # Build chart listing
           chart_list=""
           for chart_dir in charts/*/; do
             chart_name=$(basename "${chart_dir}")
-            chart_version=$(yq '.version' "${chart_dir}/Chart.yaml")
             chart_list="${chart_list}
           - \`oci://${REGISTRY_PATH}/${chart_name}:${chart_version}\` — signed + SBOM"
           done
