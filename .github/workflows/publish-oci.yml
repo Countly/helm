@@ -46,8 +46,6 @@ jobs:
       contents: write
       packages: write
       id-token: write
-    outputs:
-      artifacts: ${{ steps.publish.outputs.artifacts }}
     steps:
       - uses: actions/checkout@v5
 
@@ -71,13 +69,10 @@ jobs:
           echo "${GITHUB_TOKEN}" | cosign login ${REGISTRY} -u "${GH_ACTOR}" --password-stdin
 
       - name: Package, push, sign, and attach SBOM
-        id: publish
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           mkdir -p /tmp/helm-packages
-          artifacts="["
-          first=true
 
           # Derive chart version from release tag (strip leading 'v' if present)
           chart_version="${RELEASE_TAG#v}"
@@ -134,14 +129,7 @@ jobs:
             cosign attest --yes --predicate "${sbom_file}" --type cyclonedx "${ref}"
 
             echo "::endgroup::"
-
-            # Build matrix JSON for provenance attestation job
-            if [ "${first}" = true ]; then first=false; else artifacts+=","; fi
-            artifacts+="{\"name\":\"${REGISTRY_PATH}/${chart_name}\",\"digest\":\"${digest}\"}"
           done
-
-          artifacts+="]"
-          echo "artifacts=${artifacts}" >> "$GITHUB_OUTPUT"
 
       - name: Summary and release notes
         env:
@@ -178,29 +166,3 @@ jobs:
             echo '```'
             echo "${chart_list}"
           } | gh release edit "${RELEASE_TAG}" --notes-file -
-
-  attest:
-    name: Provenance Attestation
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: publish
-    permissions:
-      id-token: write
-      attestations: write
-      packages: write
-    strategy:
-      matrix:
-        artifact: ${{ fromJSON(needs.publish.outputs.artifacts) }}
-    steps:
-      - name: Login to GHCR
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_ACTOR: ${{ github.actor }}
-        run: echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "${GH_ACTOR}" --password-stdin
-
-      - name: Attest build provenance
-        uses: actions/attest-build-provenance@v4
-        with:
-          subject-name: ${{ matrix.artifact.name }}
-          subject-digest: ${{ matrix.artifact.digest }}
-          push-to-registry: true
