@@ -172,8 +172,6 @@ jobs:
             echo ""
             echo "## OCI Charts"
             echo ""
-            echo "All charts are signed with [Cosign](https://docs.sigstore.dev/cosign/overview/) (keyless/Sigstore) and include SBOM attestations."
-            echo ""
             echo '```bash'
             echo "helm pull oci://${REGISTRY_PATH}/<chart-name> --version <version>"
             echo '```'
@@ -193,6 +191,12 @@ jobs:
       matrix:
         artifact: ${{ fromJSON(needs.publish.outputs.artifacts) }}
     steps:
+      - name: Login to GHCR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_ACTOR: ${{ github.actor }}
+        run: echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "${GH_ACTOR}" --password-stdin
+
       - name: Attest build provenance
         uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
         with:
