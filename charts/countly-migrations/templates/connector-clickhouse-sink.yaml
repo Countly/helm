@@ -6,8 +6,10 @@ metadata:
   labels:
     strimzi.io/cluster: {{ include "countly-migrations.connectSinkName" . }}
     {{- include "countly-migrations.labels" . | nindent 4 }}
+  {{- if .Values.argocd.enabled }}
   annotations:
     {{- include "countly-migrations.syncWave" (dict "wave" "15" "root" .) | nindent 4 }}
+  {{- end }}
 spec:
   class: com.clickhouse.kafka.connect.ClickHouseSinkConnector
   tasksMax: {{ .Values.connectors.clickhouseSink.tasksMax }}

@@ -5,8 +5,10 @@ metadata:
   name: {{ include "countly-migrations.fullname" . }}-progress-script
   labels:
     {{- include "countly-migrations.labels" . | nindent 4 }}
+  {{- if .Values.argocd.enabled }}
   annotations:
     {{- include "countly-migrations.syncWave" (dict "wave" "20" "root" .) | nindent 4 }}
+  {{- end }}
 data:
   check-progress.sh: |
     #!/bin/bash

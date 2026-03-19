@@ -5,8 +5,10 @@ metadata:
   name: {{ include "countly-migrations.fullname" . }}-progress
   labels:
     {{- include "countly-migrations.labels" . | nindent 4 }}
+  {{- if .Values.argocd.enabled }}
   annotations:
     {{- include "countly-migrations.syncWave" (dict "wave" "20" "root" .) | nindent 4 }}
+  {{- end }}
 spec:
   schedule: {{ .Values.progressMonitor.schedule | quote }}
   concurrencyPolicy: Forbid

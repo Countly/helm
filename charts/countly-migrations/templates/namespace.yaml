@@ -5,6 +5,8 @@ metadata:
   name: {{ .Release.Namespace }}
   labels:
     {{- include "countly-migrations.labels" . | nindent 4 }}
+  {{- if .Values.argocd.enabled }}
   annotations:
     {{- include "countly-migrations.syncWave" (dict "wave" "-5" "root" .) | nindent 4 }}
+  {{- end }}
 {{- end }}

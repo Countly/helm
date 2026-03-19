@@ -5,8 +5,10 @@ metadata:
   name: {{ .Values.storageClass.name }}
   labels:
     {{- include "countly-migrations.labels" . | nindent 4 }}
+  {{- if .Values.argocd.enabled }}
   annotations:
     {{- include "countly-migrations.syncWave" (dict "wave" "-3" "root" .) | nindent 4 }}
+  {{- end }}
 provisioner: {{ .Values.storageClass.provisioner }}
 {{- with .Values.storageClass.parameters }}
 parameters:

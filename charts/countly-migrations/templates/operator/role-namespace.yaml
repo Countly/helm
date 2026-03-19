@@ -5,8 +5,10 @@ metadata:
   name: strimzi-cluster-operator-namespaced
   labels:
     {{- include "countly-migrations.labels" . | nindent 4 }}
+  {{- if .Values.argocd.enabled }}
   annotations:
     {{- include "countly-migrations.syncWave" (dict "wave" "-1" "root" .) | nindent 4 }}
+  {{- end }}
 rules:
   - apiGroups: [""]
     resources: ["pods", "pods/log", "services", "endpoints", "configmaps", "secrets", "events", "persistentvolumeclaims", "serviceaccounts"]

@@ -4,8 +4,10 @@ metadata:
   name: {{ include "countly-migrations.fullname" . }}-connect-env
   labels:
     {{- include "countly-migrations.labels" . | nindent 4 }}
+  {{- if .Values.argocd.enabled }}
   annotations:
     {{- include "countly-migrations.syncWave" (dict "wave" "0" "root" .) | nindent 4 }}
+  {{- end }}
 data:
   # ClickHouse target
   CLICKHOUSE_HOST: {{ .Values.clickhouse.host | quote }}

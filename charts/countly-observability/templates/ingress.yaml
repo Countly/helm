@@ -7,10 +7,12 @@ metadata:
   labels:
     {{- include "obs.labels" . | nindent 4 }}
     app.kubernetes.io/component: grafana
+  {{- if or .Values.argocd.enabled .Values.ingress.annotations }}
   annotations:
     {{- include "obs.syncWave" (dict "wave" "5" "root" .) | nindent 4 }}
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
+    {{- end }}
   {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}

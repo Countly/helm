@@ -6,8 +6,10 @@ metadata:
   labels:
     {{- include "countly-migrations.labels" . | nindent 4 }}
     app: strimzi
+  {{- if .Values.argocd.enabled }}
   annotations:
     {{- include "countly-migrations.syncWave" (dict "wave" "-1" "root" .) | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.operator.replicas }}
   selector:
