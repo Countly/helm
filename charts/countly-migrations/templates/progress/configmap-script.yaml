@@ -1,0 +1,80 @@
+{{- if .Values.progressMonitor.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "countly-migrations.fullname" . }}-progress-script
+  labels:
+    {{- include "countly-migrations.labels" . | nindent 4 }}
+  annotations:
+    {{- include "countly-migrations.syncWave" (dict "wave" "20" "root" .) | nindent 4 }}
+data:
+  check-progress.sh: |
+    #!/bin/bash
+    set -e
+
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    CYAN='\033[0;36m'
+    BLUE='\033[0;34m'
+    NC='\033[0m'
+
+    NAMESPACE_MIGRATION="{{ .Release.Namespace }}"
+    NAMESPACE_MONGODB="{{ .Values.progressMonitor.mongodb.namespace }}"
+    NAMESPACE_CLICKHOUSE="{{ .Values.progressMonitor.clickhouse.namespace }}"
+    MONGO_POD="{{ .Values.progressMonitor.mongodb.pod }}"
+    MONGO_CONTAINER="{{ .Values.progressMonitor.mongodb.container }}"
+    MONGO_USER="{{ .Values.progressMonitor.mongodb.user }}"
+    MONGO_DB="{{ .Values.progressMonitor.mongodb.database }}"
+    CLICKHOUSE_POD="{{ .Values.progressMonitor.clickhouse.pod }}"
+    CLICKHOUSE_CONTAINER="{{ .Values.progressMonitor.clickhouse.container }}"
+    CLICKHOUSE_DB="{{ .Values.progressMonitor.clickhouse.database }}"
+    CLICKHOUSE_TABLE="{{ .Values.progressMonitor.clickhouse.table }}"
+    BROKER_POD="{{ include "countly-migrations.fullname" . }}-brokers-0"
+    SOURCE_CONNECTOR="mongo-snapshot-only-mig"
+    SINK_CONNECTOR="ch-sink-drill-migration-mig"
+
+    # Get MongoDB count
+    MONGO_COUNT=$(kubectl exec -n $NAMESPACE_MONGODB $MONGO_POD -c $MONGO_CONTAINER -- \
+        mongosh --quiet --eval "
+    var d = db.getSiblingDB('$MONGO_DB');
+    var total = 0;
+    d.getCollectionNames().filter(function(c){ return c.startsWith('drill_events'); }).forEach(function(c){
+      total += d.getCollection(c).estimatedDocumentCount();
+    });
+    print(total);
+    " 2>&1 | grep -E '^[0-9]+$' | tail -1) || MONGO_COUNT=0
+
+    # Get ClickHouse count
+    CLICKHOUSE_COUNT=$(kubectl exec -n $NAMESPACE_CLICKHOUSE $CLICKHOUSE_POD -c $CLICKHOUSE_CONTAINER -- \
+        clickhouse-client --query "SELECT count() FROM $CLICKHOUSE_DB.$CLICKHOUSE_TABLE FORMAT TSV" 2>/dev/null) || CLICKHOUSE_COUNT=0
+
+    # Get connector status
+    SOURCE_STATUS=$(kubectl get kafkaconnector $SOURCE_CONNECTOR -n $NAMESPACE_MIGRATION \
+        -o jsonpath='{.status.connectorStatus.connector.state}' 2>/dev/null) || SOURCE_STATUS="UNKNOWN"
+    SINK_STATUS=$(kubectl get kafkaconnector $SINK_CONNECTOR -n $NAMESPACE_MIGRATION \
+        -o jsonpath='{.status.connectorStatus.connector.state}' 2>/dev/null) || SINK_STATUS="UNKNOWN"
+
+    echo ""
+    echo -e "${CYAN}======================================${NC}"
+    echo -e "${CYAN}  MIGRATION PROGRESS${NC}"
+    echo -e "${CYAN}======================================${NC}"
+    echo ""
+    echo -e "${YELLOW}MongoDB:${NC}     $(printf "%'d" $MONGO_COUNT 2>/dev/null || echo $MONGO_COUNT) documents"
+    echo -e "${YELLOW}ClickHouse:${NC}  $(printf "%'d" $CLICKHOUSE_COUNT 2>/dev/null || echo $CLICKHOUSE_COUNT) documents"
+    echo ""
+
+    if [ "$MONGO_COUNT" -gt 0 ] && [ "$CLICKHOUSE_COUNT" -ge 0 ] 2>/dev/null; then
+        REMAINING=$((MONGO_COUNT - CLICKHOUSE_COUNT))
+        PROGRESS=$(echo "scale=2; ($CLICKHOUSE_COUNT * 100) / $MONGO_COUNT" | bc 2>/dev/null || echo "0")
+        echo -e "${YELLOW}Progress:${NC}    ${GREEN}${PROGRESS}%${NC} ($(printf "%'d" $REMAINING 2>/dev/null || echo $REMAINING) remaining)"
+    fi
+
+    echo ""
+    echo -e "${YELLOW}Connectors:${NC}"
+    echo -e "  Source:  $SOURCE_STATUS"
+    echo -e "  Sink:    $SINK_STATUS"
+    echo ""
+    echo -e "${BLUE}$(date '+%Y-%m-%d %H:%M:%S')${NC}"
+    echo -e "${CYAN}======================================${NC}"
+{{- end }}

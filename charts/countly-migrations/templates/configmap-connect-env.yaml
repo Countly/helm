@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "countly-migrations.fullname" . }}-connect-env
+  labels:
+    {{- include "countly-migrations.labels" . | nindent 4 }}
+  annotations:
+    {{- include "countly-migrations.syncWave" (dict "wave" "0" "root" .) | nindent 4 }}
+data:
+  # ClickHouse target
+  CLICKHOUSE_HOST: {{ .Values.clickhouse.host | quote }}
+  CLICKHOUSE_PORT: {{ .Values.clickhouse.port | quote }}
+  CLICKHOUSE_SSL: {{ .Values.clickhouse.ssl | quote }}
+  CLICKHOUSE_DB: {{ .Values.clickhouse.database | quote }}
+
+  # Behavior
+  EXACTLY_ONCE: {{ .Values.behavior.exactlyOnce | quote }}
+  ERRORS_RETRY_TIMEOUT: {{ .Values.behavior.errorsRetryTimeout | quote }}
+  ERRORS_TOLERANCE: {{ .Values.behavior.errorsTolerance | quote }}
+
+  # ClickHouse session / JSON handling
+  CLICKHOUSE_SETTINGS: {{ .Values.clickhouse.settings | quote }}
+  BYPASS_ROW_BINARY: {{ .Values.clickhouse.bypassRowBinary | quote }}
+  TABLE_REFRESH_INTERVAL: {{ .Values.clickhouse.tableRefreshInterval | quote }}
+
+  # Converters
+  KEY_CONVERTER: {{ .Values.converters.key | quote }}
+  VALUE_CONVERTER: {{ .Values.converters.value | quote }}
+  VALUE_CONVERTER_SCHEMAS_ENABLE: {{ .Values.converters.valueSchemasEnable | quote }}
+
+  # Sink consumer batching / throughput
+  KAFKA_CONSUMER_FETCH_MIN_BYTES: {{ .Values.consumerTuning.sink.fetchMinBytes | quote }}
+  KAFKA_CONSUMER_FETCH_MAX_WAIT_MS: {{ .Values.consumerTuning.sink.fetchMaxWaitMs | quote }}
+  KAFKA_CONSUMER_MAX_POLL_RECORDS: {{ .Values.consumerTuning.sink.maxPollRecords | quote }}
+  KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES: {{ .Values.consumerTuning.sink.maxPartitionFetchBytes | quote }}
+  KAFKA_CONSUMER_FETCH_MAX_BYTES: {{ .Values.consumerTuning.sink.fetchMaxBytes | quote }}
+
+  # Writeback consumer tuning
+  WB_CONSUMER_MAX_POLL_RECORDS: {{ .Values.consumerTuning.writeback.maxPollRecords | quote }}
+  WB_CONSUMER_FETCH_MAX_WAIT_MS: {{ .Values.consumerTuning.writeback.fetchMaxWaitMs | quote }}
+
+  # Debezium snapshot tuning (source)
+  DBZ_SNAPSHOT_MODE: {{ .Values.debezium.snapshotMode | quote }}
+  DBZ_SNAPSHOT_MAX_THREADS: {{ .Values.debezium.snapshotMaxThreads | quote }}
+  DBZ_SNAPSHOT_FETCH_SIZE: {{ .Values.debezium.snapshotFetchSize | quote }}
+  DBZ_MAX_BATCH_SIZE: {{ .Values.debezium.maxBatchSize | quote }}
+  DBZ_MAX_QUEUE_SIZE: {{ .Values.debezium.maxQueueSize | quote }}
+
+  # MongoDB connection (source)
+  MONGO_CONN_STR: {{ .Values.mongodb.connectionString | quote }}
+  MONGO_DB: {{ .Values.mongodb.database | quote }}
+  DBZ_FILTERS_MATCH_MODE: {{ .Values.mongodb.filtersMatchMode | quote }}
+  DRILL_EVENTS_NS_SELECTOR: {{ .Values.mongodb.namespaceSelector | quote }}
+  TOPIC_PREFIX: {{ .Values.mongodb.topicPrefix | quote }}

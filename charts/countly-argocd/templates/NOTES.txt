@@ -2,7 +2,7 @@
 
 Environment: {{ .Values.environment }}
 Cluster:     {{ .Values.destination.server }}
-Project:     {{ .Values.project }}
+Project:     {{ include "countly-argocd.projectName" . }}
 
 Applications deployed (sync wave order):
   Wave 0:  {{ if .Values.mongodb.enabled }}mongodb{{ end }} {{ if .Values.clickhouse.enabled }}clickhouse{{ end }}

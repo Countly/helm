@@ -1,0 +1,166 @@
+apiVersion: {{ .Values.strimzi.apiVersion }}
+kind: KafkaConnect
+metadata:
+  name: {{ include "countly-migrations.connectSinkName" . }}
+  labels:
+    {{- include "countly-migrations.labels" . | nindent 4 }}
+  annotations:
+    strimzi.io/use-connector-resources: "true"
+    {{- include "countly-migrations.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
+spec:
+  version: {{ .Values.version | quote }}
+  replicas: {{ .Values.connectSink.replicas }}
+  bootstrapServers: {{ include "countly-migrations.bootstrapServers" . }}
+  image: {{ .Values.connectSink.image }}
+  {{- if .Values.metrics.enabled }}
+  metricsConfig:
+    type: jmxPrometheusExporter
+    valueFrom:
+      configMapKeyRef:
+        name: {{ include "countly-migrations.fullname" . }}-metrics
+        key: connect-metrics-config.yml
+  {{- end }}
+  resources:
+    {{- toYaml .Values.connectSink.resources | nindent 4 }}
+  jvmOptions:
+    -Xms: {{ .Values.connectSink.jvmOptions.xms }}
+    -Xmx: {{ .Values.connectSink.jvmOptions.xmx }}
+    javaSystemProperties:
+      - name: com.sun.management.jmxremote
+        value: "true"
+      - name: com.sun.management.jmxremote.port
+        value: "9999"
+      - name: com.sun.management.jmxremote.authenticate
+        value: "false"
+      - name: com.sun.management.jmxremote.ssl
+        value: "false"
+  config:
+    {{- range $key, $value := .Values.connectSink.workerConfig }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  template:
+    connectContainer:
+      env:
+        # ClickHouse credentials from Secret
+        - name: CLICKHOUSE_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "countly-migrations.clickhouseSecretName" . }}
+              key: username
+        - name: CLICKHOUSE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "countly-migrations.clickhouseSecretName" . }}
+              key: password
+        # ClickHouse connection from ConfigMap
+        - name: CLICKHOUSE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: CLICKHOUSE_HOST
+        - name: CLICKHOUSE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: CLICKHOUSE_PORT
+        - name: CLICKHOUSE_SSL
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: CLICKHOUSE_SSL
+        - name: CLICKHOUSE_DB
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: CLICKHOUSE_DB
+        # Behavior
+        - name: EXACTLY_ONCE
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: EXACTLY_ONCE
+        - name: ERRORS_RETRY_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: ERRORS_RETRY_TIMEOUT
+        - name: ERRORS_TOLERANCE
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: ERRORS_TOLERANCE
+        # ClickHouse settings
+        - name: CLICKHOUSE_SETTINGS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: CLICKHOUSE_SETTINGS
+        - name: BYPASS_ROW_BINARY
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: BYPASS_ROW_BINARY
+        - name: TABLE_REFRESH_INTERVAL
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: TABLE_REFRESH_INTERVAL
+        # Converters
+        - name: KEY_CONVERTER
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: KEY_CONVERTER
+        - name: VALUE_CONVERTER
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: VALUE_CONVERTER
+        - name: VALUE_CONVERTER_SCHEMAS_ENABLE
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: VALUE_CONVERTER_SCHEMAS_ENABLE
+        # Sink consumer batching
+        - name: KAFKA_CONSUMER_FETCH_MIN_BYTES
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: KAFKA_CONSUMER_FETCH_MIN_BYTES
+        - name: KAFKA_CONSUMER_FETCH_MAX_WAIT_MS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: KAFKA_CONSUMER_FETCH_MAX_WAIT_MS
+        - name: KAFKA_CONSUMER_MAX_POLL_RECORDS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: KAFKA_CONSUMER_MAX_POLL_RECORDS
+        - name: KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES
+        - name: KAFKA_CONSUMER_FETCH_MAX_BYTES
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: KAFKA_CONSUMER_FETCH_MAX_BYTES
+        # Writeback consumer tuning
+        - name: WB_CONSUMER_MAX_POLL_RECORDS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: WB_CONSUMER_MAX_POLL_RECORDS
+        - name: WB_CONSUMER_FETCH_MAX_WAIT_MS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: WB_CONSUMER_FETCH_MAX_WAIT_MS
+        # MongoDB connection for writeback
+        - name: MONGO_CONN_STR
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "countly-migrations.fullname" . }}-connect-env
+              key: MONGO_CONN_STR

@@ -1,0 +1,59 @@
+{{- if .Values.connectors.mongoWriteback.enabled }}
+apiVersion: {{ .Values.strimzi.apiVersion }}
+kind: KafkaConnector
+metadata:
+  name: mongo-writeback-mig
+  labels:
+    strimzi.io/cluster: {{ include "countly-migrations.connectSinkName" . }}
+    {{- include "countly-migrations.labels" . | nindent 4 }}
+  annotations:
+    {{- include "countly-migrations.syncWave" (dict "wave" "15" "root" .) | nindent 4 }}
+spec:
+  class: com.mongodb.kafka.connect.MongoSinkConnector
+  tasksMax: {{ .Values.connectors.mongoWriteback.tasksMax }}
+  state: {{ include "countly-migrations.connectorState" (dict "connector" .Values.connectors.mongoWriteback "global" .Values.migration) }}
+  autoRestart:
+    enabled: true
+  config:
+    topics: "drill-events-migration"
+
+    connection.uri: "${env:MONGO_CONN_STR}"
+
+    # Route each update to the originating collection
+    namespace.mapper: "com.mongodb.kafka.connect.sink.namespace.mapping.FieldPathNamespaceMapper"
+    namespace.mapper.value.database.field: "_src_db"
+    namespace.mapper.value.collection.field: "_src_col"
+
+    # UpdateOne by _id, $set remaining fields
+    writemodel.strategy: "com.mongodb.kafka.connect.sink.writemodel.strategy.UpdateOneDefaultWriteModelStrategy"
+
+    # Unordered bulk writes for parallelism (safe: each op targets distinct _id)
+    bulk.write.ordered: {{ .Values.connectors.mongoWriteback.bulkWriteOrdered | quote }}
+    bulk.write.size: {{ .Values.connectors.mongoWriteback.bulkWriteSize | quote }}
+
+    # PrepareMongoWriteback SMT: outputs { _id, migrated: true, _src_col, _src_db }
+    transforms: "prepareWriteback"
+    transforms.prepareWriteback.type: "dev.you.smt.PrepareMongoWriteback"
+
+    key.converter: "${env:KEY_CONVERTER}"
+    value.converter: "${env:VALUE_CONVERTER}"
+    value.converter.schemas.enable: "${env:VALUE_CONVERTER_SCHEMAS_ENABLE}"
+
+    # Writeback lags behind ClickHouse sink intentionally
+    consumer.override.fetch.min.bytes: "${env:KAFKA_CONSUMER_FETCH_MIN_BYTES}"
+    consumer.override.fetch.max.wait.ms: "${env:WB_CONSUMER_FETCH_MAX_WAIT_MS}"
+    consumer.override.max.poll.records: "${env:WB_CONSUMER_MAX_POLL_RECORDS}"
+    consumer.override.max.partition.fetch.bytes: "${env:KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES}"
+    consumer.override.fetch.max.bytes: "${env:KAFKA_CONSUMER_FETCH_MAX_BYTES}"
+
+    errors.log.enable: "true"
+    max.num.retries: {{ .Values.connectors.mongoWriteback.maxRetries | quote }}
+    errors.retry.timeout: "${env:ERRORS_RETRY_TIMEOUT}"
+    errors.tolerance: "${env:ERRORS_TOLERANCE}"
+
+    {{- with .Values.connectors.mongoWriteback.dlq }}
+    errors.deadletterqueue.topic.name: {{ .topicName | quote }}
+    errors.deadletterqueue.topic.replication.factor: {{ .replicationFactor | quote }}
+    errors.deadletterqueue.context.headers.enable: {{ .headerEnabled | quote }}
+    {{- end }}
+{{- end }}

@@ -31,7 +31,7 @@ metadata:
     {{- include "countly.labels" . | nindent 4 }}
   {{- if $.Values.argocd.enabled }}
   annotations:
-    {{- include "countly.syncWave" (dict "wave" "10" "root" $) | nindent 4 }}
+    {{- include "countly.syncWave" (dict "wave" "11" "root" $) | nindent 4 }}
   {{- end }}
 spec:
   isCA: true
@@ -52,7 +52,7 @@ metadata:
     {{- include "countly.labels" . | nindent 4 }}
   {{- if $.Values.argocd.enabled }}
   annotations:
-    {{- include "countly.syncWave" (dict "wave" "10" "root" $) | nindent 4 }}
+    {{- include "countly.syncWave" (dict "wave" "12" "root" $) | nindent 4 }}
   {{- end }}
 spec:
   ca:

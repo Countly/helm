@@ -1,0 +1,82 @@
+{{- if .Values.operator.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: strimzi-cluster-operator
+  labels:
+    {{- include "countly-migrations.labels" . | nindent 4 }}
+    app: strimzi
+  annotations:
+    {{- include "countly-migrations.syncWave" (dict "wave" "-1" "root" .) | nindent 4 }}
+spec:
+  replicas: {{ .Values.operator.replicas }}
+  selector:
+    matchLabels:
+      name: strimzi-cluster-operator
+      strimzi.io/kind: cluster-operator
+  template:
+    metadata:
+      labels:
+        name: strimzi-cluster-operator
+        strimzi.io/kind: cluster-operator
+        {{- include "countly-migrations.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: strimzi-cluster-operator
+      containers:
+        - name: strimzi-cluster-operator
+          image: {{ .Values.operator.image }}
+          ports:
+            - containerPort: 8080
+              name: http
+          resources:
+            {{- toYaml .Values.operator.resources | nindent 12 }}
+          env:
+            - name: STRIMZI_NAMESPACE
+              value: {{ .Release.Namespace | quote }}
+            - name: STRIMZI_RBAC_SCOPE
+              value: "NAMESPACED"
+            - name: STRIMZI_KAFKA_IMAGES
+              value: {{ printf "%s=%s" .Values.version .Values.operator.imageMaps.kafka | quote }}
+            - name: STRIMZI_KAFKA_CONNECT_IMAGES
+              value: {{ printf "%s=%s" .Values.version .Values.operator.imageMaps.kafkaConnect | quote }}
+            - name: STRIMZI_KAFKA_BRIDGE_IMAGES
+              value: {{ printf "%s=%s" .Values.version .Values.operator.imageMaps.kafkaBridge | quote }}
+            - name: STRIMZI_KAFKA_MIRROR_MAKER_2_IMAGES
+              value: {{ printf "%s=%s" .Values.version .Values.operator.imageMaps.kafkaMirrorMaker2 | quote }}
+            - name: STRIMZI_DEFAULT_KANIKO_EXECUTOR_IMAGE
+              value: {{ .Values.operator.kanikoImage | quote }}
+            - name: STRIMZI_DEFAULT_MAVEN_BUILDER_IMAGE
+              value: {{ .Values.operator.mavenBuilderImage | quote }}
+            - name: STRIMZI_FULL_RECONCILIATION_INTERVAL_MS
+              value: {{ .Values.operator.reconciliationIntervalMs | quote }}
+            - name: STRIMZI_OPERATION_TIMEOUT_MS
+              value: {{ .Values.operator.operationTimeoutMs | quote }}
+            - name: STRIMZI_LEADER_ELECTION_ENABLED
+              value: "true"
+            - name: STRIMZI_LEADER_ELECTION_LEASE_NAME
+              value: "strimzi-cluster-operator"
+            - name: STRIMZI_OPERATOR_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: STRIMZI_LEADER_ELECTION_LEASE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: STRIMZI_LEADER_ELECTION_IDENTITY
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          livenessProbe:
+            httpGet:
+              path: /healthy
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+{{- end }}

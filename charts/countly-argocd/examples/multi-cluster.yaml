@@ -12,7 +12,7 @@
 #
 # Deploy:
 #   helm install customer-a charts/countly-argocd -f examples/multi-cluster.yaml -n argocd
-#   helm install customer-b charts/countly-argocd -f examples/customer-b.yaml -n argocd
+#   helm install customer-b charts/countly-argocd -f examples/multi-cluster.yaml --set environment=customer-b -n argocd
 
 # --- Customer A: Production, large, with migrations ---
 repoURL: "https://github.com/Countly/helm.git"

@@ -1,0 +1,26 @@
+apiVersion: v2
+name: countly-migrations
+description: MongoDB to ClickHouse migration pipeline via Kafka (Strimzi)
+type: application
+version: 0.1.0
+appVersion: "0.47.0"
+home: https://countly.com
+icon: https://count.ly/images/logos/countly-logo.svg
+sources:
+  - https://github.com/Countly/countly-server
+keywords:
+  - migration
+  - kafka
+  - strimzi
+  - debezium
+  - clickhouse
+  - mongodb
+  - countly
+maintainers:
+  - name: Countly
+    url: https://countly.com
+annotations:
+  artifacthub.io/license: AGPL-3.0
+  artifacthub.io/links: |
+    - name: Documentation
+      url: https://github.com/Countly/helm
