@@ -5,6 +5,10 @@ metadata:
   name: {{ include "countly-mongodb.fullname" . }}-default-deny
   labels:
     {{- include "countly-mongodb.labels" . | nindent 4 }}
+  {{- if .Values.argocd.enabled }}
+  annotations:
+    {{- include "countly-mongodb.syncWave" (dict "wave" "0" "root" .) | nindent 4 }}
+  {{- end }}
 spec:
   podSelector: {}
   policyTypes:

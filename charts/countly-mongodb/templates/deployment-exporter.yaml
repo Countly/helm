@@ -6,6 +6,10 @@ metadata:
   labels:
     {{- include "countly-mongodb.labels" . | nindent 4 }}
     app.kubernetes.io/component: exporter
+  {{- if .Values.argocd.enabled }}
+  annotations:
+    {{- include "countly-mongodb.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
+  {{- end }}
 spec:
   replicas: 1
   selector:

@@ -5,6 +5,10 @@ metadata:
   name: {{ include "countly-mongodb.fullname" . }}-pdb
   labels:
     {{- include "countly-mongodb.labels" . | nindent 4 }}
+  {{- if .Values.argocd.enabled }}
+  annotations:
+    {{- include "countly-mongodb.syncWave" (dict "wave" "5" "root" .) | nindent 4 }}
+  {{- end }}
 spec:
   {{- if .Values.podDisruptionBudget.minAvailable }}
   minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}

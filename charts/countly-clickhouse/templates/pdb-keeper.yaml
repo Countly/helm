@@ -5,6 +5,10 @@ metadata:
   name: {{ include "countly-clickhouse.fullname" . }}-keeper-pdb
   labels:
     {{- include "countly-clickhouse.labels" . | nindent 4 }}
+  {{- if .Values.argocd.enabled }}
+  annotations:
+    {{- include "countly-clickhouse.syncWave" (dict "wave" "3" "root" .) | nindent 4 }}
+  {{- end }}
 spec:
   maxUnavailable: {{ .Values.podDisruptionBudget.keeper.maxUnavailable | default 1 }}
   selector:

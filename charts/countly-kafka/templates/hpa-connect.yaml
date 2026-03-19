@@ -5,6 +5,10 @@ metadata:
   name: {{ include "countly-kafka.connectName" . }}-hpa
   labels:
     {{- include "countly-kafka.labels" . | nindent 4 }}
+  {{- if .Values.argocd.enabled }}
+  annotations:
+    {{- include "countly-kafka.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
+  {{- end }}
 spec:
   scaleTargetRef:
     apiVersion: {{ .Values.strimzi.apiVersion }}

@@ -12,6 +12,9 @@ fullnameOverride: ""
 
 createNamespace: false
 
+argocd:
+  enabled: false
+
 clickhouseOperator:
   apiVersion: clickhouse.com/v1alpha1
 

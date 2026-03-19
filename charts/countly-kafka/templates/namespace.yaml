@@ -5,4 +5,8 @@ metadata:
   name: {{ .Release.Namespace }}
   labels:
     {{- include "countly-kafka.labels" . | nindent 4 }}
+  {{- if .Values.argocd.enabled }}
+  annotations:
+    {{- include "countly-kafka.syncWave" (dict "wave" "0" "root" .) | nindent 4 }}
+  {{- end }}
 {{- end }}

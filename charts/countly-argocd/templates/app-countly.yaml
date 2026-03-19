@@ -1,0 +1,41 @@
+{{- if .Values.countly.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ include "countly-argocd.fullname" . }}-countly
+  namespace: argocd
+  labels:
+    {{- include "countly-argocd.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ include "countly-argocd.projectName" . }}
+  source:
+    repoURL: {{ .Values.repoURL }}
+    targetRevision: {{ .Values.targetRevision }}
+    path: charts/countly
+    helm:
+      releaseName: countly
+      valueFiles:
+        - ../../environments/{{ .Values.environment }}/global.yaml
+        - ../../profiles/sizing/{{ .Values.global.sizing }}/countly.yaml
+        - ../../profiles/tls/{{ .Values.global.tls }}/countly.yaml
+        - ../../profiles/observability/{{ .Values.global.observability }}/countly.yaml
+        - ../../profiles/security/{{ .Values.global.security }}/countly.yaml
+        - ../../environments/{{ .Values.environment }}/countly.yaml
+        - ../../environments/{{ .Values.environment }}/secrets-countly.yaml
+      parameters:
+        - name: argocd.enabled
+          value: "true"
+  destination:
+    server: {{ .Values.destination.server }}
+    namespace: {{ .Values.countly.namespace }}
+  {{- include "countly-argocd.syncPolicy" . | nindent 2 }}
+  ignoreDifferences:
+    - group: networking.k8s.io
+      kind: Ingress
+      jsonPointers:
+        - /status
+{{- end }}

@@ -7,8 +7,9 @@ metadata:
   labels:
     {{- include "obs.labels" . | nindent 4 }}
     app.kubernetes.io/component: grafana
-  {{- with .Values.ingress.annotations }}
   annotations:
+    {{- include "obs.syncWave" (dict "wave" "5" "root" .) | nindent 4 }}
+    {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:

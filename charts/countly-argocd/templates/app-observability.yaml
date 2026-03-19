@@ -1,0 +1,35 @@
+{{- if .Values.observability.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ include "countly-argocd.fullname" . }}-observability
+  namespace: argocd
+  labels:
+    {{- include "countly-argocd.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "15"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ include "countly-argocd.projectName" . }}
+  source:
+    repoURL: {{ .Values.repoURL }}
+    targetRevision: {{ .Values.targetRevision }}
+    path: charts/countly-observability
+    helm:
+      releaseName: countly-observability
+      valueFiles:
+        - ../../environments/{{ .Values.environment }}/global.yaml
+        - ../../profiles/sizing/{{ .Values.global.sizing }}/observability.yaml
+        - ../../profiles/observability/{{ .Values.global.observability }}/observability.yaml
+        - ../../profiles/security/{{ .Values.global.security }}/observability.yaml
+        - ../../environments/{{ .Values.environment }}/observability.yaml
+        - ../../environments/{{ .Values.environment }}/secrets-observability.yaml
+      parameters:
+        - name: argocd.enabled
+          value: "true"
+  destination:
+    server: {{ .Values.destination.server }}
+    namespace: {{ .Values.observability.namespace }}
+  {{- include "countly-argocd.syncPolicy" . | nindent 2 }}
+{{- end }}

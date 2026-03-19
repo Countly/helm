@@ -12,6 +12,9 @@ fullnameOverride: ""
 
 createNamespace: false
 
+argocd:
+  enabled: false
+
 serviceAccount:
   create: true
   name: ""

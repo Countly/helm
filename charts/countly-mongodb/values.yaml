@@ -12,6 +12,9 @@ fullnameOverride: ""
 
 createNamespace: false
 
+argocd:
+  enabled: false
+
 mongodb:
   version: "8.2.5"
   members: 2

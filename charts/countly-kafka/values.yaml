@@ -12,6 +12,9 @@ fullnameOverride: ""
 
 createNamespace: false
 
+argocd:
+  enabled: false
+
 strimzi:
   apiVersion: kafka.strimzi.io/v1
 

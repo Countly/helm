@@ -7,6 +7,10 @@ metadata:
     {{- include "countly-clickhouse.labels" . | nindent 4 }}
     countly.io/component: clickhouse-server
     countly.io/metrics: "true"
+  {{- if .Values.argocd.enabled }}
+  annotations:
+    {{- include "countly-clickhouse.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
+  {{- end }}
 spec:
   type: ClusterIP
   {{- if eq (.Values.serviceMonitor.serviceType | default "headless") "headless" }}
@@ -30,6 +34,10 @@ metadata:
     {{- include "countly-clickhouse.labels" . | nindent 4 }}
     countly.io/component: clickhouse-keeper
     countly.io/metrics: "true"
+  {{- if .Values.argocd.enabled }}
+  annotations:
+    {{- include "countly-clickhouse.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
+  {{- end }}
 spec:
   type: ClusterIP
   {{- if eq (.Values.serviceMonitor.serviceType | default "headless") "headless" }}

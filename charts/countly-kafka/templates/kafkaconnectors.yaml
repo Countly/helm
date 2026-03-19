@@ -9,6 +9,10 @@ metadata:
   labels:
     strimzi.io/cluster: {{ include "countly-kafka.connectName" $ }}
     {{- include "countly-kafka.labels" $ | nindent 4 }}
+  {{- if $.Values.argocd.enabled }}
+  annotations:
+    {{- include "countly-kafka.syncWave" (dict "wave" "15" "root" $) | nindent 4 }}
+  {{- end }}
 spec:
   class: {{ $connector.class }}
   tasksMax: {{ $connector.tasksMax }}
