@@ -176,7 +176,7 @@ jobs:
         run: |
           for chart in charts/*/Chart.yaml; do
             chart_name=$(basename "$(dirname "${chart}")")
-            version=$(grep '^version:' "${chart}" | awk '{print $2}' | tr -d '"'"'"')
+            version=$(grep '^version:' "${chart}" | awk '{print $2}' | tr -d '"'"'")
             if [ -z "${version}" ]; then
               echo "::error::Missing version in ${chart}"
               exit 1
