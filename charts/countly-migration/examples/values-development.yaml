@@ -1,0 +1,42 @@
+# Development values example for countly-migration.
+# Uses bundled mode — constructs credentials from sibling chart DNS.
+
+image:
+  repository: countly/migration
+  tag: "1.0.0"
+
+deployment:
+  replicas: 1
+  strategy:
+    type: Recreate
+
+# Construct MongoDB URI from sibling countly-mongodb chart
+backingServices:
+  mongodb:
+    mode: bundled
+    password: "devpassword"
+    namespace: mongodb
+  clickhouse:
+    mode: bundled
+    password: "devpassword"
+    namespace: clickhouse
+  redis:
+    url: "redis://redis:6379"
+
+secrets:
+  mode: values
+
+config:
+  SERVICE_NAME: countly-migration
+  LOG_LEVEL: "debug"
+  RERUN_MODE: "resume"
+  MONGO_DB: "countly_drill"
+  CLICKHOUSE_DB: "countly_drill"
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "512Mi"
+  limits:
+    cpu: "1"
+    memory: "2Gi"

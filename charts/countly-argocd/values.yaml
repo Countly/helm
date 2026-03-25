@@ -46,6 +46,10 @@ migrations:
   enabled: false
   namespace: kafka-migrations
 
+migration:
+  enabled: false
+  namespace: countly-migration
+
 # -- Sync policy for child Applications
 syncPolicy:
   automated: true

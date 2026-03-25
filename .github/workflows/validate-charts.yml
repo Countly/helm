@@ -33,6 +33,15 @@ jobs:
         with:
           version: v3.17.0
 
+      - name: Build chart dependencies
+        run: |
+          for chart in charts/*/; do
+            if grep -q '^dependencies:' "${chart}Chart.yaml" 2>/dev/null; then
+              echo "Building dependencies for $(basename "${chart}")..."
+              helm dependency build "${chart}"
+            fi
+          done
+
       - name: Lint all charts
         run: |
           exit_code=0
@@ -57,6 +66,15 @@ jobs:
         with:
           version: v3.17.0
 
+      - name: Build chart dependencies
+        run: |
+          for chart in charts/*/; do
+            if grep -q '^dependencies:' "${chart}Chart.yaml" 2>/dev/null; then
+              echo "Building dependencies for $(basename "${chart}")..."
+              helm dependency build "${chart}"
+            fi
+          done
+
       - name: Template render all charts
         run: |
           exit_code=0
@@ -76,6 +94,9 @@ jobs:
                 ;;
               countly-mongodb)
                 set_args="--set users.app.password=test --set users.metrics.password=test"
+                ;;
+              countly-migration)
+                set_args="--set backingServices.mongodb.uri=mongodb://test --set backingServices.clickhouse.url=http://test"
                 ;;
             esac
             helm template test-release "${chart}" ${set_args} > /dev/null || exit_code=1

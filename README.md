@@ -4,7 +4,7 @@ Helm charts for deploying Countly analytics on Kubernetes.
 
 ## Architecture
 
-Five charts, each in its own namespace:
+Six charts, each in its own namespace:
 
 | Chart | Namespace | Purpose |
 |-------|-----------|---------|
@@ -13,6 +13,7 @@ Five charts, each in its own namespace:
 | `countly-clickhouse` | clickhouse | ClickHouse via ClickHouse Operator |
 | `countly-kafka` | kafka | Kafka via Strimzi Operator |
 | `countly-observability` | observability | Prometheus, Grafana, Loki, Tempo, Pyroscope |
+| `countly-migration` | countly-migration | MongoDB to ClickHouse batch migration (with bundled Redis) |
 
 ### Architecture Overview
 
@@ -46,6 +47,11 @@ flowchart TB
         mongo["MongoDB\n:27017"]
     end
 
+    subgraph mig-ns["countly-migration"]
+        migsvc["Migration Service\n:8080"]
+        redis["Redis\n:6379"]
+    end
+
     subgraph obs-ns["observability"]
         prom["Prometheus"]
         grafana["Grafana"]
@@ -65,6 +71,10 @@ flowchart TB
     jobserver --> mongo
     brokers --> connect --> chserver
     keeper -.-> chserver
+
+    migsvc -->|read batches| mongo
+    migsvc -->|insert rows| chserver
+    migsvc <-.->|hot state| redis
 
     alloy -.-> prom & loki & tempo & pyroscope
     prom & loki & tempo & pyroscope --> grafana
@@ -201,6 +211,12 @@ helm install countly-observability ./charts/countly-observability -n observabili
   -f profiles/sizing/production/observability.yaml \
   -f profiles/observability/full/observability.yaml \
   -f environments/my-deployment/observability.yaml
+
+# Optional: MongoDB to ClickHouse batch migration (includes bundled Redis)
+helm install countly-migration ./charts/countly-migration -n countly-migration --create-namespace \
+  --wait --timeout 5m \
+  -f environments/my-deployment/migration.yaml \
+  -f environments/my-deployment/secrets-migration.yaml
 ```
 
 ## Configuration Model

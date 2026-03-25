@@ -1,0 +1,70 @@
+Countly Migration service has been deployed!
+
+=== Service Endpoints ===
+
+  Health:    GET /healthz          (liveness probe)
+  Ready:     GET /readyz           (readiness — checks mongo, clickhouse, redis)
+  Stats:     GET /stats            (throughput, memory, backpressure)
+  Runs:      GET /runs/current     (active run details)
+  Control:   POST /control/{pause,resume,stop-after-batch}
+
+=== Access ===
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
+{{- end }}
+{{- else }}
+
+  kubectl port-forward svc/{{ include "countly-migration.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }} -n {{ .Release.Namespace }}
+  # Then open: http://localhost:{{ .Values.service.port }}/stats
+{{- end }}
+{{- if and .Values.externalLink.enabled .Values.externalLink.url }}
+
+  ArgoCD progress link: {{ .Values.externalLink.url }}
+{{- end }}
+
+=== Redis ===
+{{- if .Values.redis.enabled }}
+
+  Bundled Redis (Bitnami subchart):
+    URL:         redis://{{ include "countly-migration.fullname" . }}-redis-master:6379
+    Persistence: {{ if .Values.redis.master.persistence.enabled }}enabled ({{ .Values.redis.master.persistence.size }}){{ else }}disabled{{ end }}
+    Auth:        {{ if .Values.redis.auth.enabled }}enabled{{ else }}disabled{{ end }}
+{{- else if .Values.backingServices.redis.url }}
+
+  External Redis: {{ .Values.backingServices.redis.url }}
+{{- else }}
+
+  WARNING: No Redis configured. The migration service requires Redis for state tracking.
+  Either enable the bundled Redis (redis.enabled=true) or provide backingServices.redis.url.
+{{- end }}
+
+=== Secrets ===
+
+  Mode: {{ .Values.secrets.mode }}
+{{- if eq .Values.secrets.mode "existingSecret" }}
+  Secret: {{ .Values.secrets.existingSecret.name }}
+{{- end }}
+{{- if eq .Values.secrets.mode "externalSecret" }}
+  External Secrets Operator will provision the secret.
+{{- end }}
+
+=== Verify Deployment ===
+
+  1. Check pods:
+     kubectl get pods -n {{ .Release.Namespace }}
+
+  2. Check health:
+     kubectl exec -n {{ .Release.Namespace }} deploy/{{ include "countly-migration.fullname" . }} -- \
+       node -e "fetch('http://localhost:{{ .Values.service.port }}/healthz').then(r=>r.text()).then(console.log)"
+
+  3. Check readiness (all backing services connected):
+     kubectl exec -n {{ .Release.Namespace }} deploy/{{ include "countly-migration.fullname" . }} -- \
+       node -e "fetch('http://localhost:{{ .Values.service.port }}/readyz').then(r=>r.text()).then(console.log)"
+
+  4. Check migration progress:
+     kubectl exec -n {{ .Release.Namespace }} deploy/{{ include "countly-migration.fullname" . }} -- \
+       node -e "fetch('http://localhost:{{ .Values.service.port }}/runs?limit=5').then(r=>r.text()).then(console.log)"
+
+  5. View logs:
+     kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name=countly-migration -f

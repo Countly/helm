@@ -1,0 +1,61 @@
+# Production values example for countly-migration.
+# Uses existingSecret mode — credentials are pre-created or managed externally.
+
+image:
+  repository: registry.example.com/countly/migration
+  tag: "1.0.0"
+
+argocd:
+  enabled: true
+
+deployment:
+  replicas: 1
+  strategy:
+    type: Recreate
+  terminationGracePeriodSeconds: 90
+
+service:
+  port: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,192.168.0.0/16"
+    argocd.argoproj.io/ignore-default-links: "true"
+  hosts:
+    - host: migration.example.internal
+      paths:
+        - path: /
+          pathType: Prefix
+
+externalLink:
+  enabled: true
+  url: "https://migration.example.internal/runs/current"
+
+# Reference pre-created secret containing MONGO_URI, CLICKHOUSE_URL, CLICKHOUSE_PASSWORD, REDIS_URL
+secrets:
+  mode: existingSecret
+  keep: true
+  existingSecret:
+    name: countly-migration-secrets
+
+config:
+  SERVICE_NAME: countly-migration
+  SERVICE_PORT: "8080"
+  RERUN_MODE: "resume"
+  LOG_LEVEL: "info"
+  MONGO_DB: "countly_drill"
+  MONGO_COLLECTION_PREFIX: "drill_events"
+  CLICKHOUSE_DB: "countly_drill"
+  CLICKHOUSE_TABLE: "drill_events"
+  MANIFEST_DB: "countly_drill"
+  REDIS_KEY_PREFIX: "mig"
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "2"
+    memory: "3Gi"
