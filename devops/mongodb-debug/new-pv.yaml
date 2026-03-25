@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-<customer name>-data
+spec:
+  capacity:
+    storage: 900Gi # MUST match PVC requested storage size
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: "premium-rwo"           # empty to ensure static PV (no dynamic provisioning)
+  csi:
+    driver: pd.csi.storage.gke.io
+    # volumeHandle format: projects/PROJECT/zones/ZONE/disks/DISKNAME
+    fsType: ext4 # MUST match the filesystem type expected by the application

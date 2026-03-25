@@ -1,0 +1,13 @@
+# Profile: tier1 — MongoDB chart sizing
+# Machine: e2-standard-16 (16 CPU / 64 GB RAM)
+
+mongodb:
+  members: 1
+  resources:
+    requests: { cpu: "1500m", memory: "11Gi" }
+    limits: { cpu: "2", memory: "11Gi" }
+  persistence:
+    size: 200Gi
+  scheduling:
+    antiAffinity:
+      enabled: false
