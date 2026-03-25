@@ -4,7 +4,7 @@ Helm charts for deploying Countly analytics on Kubernetes.
 
 ## Architecture
 
-Six charts, each in its own namespace:
+Seven charts, each in its own namespace:
 
 | Chart | Namespace | Purpose |
 |-------|-----------|---------|
@@ -14,6 +14,7 @@ Six charts, each in its own namespace:
 | `countly-kafka` | kafka | Kafka via Strimzi Operator |
 | `countly-observability` | observability | Prometheus, Grafana, Loki, Tempo, Pyroscope |
 | `countly-migration` | countly-migration | MongoDB to ClickHouse batch migration (with bundled Redis) |
+| `countly-argocd` | argocd | ArgoCD app-of-apps (AppProject + Applications) |
 
 ### Architecture Overview
 
@@ -263,6 +264,7 @@ Environments contain deployment-specific choices:
 - [VERIFICATION.md](docs/VERIFICATION.md) — Chart signature verification, SBOM, provenance
 - [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — Common issues and fixes
 - [VERSION-MATRIX.md](docs/VERSION-MATRIX.md) — Pinned operator and image versions
+- [ARGOCD.md](docs/ARGOCD.md) — ArgoCD deployment, sync waves, custom health checks
 
 ## Repository Structure
 
@@ -274,6 +276,8 @@ helm/
     countly-clickhouse/
     countly-kafka/
     countly-observability/
+    countly-migration/
+    countly-argocd/
   profiles/                         # Composable profile dimensions
     sizing/                         # local | small | production
     observability/                  # disabled | full | external-grafana | external
