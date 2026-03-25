@@ -42,10 +42,6 @@ observability:
   enabled: true
   namespace: observability
 
-migrations:
-  enabled: false
-  namespace: kafka-migrations
-
 migration:
   enabled: false
   namespace: countly-migration

@@ -136,7 +136,7 @@ spec:
 # - countly-kafka (wave 5)
 # - countly (wave 10)
 # - countly-observability (wave 15)
-# - countly-migrations (wave 10, optional)
+# - countly-migration (wave 10, optional)
 #
 # For a DRY approach, use a Matrix generator combining the customer list
 # with a component list to generate all Applications from a single spec.
