@@ -7,7 +7,7 @@ Project:     {{ include "countly-argocd.projectName" . }}
 Applications deployed (sync wave order):
   Wave 0:  {{ if .Values.mongodb.enabled }}mongodb{{ end }} {{ if .Values.clickhouse.enabled }}clickhouse{{ end }}
   Wave 5:  {{ if .Values.kafka.enabled }}kafka{{ end }}
-  Wave 10: {{ if .Values.countly.enabled }}countly{{ end }} {{ if .Values.migrations.enabled }}migrations{{ end }}
+  Wave 10: {{ if .Values.countly.enabled }}countly{{ end }} {{ if .Values.migration.enabled }}migration{{ end }}
   Wave 15: {{ if .Values.observability.enabled }}observability{{ end }}
 
 --- Status ---

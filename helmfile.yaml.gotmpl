@@ -96,16 +96,16 @@ releases:
     needs:
       - countly/countly
 
-  # Optional: MongoDB to ClickHouse migration pipeline
+  # Optional: MongoDB to ClickHouse batch migration service (with bundled Redis)
   # Set migration.enabled: true in your environment's global.yaml to deploy
-  - name: countly-migrations
+  - name: countly-migration
     installed: {{ .Values | get "migration.enabled" false }}
-    chart: ./charts/countly-migrations
-    namespace: kafka-migrations
+    chart: ./charts/countly-migration
+    namespace: countly-migration
     values:
       - environments/{{ .Environment.Name }}/global.yaml
-      - environments/{{ .Environment.Name }}/migrations.yaml
-      - environments/{{ .Environment.Name }}/secrets-migrations.yaml
+      - environments/{{ .Environment.Name }}/migration.yaml
+      - environments/{{ .Environment.Name }}/secrets-migration.yaml
     needs:
       - mongodb/countly-mongodb
       - clickhouse/countly-clickhouse
