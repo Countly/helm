@@ -1,76 +1,173 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["image"],
+  "required": [
+    "image"
+  ],
   "properties": {
     "global": {
       "type": "object",
       "properties": {
-        "imageRegistry": { "type": "string" },
-        "imagePullSecrets": { "type": "array" },
-        "storageClass": { "type": "string" },
-        "sizing": { "type": "string", "enum": ["local", "small", "production"] },
-        "scheduling": { "type": "object" }
+        "imageRegistry": {
+          "type": "string"
+        },
+        "imagePullSecrets": {
+          "type": "array"
+        },
+        "storageClass": {
+          "type": "string"
+        },
+        "sizing": {
+          "type": "string",
+          "enum": [
+            "local",
+            "small",
+            "production",
+            "tier1"
+          ]
+        },
+        "scheduling": {
+          "type": "object"
+        }
       }
     },
     "image": {
       "type": "object",
-      "required": ["repository"],
+      "required": [
+        "repository"
+      ],
       "properties": {
-        "repository": { "type": "string", "minLength": 1 },
-        "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "Image digest (takes precedence over tag when set)" },
-        "tag": { "type": "string", "description": "Image tag (used as fallback when digest is empty)" },
-        "pullPolicy": { "type": "string", "enum": ["Always", "IfNotPresent", "Never"] }
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "digest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "Image digest (takes precedence over tag when set)"
+        },
+        "tag": {
+          "type": "string",
+          "description": "Image tag (used as fallback when digest is empty)"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": [
+            "Always",
+            "IfNotPresent",
+            "Never"
+          ]
+        }
       }
     },
-    "api": { "$ref": "#/definitions/component" },
-    "frontend": { "$ref": "#/definitions/component" },
-    "ingestor": { "$ref": "#/definitions/component" },
-    "aggregator": { "$ref": "#/definitions/component" },
-    "jobserver": { "$ref": "#/definitions/component" },
+    "api": {
+      "$ref": "#/definitions/component"
+    },
+    "frontend": {
+      "$ref": "#/definitions/component"
+    },
+    "ingestor": {
+      "$ref": "#/definitions/component"
+    },
+    "aggregator": {
+      "$ref": "#/definitions/component"
+    },
+    "jobserver": {
+      "$ref": "#/definitions/component"
+    },
     "secrets": {
       "type": "object",
       "properties": {
-        "mode": { "type": "string", "enum": ["values", "existingSecret", "externalSecret"] },
-        "keep": { "type": "boolean" },
-        "rotationId": { "type": "string" },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "values",
+            "existingSecret",
+            "externalSecret"
+          ]
+        },
+        "keep": {
+          "type": "boolean"
+        },
+        "rotationId": {
+          "type": "string"
+        },
         "common": {
           "type": "object",
           "properties": {
-            "existingSecret": { "type": "string" },
-            "encryptionReportsKey": { "type": "string" },
-            "webSessionSecret": { "type": "string" },
-            "passwordSecret": { "type": "string" }
+            "existingSecret": {
+              "type": "string"
+            },
+            "encryptionReportsKey": {
+              "type": "string"
+            },
+            "webSessionSecret": {
+              "type": "string"
+            },
+            "passwordSecret": {
+              "type": "string"
+            }
           }
         },
         "clickhouse": {
           "type": "object",
           "properties": {
-            "existingSecret": { "type": "string" },
-            "username": { "type": "string" },
-            "password": { "type": "string" },
-            "database": { "type": "string" }
+            "existingSecret": {
+              "type": "string"
+            },
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "database": {
+              "type": "string"
+            }
           }
         },
         "kafka": {
           "type": "object",
           "properties": {
-            "existingSecret": { "type": "string" },
+            "existingSecret": {
+              "type": "string"
+            },
             "securityProtocol": {
               "type": "string",
-              "enum": ["", "PLAINTEXT", "SSL", "SASL_PLAINTEXT", "SASL_SSL"]
+              "enum": [
+                "",
+                "PLAINTEXT",
+                "SSL",
+                "SASL_PLAINTEXT",
+                "SASL_SSL"
+              ]
             },
-            "saslMechanism": { "type": "string" },
-            "saslUsername": { "type": "string" },
-            "saslPassword": { "type": "string" }
+            "saslMechanism": {
+              "type": "string"
+            },
+            "saslUsername": {
+              "type": "string"
+            },
+            "saslPassword": {
+              "type": "string"
+            }
           }
         },
         "mongodb": {
           "type": "object",
           "properties": {
-            "existingSecret": { "type": "string" },
-            "key": { "type": "string" },
-            "password": { "type": "string" }
+            "existingSecret": {
+              "type": "string"
+            },
+            "key": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            }
           }
         }
       }
@@ -82,19 +179,37 @@
         "mongodb": {
           "type": "object",
           "properties": {
-            "mode": { "type": "string", "enum": ["bundled", "external"] }
+            "mode": {
+              "type": "string",
+              "enum": [
+                "bundled",
+                "external"
+              ]
+            }
           }
         },
         "clickhouse": {
           "type": "object",
           "properties": {
-            "mode": { "type": "string", "enum": ["bundled", "external"] }
+            "mode": {
+              "type": "string",
+              "enum": [
+                "bundled",
+                "external"
+              ]
+            }
           }
         },
         "kafka": {
           "type": "object",
           "properties": {
-            "mode": { "type": "string", "enum": ["bundled", "external"] }
+            "mode": {
+              "type": "string",
+              "enum": [
+                "bundled",
+                "external"
+              ]
+            }
           }
         }
       }
@@ -103,50 +218,112 @@
       "type": "object",
       "description": "Configuration env vars injected into components",
       "properties": {
-        "common": { "type": "object" },
-        "api": { "type": "object" },
-        "frontend": { "type": "object" },
-        "ingestor": { "type": "object" },
-        "aggregator": { "type": "object" },
-        "jobserver": { "type": "object" },
-        "clickhouse": { "type": "object" },
-        "kafka": { "type": "object" },
-        "otel": { "type": "object" }
+        "common": {
+          "type": "object"
+        },
+        "api": {
+          "type": "object"
+        },
+        "frontend": {
+          "type": "object"
+        },
+        "ingestor": {
+          "type": "object"
+        },
+        "aggregator": {
+          "type": "object"
+        },
+        "jobserver": {
+          "type": "object"
+        },
+        "clickhouse": {
+          "type": "object"
+        },
+        "kafka": {
+          "type": "object"
+        },
+        "otel": {
+          "type": "object"
+        }
       }
     },
     "nodeOptions": {
       "type": "object",
       "description": "Node.js heap tuning per component",
       "properties": {
-        "api": { "type": "string" },
-        "frontend": { "type": "string" },
-        "ingestor": { "type": "string" },
-        "aggregator": { "type": "string" },
-        "jobserver": { "type": "string" }
+        "api": {
+          "type": "string"
+        },
+        "frontend": {
+          "type": "string"
+        },
+        "ingestor": {
+          "type": "string"
+        },
+        "aggregator": {
+          "type": "string"
+        },
+        "jobserver": {
+          "type": "string"
+        }
       }
     },
-    "clickhouseNamespace": { "type": "string", "description": "Namespace where ClickHouse is deployed" },
-    "kafkaNamespace": { "type": "string", "description": "Namespace where Kafka is deployed" },
-    "mongodbNamespace": { "type": "string", "description": "Namespace where MongoDB is deployed" },
+    "clickhouseNamespace": {
+      "type": "string",
+      "description": "Namespace where ClickHouse is deployed"
+    },
+    "kafkaNamespace": {
+      "type": "string",
+      "description": "Namespace where Kafka is deployed"
+    },
+    "mongodbNamespace": {
+      "type": "string",
+      "description": "Namespace where MongoDB is deployed"
+    },
     "ingress": {
       "type": "object",
       "properties": {
-        "enabled": { "type": "boolean" },
-        "className": { "type": "string" },
-        "hostname": { "type": "string", "description": "Single hostname for the ingress" },
-        "annotations": { "type": "object" },
+        "enabled": {
+          "type": "boolean"
+        },
+        "className": {
+          "type": "string"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Single hostname for the ingress"
+        },
+        "annotations": {
+          "type": "object"
+        },
         "tls": {
           "type": "object",
           "description": "TLS mode configuration",
           "properties": {
-            "mode": { "type": "string", "enum": ["http", "letsencrypt", "existingSecret", "selfSigned"] },
-            "clusterIssuer": { "type": "string" },
-            "secretName": { "type": "string" },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "http",
+                "letsencrypt",
+                "existingSecret",
+                "selfSigned"
+              ]
+            },
+            "clusterIssuer": {
+              "type": "string"
+            },
+            "secretName": {
+              "type": "string"
+            },
             "selfSigned": {
               "type": "object",
               "properties": {
-                "issuerName": { "type": "string" },
-                "caSecretName": { "type": "string" }
+                "issuerName": {
+                  "type": "string"
+                },
+                "caSecretName": {
+                  "type": "string"
+                }
               }
             }
           }
@@ -158,34 +335,79 @@
     "component": {
       "type": "object",
       "properties": {
-        "enabled": { "type": "boolean" },
-        "replicaCount": { "type": "integer", "minimum": 0 },
-        "command": { "type": "array", "items": { "type": "string" } },
-        "port": { "type": "integer", "minimum": 0, "maximum": 65535 },
-        "healthCheck": { "type": "object" },
-        "terminationGracePeriodSeconds": { "type": "integer", "minimum": 0 },
-        "resources": { "$ref": "#/definitions/resources" },
+        "enabled": {
+          "type": "boolean"
+        },
+        "replicaCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "command": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "healthCheck": {
+          "type": "object"
+        },
+        "terminationGracePeriodSeconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
+        },
         "hpa": {
           "type": "object",
           "properties": {
-            "enabled": { "type": "boolean" },
-            "minReplicas": { "type": "integer", "minimum": 1 },
-            "maxReplicas": { "type": "integer", "minimum": 1 },
-            "metrics": { "type": "object" },
-            "behavior": { "type": "object" }
+            "enabled": {
+              "type": "boolean"
+            },
+            "minReplicas": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maxReplicas": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "metrics": {
+              "type": "object"
+            },
+            "behavior": {
+              "type": "object"
+            }
           }
         },
         "pdb": {
           "type": "object",
           "properties": {
-            "enabled": { "type": "boolean" },
-            "minAvailable": { "type": "integer" },
-            "maxUnavailable": { "type": "integer" }
+            "enabled": {
+              "type": "boolean"
+            },
+            "minAvailable": {
+              "type": "integer"
+            },
+            "maxUnavailable": {
+              "type": "integer"
+            }
           }
         },
-        "scheduling": { "$ref": "#/definitions/scheduling" },
-        "extraEnv": { "type": "array" },
-        "extraEnvFrom": { "type": "array" }
+        "scheduling": {
+          "$ref": "#/definitions/scheduling"
+        },
+        "extraEnv": {
+          "type": "array"
+        },
+        "extraEnvFrom": {
+          "type": "array"
+        }
       }
     },
     "resources": {
@@ -194,15 +416,27 @@
         "requests": {
           "type": "object",
           "properties": {
-            "cpu": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?m?$" },
-            "memory": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?(Mi|Gi)$" }
+            "cpu": {
+              "type": "string",
+              "pattern": "^[0-9]+(\\.[0-9]+)?m?$"
+            },
+            "memory": {
+              "type": "string",
+              "pattern": "^[0-9]+(\\.[0-9]+)?(Mi|Gi)$"
+            }
           }
         },
         "limits": {
           "type": "object",
           "properties": {
-            "cpu": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?m?$" },
-            "memory": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?(Mi|Gi)$" }
+            "cpu": {
+              "type": "string",
+              "pattern": "^[0-9]+(\\.[0-9]+)?m?$"
+            },
+            "memory": {
+              "type": "string",
+              "pattern": "^[0-9]+(\\.[0-9]+)?(Mi|Gi)$"
+            }
           }
         }
       }
@@ -210,17 +444,39 @@
     "scheduling": {
       "type": "object",
       "properties": {
-        "nodeSelector": { "type": "object" },
-        "tolerations": { "type": "array" },
-        "affinity": { "type": "object" },
-        "topologySpreadConstraints": { "type": "array" },
+        "nodeSelector": {
+          "type": "object"
+        },
+        "tolerations": {
+          "type": "array"
+        },
+        "affinity": {
+          "type": "object"
+        },
+        "topologySpreadConstraints": {
+          "type": "array"
+        },
         "antiAffinity": {
           "type": "object",
           "properties": {
-            "enabled": { "type": "boolean" },
-            "type": { "type": "string", "enum": ["preferred", "required"] },
-            "topologyKey": { "type": "string" },
-            "weight": { "type": "integer", "minimum": 1, "maximum": 100 }
+            "enabled": {
+              "type": "boolean"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "preferred",
+                "required"
+              ]
+            },
+            "topologyKey": {
+              "type": "string"
+            },
+            "weight": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
           }
         }
       }

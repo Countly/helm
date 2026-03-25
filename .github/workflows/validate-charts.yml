@@ -81,25 +81,43 @@ jobs:
           for chart in charts/*/; do
             chart_name=$(basename "${chart}")
             echo "::group::Rendering ${chart_name}..."
-            set_args=""
+            # provide dummy secrets so helm template can render without a cluster
             case "${chart_name}" in
               countly)
-                set_args="--set secrets.common.encryptionReportsKey=test --set secrets.common.webSessionSecret=test --set secrets.common.passwordSecret=test --set secrets.clickhouse.password=test --set secrets.mongodb.password=test"
+                helm template test-release "${chart}" \
+                  --set secrets.common.encryptionReportsKey=test \
+                  --set secrets.common.webSessionSecret=test \
+                  --set secrets.common.passwordSecret=test \
+                  --set secrets.clickhouse.password=test \
+                  --set secrets.mongodb.password=test \
+                  > /dev/null || exit_code=1
                 ;;
               countly-clickhouse)
-                set_args="--set auth.defaultUserPassword.password=test"
+                helm template test-release "${chart}" \
+                  --set auth.defaultUserPassword.password=test \
+                  > /dev/null || exit_code=1
                 ;;
               countly-kafka)
-                set_args="--set kafkaConnect.clickhouse.password=test"
+                helm template test-release "${chart}" \
+                  --set kafkaConnect.clickhouse.password=test \
+                  > /dev/null || exit_code=1
                 ;;
               countly-mongodb)
-                set_args="--set users.app.password=test --set users.metrics.password=test"
+                helm template test-release "${chart}" \
+                  --set users.app.password=test \
+                  --set users.metrics.password=test \
+                  > /dev/null || exit_code=1
                 ;;
               countly-migration)
-                set_args="--set backingServices.mongodb.uri=mongodb://test --set backingServices.clickhouse.url=http://test"
+                helm template test-release "${chart}" \
+                  --set backingServices.mongodb.uri=mongodb://test \
+                  --set backingServices.clickhouse.url=http://test \
+                  > /dev/null || exit_code=1
+                ;;
+              *)
+                helm template test-release "${chart}" > /dev/null || exit_code=1
                 ;;
             esac
-            helm template test-release "${chart}" ${set_args} > /dev/null || exit_code=1
             echo "::endgroup::"
           done
           exit $exit_code
@@ -182,7 +200,7 @@ jobs:
         run: |
           for chart in charts/*/Chart.yaml; do
             chart_name=$(basename "$(dirname "${chart}")")
-            version=$(grep '^version:' "${chart}" | awk '{print $2}' | tr -d "\"'")
+            version=$(grep '^version:' "${chart}" | awk '{print $2}' | tr -d '"'"'")
             if [ -z "${version}" ]; then
               echo "::error::Missing version in ${chart}"
               exit 1

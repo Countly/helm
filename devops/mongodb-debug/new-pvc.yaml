@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-volume-countly-mongodb-0     # MUST match operator expected PVC name
+  namespace: mongodb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 900Gi
+  volumeName: pv-<customer name>-data        # static bind the PV we created
+  storageClassName: "premium-rwo"
