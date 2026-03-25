@@ -1,0 +1,53 @@
+# Profile: tier1 — Kafka chart sizing
+# Machine: e2-standard-16 (16 CPU / 64 GB RAM)
+#
+# 2 brokers + 1 controller. Replication factor 2, min.insync.replicas 1
+# (allows writes when one broker is unavailable on a 2-broker cluster).
+#
+# NOTE: kafkaConnect resources here will be overridden by the kafka-connect
+# dimension profile (throughput/balanced/low-latency). The values below
+# reflect the tier1-validated connect worker sizing; pair with a matching
+# kafka-connect profile if you need to honour them exactly.
+
+brokers:
+  replicas: 2
+  resources:
+    requests: { cpu: "500m", memory: "4.5Gi" }
+    limits: { cpu: "750m", memory: "4.5Gi" }
+  jvmOptions:
+    xms: "2560m"
+    xmx: "2560m"
+  persistence:
+    volumes:
+      - id: 0
+        size: 100Gi
+  config:
+    default.replication.factor: 2
+    min.insync.replicas: 1
+    offsets.topic.replication.factor: 2
+    transaction.state.log.replication.factor: 2
+    transaction.state.log.min.isr: 1
+
+controllers:
+  replicas: 1
+  resources:
+    requests: { cpu: "500m", memory: "2.5Gi" }
+    limits: { cpu: "1", memory: "2.5Gi" }
+  persistence:
+    size: 10Gi
+
+cruiseControl:
+  enabled: false
+
+kafkaConnect:
+  replicas: 1
+  resources:
+    requests: { cpu: "1", memory: "2Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  jvmOptions:
+    xms: "1g"
+    xmx: "1g"
+  workerConfig:
+    config.storage.replication.factor: 2
+    offset.storage.replication.factor: 2
+    status.storage.replication.factor: 2
