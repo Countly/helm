@@ -15,6 +15,11 @@ spec:
   replicas: {{ .Values.deployment.replicas }}
   strategy:
     type: {{ .Values.deployment.strategy.type }}
+    {{- if eq .Values.deployment.strategy.type "RollingUpdate" }}
+    rollingUpdate:
+      maxSurge: {{ .Values.deployment.strategy.rollingUpdate.maxSurge | default 1 }}
+      maxUnavailable: {{ .Values.deployment.strategy.rollingUpdate.maxUnavailable | default 0 }}
+    {{- end }}
   selector:
     matchLabels:
       {{- include "countly-migration.selectorLabels" . | nindent 6 }}
@@ -54,6 +59,16 @@ spec:
                 name: {{ include "countly-migration.fullname" . }}
             - secretRef:
                 name: {{ include "countly-migration.secretName" . }}
+          env:
+            - name: POD_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          lifecycle:
+            preStop:
+              httpGet:
+                path: /control/drain
+                port: http
           livenessProbe:
             httpGet:
               path: {{ .Values.probes.liveness.path }}
@@ -82,9 +97,19 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- if .Values.affinity }}
       affinity:
-        {{- toYaml . | nindent 8 }}
+        {{- toYaml .Values.affinity | nindent 8 }}
+      {{- else if gt (int .Values.deployment.replicas) 1 }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "countly-migration.selectorLabels" . | nindent 20 }}
+                topologyKey: kubernetes.io/hostname
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations:

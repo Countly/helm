@@ -12,3 +12,17 @@ data:
   {{- range $k, $v := .Values.config }}
   {{ $k }}: {{ $v | quote }}
   {{- end }}
+  {{- /* Multi-pod worker configuration */ -}}
+  {{- with .Values.worker }}
+  MULTI_POD_ENABLED: {{ .enabled | quote }}
+  LOCK_TTL_SECONDS: {{ .lockTtlSec | quote }}
+  LOCK_RENEW_MS: {{ .lockRenewMs | quote }}
+  POD_HEARTBEAT_MS: {{ .podHeartbeatMs | quote }}
+  POD_DEAD_AFTER_SEC: {{ .podDeadAfterSec | quote }}
+  RANGE_PARALLEL_THRESHOLD: {{ .rangeParallelThreshold | quote }}
+  RANGE_COUNT: {{ .rangeCount | quote }}
+  RANGE_LEASE_TTL_SEC: {{ .rangeLeaseTtlSec | quote }}
+  PROGRESS_UPDATE_MS: {{ .progressUpdateMs | quote }}
+  ASYNC_WRITE_FLUSH_INTERVAL_MS: {{ .asyncWriteFlushIntervalMs | quote }}
+  ASYNC_WRITE_FLUSH_BATCH_SIZE: {{ .asyncWriteFlushBatchSize | quote }}
+  {{- end }}

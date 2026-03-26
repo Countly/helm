@@ -27,16 +27,16 @@
       "properties": {
         "replicas": {
           "type": "integer",
-          "const": 1,
-          "description": "Must be 1 — this workload is a singleton"
+          "minimum": 1,
+          "description": "Number of migration pods (>1 enables multi-pod coordination)"
         },
         "strategy": {
           "type": "object",
           "properties": {
             "type": {
               "type": "string",
-              "const": "Recreate",
-              "description": "Must be Recreate — concurrent pods are unsafe"
+              "enum": ["Recreate", "RollingUpdate"],
+              "description": "Deployment strategy (use RollingUpdate for multi-pod)"
             }
           },
           "required": ["type"]
@@ -205,6 +205,23 @@
         "interval": { "type": "string" },
         "scrapeTimeout": { "type": "string" },
         "path": { "type": "string" }
+      }
+    },
+    "worker": {
+      "type": "object",
+      "description": "Multi-pod worker coordination settings",
+      "properties": {
+        "enabled": { "type": "boolean", "description": "Enable multi-pod coordination mode" },
+        "lockTtlSec": { "type": "integer", "minimum": 30, "description": "Collection lock TTL in seconds" },
+        "lockRenewMs": { "type": "integer", "minimum": 1000, "description": "Lock renewal interval in ms" },
+        "podHeartbeatMs": { "type": "integer", "minimum": 1000, "description": "Pod heartbeat interval in ms" },
+        "podDeadAfterSec": { "type": "integer", "minimum": 30, "description": "Consider pod dead after N seconds" },
+        "rangeParallelThreshold": { "type": "integer", "minimum": 0, "description": "Doc count to trigger range splitting" },
+        "rangeCount": { "type": "integer", "minimum": 1, "description": "Number of time ranges" },
+        "rangeLeaseTtlSec": { "type": "integer", "minimum": 30, "description": "Range lease TTL in seconds" },
+        "progressUpdateMs": { "type": "integer", "minimum": 1000, "description": "Progress report interval in ms" },
+        "asyncWriteFlushIntervalMs": { "type": "integer", "minimum": 1000, "description": "Async batch flush interval in ms" },
+        "asyncWriteFlushBatchSize": { "type": "integer", "minimum": 1, "description": "Async batch flush size" }
       }
     }
   },
