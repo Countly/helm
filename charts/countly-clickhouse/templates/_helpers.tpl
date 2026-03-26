@@ -121,7 +121,7 @@ Password secret name for ClickHouse default user
 ArgoCD sync-wave annotation (only when argocd.enabled).
 */}}
 {{- define "countly-clickhouse.syncWave" -}}
-{{- if .root.Values.argocd.enabled }}
+{{- if ((.root.Values.argocd).enabled) }}
 argocd.argoproj.io/sync-wave: {{ .wave | quote }}
 {{- end }}
 {{- end -}}

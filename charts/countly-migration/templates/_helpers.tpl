@@ -64,7 +64,7 @@ ArgoCD sync-wave annotation (only when argocd.enabled).
 Usage: include "countly-migration.syncWave" (dict "wave" "0" "root" .)
 */}}
 {{- define "countly-migration.syncWave" -}}
-{{- if .root.Values.argocd.enabled }}
+{{- if ((.root.Values.argocd).enabled) }}
 argocd.argoproj.io/sync-wave: {{ .wave | quote }}
 {{- end }}
 {{- end -}}
@@ -87,15 +87,16 @@ Bundled mode: construct from sibling countly-mongodb chart DNS.
 */}}
 {{- define "countly-migration.mongoUri" -}}
 {{- $bs := .Values.backingServices.mongodb -}}
-{{- if eq ($bs.mode | default "external") "external" -}}
+{{- if eq ($bs.mode | default "bundled") "external" -}}
 {{- required "backingServices.mongodb.uri is required when mode=external" $bs.uri -}}
 {{- else -}}
-{{- $host := $bs.host | default (printf "%s-mongodb-svc.%s.svc.cluster.local" .Release.Name ($bs.namespace | default "mongodb")) -}}
+{{- $prefix := $bs.releaseName | default "countly" -}}
+{{- $host := $bs.host | default (printf "%s-mongodb-svc.%s.svc.cluster.local" $prefix ($bs.namespace | default "mongodb")) -}}
 {{- $port := $bs.port | default "27017" -}}
 {{- $user := $bs.username | default "app" -}}
 {{- $pass := required "backingServices.mongodb.password is required when mode=bundled" $bs.password -}}
 {{- $db := $bs.database | default "admin" -}}
-{{- $rs := $bs.replicaSet | default (printf "%s-mongodb" .Release.Name) -}}
+{{- $rs := $bs.replicaSet | default (printf "%s-mongodb" $prefix) -}}
 mongodb://{{ $user }}:{{ $pass }}@{{ $host }}:{{ $port }}/{{ $db }}?replicaSet={{ $rs }}&ssl=false
 {{- end -}}
 {{- end -}}
@@ -107,10 +108,11 @@ Bundled mode: construct from sibling countly-clickhouse chart DNS.
 */}}
 {{- define "countly-migration.clickhouseUrl" -}}
 {{- $bs := .Values.backingServices.clickhouse -}}
-{{- if eq ($bs.mode | default "external") "external" -}}
+{{- if eq ($bs.mode | default "bundled") "external" -}}
 {{- required "backingServices.clickhouse.url is required when mode=external" $bs.url -}}
 {{- else -}}
-{{- $host := $bs.host | default (printf "%s-clickhouse-clickhouse-headless.%s.svc" .Release.Name ($bs.namespace | default "clickhouse")) -}}
+{{- $prefix := $bs.releaseName | default "countly" -}}
+{{- $host := $bs.host | default (printf "%s-clickhouse-clickhouse-headless.%s.svc" $prefix ($bs.namespace | default "clickhouse")) -}}
 {{- $port := $bs.port | default "8123" -}}
 {{- $tls := $bs.tls | default "false" -}}
 {{- $scheme := ternary "https" "http" (eq (toString $tls) "true") -}}
@@ -132,9 +134,9 @@ redis://{{ include "countly-migration.fullname" . }}-redis-master:6379
 {{- end -}}
 
 {{/*
-Image reference with tag defaulting to appVersion.
+Image reference with tag defaulting to "latest".
 */}}
 {{- define "countly-migration.image" -}}
-{{- $tag := .Values.image.tag | default .Chart.AppVersion -}}
+{{- $tag := .Values.image.tag | default "latest" -}}
 {{ .Values.image.repository }}:{{ $tag }}
 {{- end }}

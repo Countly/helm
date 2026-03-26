@@ -82,7 +82,7 @@ ArgoCD sync-wave annotation (only when argocd.enabled).
 Usage: {{- include "countly-kafka.syncWave" (dict "wave" "5" "root" .) | nindent 4 }}
 */}}
 {{- define "countly-kafka.syncWave" -}}
-{{- if .root.Values.argocd.enabled }}
+{{- if ((.root.Values.argocd).enabled) }}
 argocd.argoproj.io/sync-wave: {{ .wave | quote }}
 {{- end }}
 {{- end -}}

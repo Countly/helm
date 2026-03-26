@@ -1,0 +1,79 @@
+# Production observability stack.
+# Full mode with increased resources, tail sampling, ingress for Grafana.
+
+argocd:
+  enabled: true
+
+mode: full
+clusterName: production-cluster
+
+metrics:
+  enabled: true
+  sampling:
+    interval: "15s"
+
+traces:
+  enabled: true
+  sampling:
+    strategy: "TailBased"
+    tailSampling:
+      waitDuration: "10s"
+      numTraces: 50000
+      policies:
+        keepErrors: true
+        latencyThresholdMs: 2000
+        baselineRatio: 0.1
+
+logs:
+  enabled: true
+
+profiling:
+  enabled: true
+
+prometheus:
+  resources:
+    requests:
+      cpu: "4"
+      memory: "8Gi"
+    limits:
+      cpu: "4"
+      memory: "12Gi"
+  retention:
+    time: "90d"
+    size: "200GB"
+  storage:
+    size: 500Gi
+
+loki:
+  resources:
+    requests:
+      cpu: "2"
+      memory: "4Gi"
+    limits:
+      cpu: "4"
+      memory: "8Gi"
+  storage:
+    size: 500Gi
+
+tempo:
+  resources:
+    requests:
+      cpu: "4"
+      memory: "12Gi"
+    limits:
+      cpu: "8"
+      memory: "16Gi"
+  storage:
+    size: 500Gi
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: obs.example.com
+  tls:
+    - secretName: obs-tls
+      hosts:
+        - obs.example.com

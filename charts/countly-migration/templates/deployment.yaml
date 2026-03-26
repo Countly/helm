@@ -4,7 +4,7 @@ metadata:
   name: {{ include "countly-migration.fullname" . }}
   labels:
     {{- include "countly-migration.labels" . | nindent 4 }}
-  {{- if or (and .Values.externalLink.enabled .Values.externalLink.url) .Values.argocd.enabled }}
+  {{- if or (and .Values.externalLink.enabled .Values.externalLink.url) ((.Values.argocd).enabled) }}
   annotations:
     {{- if and .Values.externalLink.enabled .Values.externalLink.url }}
     link.argocd.argoproj.io/external-link: {{ .Values.externalLink.url | quote }}

@@ -1,23 +1,37 @@
+# -- Global settings shared across all Countly charts
 global:
+  # -- Override container image registry for all images
   imageRegistry: ""
+  # -- Global image pull secrets
   imagePullSecrets: []
+  # -- Default StorageClass for PVCs (empty = cluster default)
   storageClass: ""
+  # -- Sizing profile name (informational, used by environment overlays)
   sizing: small
+  # -- Global scheduling defaults (merged with per-component settings)
   scheduling:
     nodeSelector: {}
     tolerations: []
 
+# -- Override the chart name used in resource names
 nameOverride: ""
+# -- Override the full resource name
 fullnameOverride: ""
 
+# -- Create the target namespace (disable when ArgoCD manages namespace creation)
 createNamespace: false
 
+# -- ArgoCD integration (adds sync-wave annotations when enabled)
 argocd:
   enabled: false
 
+# -- MongoDB replica set configuration
 mongodb:
+  # -- MongoDB server version
   version: "8.2.5"
+  # -- Number of replica set members
   members: 2
+  # -- Resource requests and limits per member
   resources:
     requests:
       cpu: "500m"
@@ -26,37 +40,54 @@ mongodb:
       cpu: "2"
       memory: "8Gi"
 
+  # -- Persistent volume configuration
   persistence:
+    # -- StorageClass override (empty = global or cluster default)
     storageClass: ""
+    # -- Data volume size per member
     size: 100Gi
 
+  # -- Scheduling constraints for MongoDB pods
   scheduling:
     nodeSelector: {}
     tolerations: []
     affinity: {}
+    # -- Pod anti-affinity to spread members across nodes
     antiAffinity:
       enabled: true
+      # -- preferred or required
       type: preferred
       topologyKey: kubernetes.io/hostname
       weight: 100
 
+  # -- TLS encryption for replica set communication
   tls:
     enabled: false
 
+# -- MongoDB users created by the operator
 users:
+  # -- Application user (used by Countly services)
   app:
+    # -- Username
     name: app
+    # -- Authentication database
     database: admin
+    # -- Roles granted to the app user
     roles:
       - name: readWriteAnyDatabase
         db: admin
       - name: dbAdmin
         db: admin
+    # -- Name of the Secret created by the operator for this user's password
     passwordSecretName: app-user-password
+    # -- Key within the password Secret
     passwordSecretKey: password
+    # -- Password value (REQUIRED on first install; must match countly chart's backingServices.mongodb.password)
     password: ""
 
+  # -- Metrics user (used by the Percona exporter)
   metrics:
+    # -- Deploy the metrics user
     enabled: true
     name: metrics
     database: admin
@@ -67,12 +98,18 @@ users:
         db: local
     passwordSecretName: metrics-user-password
     passwordSecretKey: password
+    # -- Password value (required when exporter.enabled=true)
     password: ""
 
+# -- Percona MongoDB exporter for Prometheus metrics
 exporter:
+  # -- Deploy the exporter sidecar
   enabled: true
+  # -- Exporter container image
   image: percona/mongodb_exporter:0.40.0
+  # -- Metrics port exposed by the exporter
   port: 9216
+  # -- Exporter resource requests and limits
   resources:
     requests:
       cpu: "50m"
@@ -80,8 +117,10 @@ exporter:
     limits:
       cpu: "200m"
       memory: "256Mi"
+  # -- Create a Service for the exporter (for ServiceMonitor scraping)
   service:
     enabled: true
+  # -- Exporter CLI arguments
   args:
     - --collect-all
     - --collector.diagnosticdata
@@ -91,18 +130,27 @@ exporter:
     - --collector.indexstats
     - --collector.collstats
 
+# -- Pod disruption budget for MongoDB members
 podDisruptionBudget:
   enabled: false
   maxUnavailable: 1
 
+# -- Network policy restricting ingress to MongoDB pods
 networkPolicy:
+  # -- Enable the NetworkPolicy
   enabled: false
+  # -- Namespaces allowed to connect to MongoDB
   allowedNamespaces:
     - countly
+  # -- Allow ingress from the monitoring namespace (for exporter scraping)
   allowMonitoring: false
+  # -- Label selector for the monitoring namespace
   monitoringNamespaceSelector:
     kubernetes.io/metadata.name: monitoring
+  # -- Additional custom ingress rules
   additionalIngress: []
 
+# -- Secret retention settings
 secrets:
+  # -- Preserve secrets on helm uninstall/upgrade
   keep: true

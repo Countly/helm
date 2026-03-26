@@ -10,7 +10,7 @@ metadata:
   name: {{ include "countly-kafka.fullname" . }}-connect-api
   labels:
     {{- include "countly-kafka.labels" . | nindent 4 }}
-  {{- if .Values.argocd.enabled }}
+  {{- if ((.Values.argocd).enabled) }}
   annotations:
     {{- include "countly-kafka.syncWave" (dict "wave" "0" "root" .) | nindent 4 }}
   {{- end }}
@@ -40,7 +40,7 @@ metadata:
   name: {{ include "countly-kafka.fullname" . }}-default-deny
   labels:
     {{- include "countly-kafka.labels" . | nindent 4 }}
-  {{- if .Values.argocd.enabled }}
+  {{- if ((.Values.argocd).enabled) }}
   annotations:
     {{- include "countly-kafka.syncWave" (dict "wave" "0" "root" .) | nindent 4 }}
   {{- end }}
@@ -56,7 +56,7 @@ metadata:
   name: {{ include "countly-kafka.fullname" . }}-allow-kafka
   labels:
     {{- include "countly-kafka.labels" . | nindent 4 }}
-  {{- if .Values.argocd.enabled }}
+  {{- if ((.Values.argocd).enabled) }}
   annotations:
     {{- include "countly-kafka.syncWave" (dict "wave" "0" "root" .) | nindent 4 }}
   {{- end }}
@@ -86,7 +86,7 @@ metadata:
   name: {{ include "countly-kafka.fullname" . }}-allow-monitoring
   labels:
     {{- include "countly-kafka.labels" . | nindent 4 }}
-  {{- if .Values.argocd.enabled }}
+  {{- if ((.Values.argocd).enabled) }}
   annotations:
     {{- include "countly-kafka.syncWave" (dict "wave" "0" "root" .) | nindent 4 }}
   {{- end }}

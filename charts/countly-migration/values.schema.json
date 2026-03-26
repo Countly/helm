@@ -122,6 +122,10 @@
             "mode": {
               "type": "string",
               "enum": ["external", "bundled"]
+            },
+            "releaseName": {
+              "type": "string",
+              "description": "Release name prefix of the sibling countly-mongodb chart"
             }
           }
         },
@@ -131,6 +135,10 @@
             "mode": {
               "type": "string",
               "enum": ["external", "bundled"]
+            },
+            "releaseName": {
+              "type": "string",
+              "description": "Release name prefix of the sibling countly-clickhouse chart"
             }
           }
         },

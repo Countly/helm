@@ -36,6 +36,19 @@ The migration service is a **singleton Deployment** with `Recreate` strategy. It
 
 ## Quick Start
 
+**Alongside sibling charts** (default — auto-discovers MongoDB and ClickHouse via DNS):
+
+```bash
+helm install countly-migration ./charts/countly-migration \
+  -n countly-migration --create-namespace \
+  --set backingServices.mongodb.password="YOUR_MONGODB_APP_PASSWORD" \
+  --set backingServices.clickhouse.password="YOUR_CLICKHOUSE_PASSWORD"
+```
+
+Only two values required. Everything else is auto-detected from the sibling `countly-mongodb` and `countly-clickhouse` charts. Redis is bundled automatically.
+
+**Standalone** (external MongoDB and ClickHouse):
+
 ```bash
 helm install countly-migration ./charts/countly-migration \
   -n countly-migration --create-namespace \
@@ -46,7 +59,9 @@ helm install countly-migration ./charts/countly-migration \
   --set backingServices.clickhouse.password="PASSWORD"
 ```
 
-Redis is deployed automatically as a subchart. The migration service auto-discovers all `drill_events*` collections and begins migrating.
+> **Production deployment:** Use the profile-based approach from the [root README](../../README.md#manual-installation-without-helmfile) instead of `--set` flags.
+
+The migration service auto-discovers all `drill_events*` collections in the source MongoDB database and begins migrating.
 
 ---
 
@@ -70,46 +85,50 @@ The chart connects to MongoDB, ClickHouse, and Redis. Each can be configured in 
 
 | Mode | Description |
 |------|-------------|
-| `external` (default) | Provide a full connection URI via `backingServices.mongodb.uri` |
-| `bundled` | Auto-constructs URI from sibling `countly-mongodb` chart using in-cluster DNS |
+| `bundled` (default) | Auto-constructs URI from sibling `countly-mongodb` chart using in-cluster DNS |
+| `external` | Provide a full connection URI via `backingServices.mongodb.uri` |
 
 ```yaml
+# Bundled mode (default — alongside countly-mongodb chart)
+backingServices:
+  mongodb:
+    password: "app-user-password"   # Only required field
+
 # External mode
 backingServices:
   mongodb:
     mode: external
     uri: "mongodb://app:pass@host:27017/admin?replicaSet=rs0&ssl=false"
-
-# Bundled mode (uses countly-mongodb chart in same cluster)
-backingServices:
-  mongodb:
-    mode: bundled
-    password: "app-user-password"
-    namespace: mongodb
 ```
+
+In bundled mode, the chart constructs the URI as:
+`mongodb://app:{password}@{releaseName}-mongodb-svc.{namespace}.svc.cluster.local:27017/admin?replicaSet={releaseName}-mongodb`
+
+Override `releaseName` if your sibling charts use a non-standard prefix (default: `"countly"`).
 
 #### ClickHouse
 
 | Mode | Description |
 |------|-------------|
-| `external` (default) | Provide a full HTTP URL via `backingServices.clickhouse.url` |
-| `bundled` | Auto-constructs URL from sibling `countly-clickhouse` chart using in-cluster DNS |
+| `bundled` (default) | Auto-constructs URL from sibling `countly-clickhouse` chart using in-cluster DNS |
+| `external` | Provide a full HTTP URL via `backingServices.clickhouse.url` |
 
 ```yaml
+# Bundled mode (default — alongside countly-clickhouse chart)
+backingServices:
+  clickhouse:
+    password: "default-password"    # Only required field
+
 # External mode
 backingServices:
   clickhouse:
     mode: external
     url: "http://clickhouse-host:8123"
     password: "default-password"
-
-# Bundled mode
-backingServices:
-  clickhouse:
-    mode: bundled
-    password: "default-password"
-    namespace: clickhouse
 ```
+
+In bundled mode, the chart constructs the URL as:
+`http://{releaseName}-clickhouse-clickhouse-headless.{namespace}.svc:8123`
 
 #### Redis
 
