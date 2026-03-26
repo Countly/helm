@@ -40,7 +40,7 @@ countly:
   enabled: true
 observability:
   enabled: true
-migrations:
+migration:
   enabled: true        # This customer needs data migration
 
 syncPolicy:
