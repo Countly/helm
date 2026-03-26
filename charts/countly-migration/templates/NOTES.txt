@@ -68,3 +68,20 @@ Countly Migration service has been deployed!
 
   5. View logs:
      kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name=countly-migration -f
+{{- if gt (int .Values.deployment.replicas) 1 }}
+
+=== Multi-Pod Mode ({{ .Values.deployment.replicas }} replicas) ===
+
+  Global control (affects all pods):
+    POST /control/global/pause      Pause all pods
+    POST /control/global/resume     Resume all pods
+    POST /control/global/stop       Stop all pods
+
+  Coordination:
+    GET  /control/locks             List collection locks
+    GET  /control/pods              List all pods and status
+    POST /control/drain             Graceful drain (preStop calls this)
+
+  Scale up/down:
+    kubectl scale deploy/{{ include "countly-migration.fullname" . }} -n {{ .Release.Namespace }} --replicas=N
+{{- end }}

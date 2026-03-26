@@ -21,11 +21,16 @@ serviceAccount:
 argocd:
   enabled: false
 
-# -- Deployment configuration (singleton, Recreate only)
+# -- Deployment configuration
+# For multi-pod mode: set replicas > 1 and strategy.type to RollingUpdate
 deployment:
   replicas: 1
   strategy:
     type: Recreate
+    # RollingUpdate settings (used when strategy.type is RollingUpdate)
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   terminationGracePeriodSeconds: 90
 
 # -- Additional pod annotations
@@ -215,7 +220,22 @@ networkPolicy:
   ingress: {}
   egress: {}
 
-# -- Pod disruption budget (optional; disabled by default for singleton)
+# -- Multi-pod worker coordination settings
+# These take effect when deployment.replicas > 1.
+worker:
+  enabled: true                      # MULTI_POD_ENABLED
+  lockTtlSec: 300                    # LOCK_TTL_SECONDS — collection lock expiration
+  lockRenewMs: 60000                 # LOCK_RENEW_MS — lock renewal interval
+  podHeartbeatMs: 30000              # POD_HEARTBEAT_MS — heartbeat interval
+  podDeadAfterSec: 180               # POD_DEAD_AFTER_SEC — dead pod threshold
+  rangeParallelThreshold: 500000     # RANGE_PARALLEL_THRESHOLD — split large collections
+  rangeCount: 100                    # RANGE_COUNT — number of time ranges
+  rangeLeaseTtlSec: 300              # RANGE_LEASE_TTL_SEC — range lease expiration
+  progressUpdateMs: 5000             # PROGRESS_UPDATE_MS — progress report interval
+  asyncWriteFlushIntervalMs: 5000    # ASYNC_WRITE_FLUSH_INTERVAL_MS
+  asyncWriteFlushBatchSize: 10       # ASYNC_WRITE_FLUSH_BATCH_SIZE
+
+# -- Pod disruption budget (recommended when replicas > 1)
 pdb:
   enabled: false
   minAvailable: 1

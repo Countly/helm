@@ -1,4 +1,11 @@
 {{/*
+Whether multi-pod mode is active (replicas > 1).
+*/}}
+{{- define "countly-migration.isMultiPod" -}}
+{{- if gt (int .Values.deployment.replicas) 1 }}true{{- end }}
+{{- end }}
+
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "countly-migration.name" -}}
