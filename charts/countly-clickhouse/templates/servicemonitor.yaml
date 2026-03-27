@@ -5,6 +5,10 @@ metadata:
   name: {{ include "countly-clickhouse.fullname" . }}-server
   labels:
     {{- include "countly-clickhouse.labels" . | nindent 4 }}
+  {{- if ((.Values.argocd).enabled) }}
+  annotations:
+    {{- include "countly-clickhouse.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
+  {{- end }}
 spec:
   namespaceSelector:
     matchNames:
@@ -24,6 +28,10 @@ metadata:
   name: {{ include "countly-clickhouse.fullname" . }}-keeper
   labels:
     {{- include "countly-clickhouse.labels" . | nindent 4 }}
+  {{- if ((.Values.argocd).enabled) }}
+  annotations:
+    {{- include "countly-clickhouse.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
+  {{- end }}
 spec:
   namespaceSelector:
     matchNames:

@@ -1,0 +1,31 @@
+# Minimal values for local development / testing.
+# Deploys all components with bundled backing services.
+# Requires: countly-mongodb, countly-clickhouse, countly-kafka deployed in-cluster.
+
+backingServices:
+  mongodb:
+    mode: bundled
+    password: "dev-password"
+  clickhouse:
+    mode: bundled
+  kafka:
+    mode: bundled
+
+secrets:
+  mode: values
+  common:
+    encryptionReportsKey: "dev-encryption-key"
+    webSessionSecret: "dev-session-secret"
+    passwordSecret: "dev-password-secret"
+  clickhouse:
+    username: "default"
+    password: "dev-ch-password"
+    database: "countly_drill"
+  mongodb:
+    password: "dev-password"
+
+ingress:
+  enabled: true
+  hostname: countly.local
+  tls:
+    mode: http

@@ -1,0 +1,142 @@
+# Alternative to the app-of-apps chart for 100+ customers.
+#
+# Instead of running `helm install` per customer, this single ApplicationSet
+# generates all Applications from a list of customers. Add a new customer
+# by adding an entry to the list — no new Helm release needed.
+#
+# Prerequisites:
+# 1. ArgoCD ApplicationSet controller installed
+# 2. Target clusters registered with ArgoCD
+# 3. Environment directories exist per customer in the helm repo
+# 4. Custom health checks in argocd-cm (see chart NOTES.txt)
+#
+# Apply: kubectl apply -f applicationset.yaml -n argocd
+# Add customer: add entry to generators[].list.elements, re-apply
+
+# One ApplicationSet per component, each with the correct sync-wave.
+# ArgoCD processes waves within a parent sync — use an app-of-apps
+# root Application that points to a directory containing these files.
+
+---
+# Wave 0: MongoDB
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: countly-mongodb
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - customer: customer-a
+            server: https://cluster-a.example.com
+            sizing: production
+            security: hardened
+          - customer: customer-b
+            server: https://cluster-b.example.com
+            sizing: small
+            security: open
+          # Add more customers here...
+  template:
+    metadata:
+      name: "{{customer}}-mongodb"
+      annotations:
+        argocd.argoproj.io/sync-wave: "0"
+    spec:
+      project: "{{customer}}"
+      source:
+        repoURL: https://github.com/Countly/helm.git
+        targetRevision: main
+        path: charts/countly-mongodb
+        helm:
+          releaseName: countly-mongodb
+          valueFiles:
+            - "../../environments/{{customer}}/global.yaml"
+            - "../../profiles/sizing/{{sizing}}/mongodb.yaml"
+            - "../../profiles/security/{{security}}/mongodb.yaml"
+            - "../../environments/{{customer}}/mongodb.yaml"
+          parameters:
+            - name: argocd.enabled
+              value: "true"
+      destination:
+        server: "{{server}}"
+        namespace: mongodb
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+
+---
+# Wave 0: ClickHouse (same pattern as MongoDB)
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: countly-clickhouse
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - customer: customer-a
+            server: https://cluster-a.example.com
+            sizing: production
+            security: hardened
+          - customer: customer-b
+            server: https://cluster-b.example.com
+            sizing: small
+            security: open
+  template:
+    metadata:
+      name: "{{customer}}-clickhouse"
+      annotations:
+        argocd.argoproj.io/sync-wave: "0"
+    spec:
+      project: "{{customer}}"
+      source:
+        repoURL: https://github.com/Countly/helm.git
+        targetRevision: main
+        path: charts/countly-clickhouse
+        helm:
+          releaseName: countly-clickhouse
+          valueFiles:
+            - "../../environments/{{customer}}/global.yaml"
+            - "../../profiles/sizing/{{sizing}}/clickhouse.yaml"
+            - "../../profiles/security/{{security}}/clickhouse.yaml"
+            - "../../environments/{{customer}}/clickhouse.yaml"
+          parameters:
+            - name: argocd.enabled
+              value: "true"
+      destination:
+        server: "{{server}}"
+        namespace: clickhouse
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+
+# Repeat the same pattern for:
+# - countly-kafka (wave 5)
+# - countly (wave 10)
+# - countly-observability (wave 15)
+# - countly-migration (wave 10, optional)
+#
+# For a DRY approach, use a Matrix generator combining the customer list
+# with a component list to generate all Applications from a single spec.

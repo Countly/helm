@@ -1,0 +1,40 @@
+# Production MongoDB replica set.
+# 3 members, PDB enabled, anti-affinity, monitoring.
+
+argocd:
+  enabled: true
+
+mongodb:
+  version: "8.2.5"
+  members: 3
+  resources:
+    requests:
+      cpu: "2"
+      memory: "8Gi"
+    limits:
+      cpu: "4"
+      memory: "16Gi"
+  persistence:
+    size: 500Gi
+  scheduling:
+    antiAffinity:
+      enabled: true
+      type: required
+      topologyKey: kubernetes.io/hostname
+
+users:
+  app:
+    password: ""  # Set via --set or existingSecret
+  metrics:
+    password: ""  # Set via --set or existingSecret
+
+exporter:
+  enabled: true
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+networkPolicy:
+  enabled: true
+  allowMonitoring: true

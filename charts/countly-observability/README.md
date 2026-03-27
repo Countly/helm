@@ -31,6 +31,8 @@ helm install countly-observability ./charts/countly-observability \
   -n observability --create-namespace
 ```
 
+> **Production deployment:** Use the profile-based approach from the [root README](../../README.md#manual-installation-without-helmfile) instead of `--set` flags. This chart supports sizing, observability, and security profile layers.
+
 Access Grafana:
 
 ```bash

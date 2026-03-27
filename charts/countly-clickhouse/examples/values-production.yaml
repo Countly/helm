@@ -1,0 +1,51 @@
+# Production ClickHouse cluster.
+# Single shard, 2 replicas, Keeper quorum, PDB enabled.
+
+argocd:
+  enabled: true
+
+shards: 1
+replicas: 2
+
+auth:
+  defaultUserPassword:
+    existingSecret: clickhouse-default-password
+
+server:
+  resources:
+    requests:
+      cpu: "4"
+      memory: "16Gi"
+    limits:
+      cpu: "8"
+      memory: "32Gi"
+  persistence:
+    size: 500Gi
+
+keeper:
+  replicas: 3
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  persistence:
+    size: 10Gi
+
+podDisruptionBudget:
+  server:
+    enabled: true
+    maxUnavailable: 1
+  keeper:
+    enabled: true
+    maxUnavailable: 1
+
+networkPolicy:
+  enabled: true
+  allowMonitoring: true
+
+serviceMonitor:
+  enabled: true
+  interval: "15s"

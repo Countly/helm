@@ -1,0 +1,67 @@
+# Production Kafka cluster.
+# 3 brokers, 3 controllers, Cruise Control, Kafka Connect with HPA.
+
+argocd:
+  enabled: true
+
+brokers:
+  replicas: 3
+  resources:
+    requests:
+      cpu: "2"
+      memory: "8Gi"
+    limits:
+      cpu: "4"
+      memory: "8Gi"
+  jvmOptions:
+    xms: "4g"
+    xmx: "4g"
+  persistence:
+    volumes:
+      - id: 0
+        size: 500Gi
+  config:
+    default.replication.factor: 3
+    min.insync.replicas: 2
+    num.partitions: 100
+
+controllers:
+  replicas: 3
+  resources:
+    requests:
+      cpu: "1"
+      memory: "4Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  persistence:
+    size: 50Gi
+
+cruiseControl:
+  enabled: true
+
+kafkaConnect:
+  enabled: true
+  replicas: 3
+  resources:
+    requests:
+      cpu: "4"
+      memory: "12Gi"
+    limits:
+      cpu: "4"
+      memory: "12Gi"
+  jvmOptions:
+    xms: "8g"
+    xmx: "8g"
+  clickhouse:
+    existingSecret: clickhouse-auth
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+  otel:
+    enabled: true
+
+networkPolicy:
+  enabled: true
+  allowMonitoring: true

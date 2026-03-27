@@ -1,0 +1,23 @@
+# Development values example for countly-migration.
+# Bundled mode (default) — auto-discovers sibling chart endpoints via DNS.
+# Only passwords are required; everything else uses sane defaults.
+
+# Backing service passwords (must match sibling charts)
+backingServices:
+  mongodb:
+    password: "devpassword"
+  clickhouse:
+    password: "devpassword"
+
+# Redis is bundled automatically — no config needed.
+
+config:
+  LOG_LEVEL: "debug"
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "512Mi"
+  limits:
+    cpu: "1"
+    memory: "2Gi"

@@ -1,0 +1,29 @@
+apiVersion: v2
+name: countly-migration
+description: MongoDB to ClickHouse batch migration service for Countly drill events
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+home: https://countly.com
+icon: https://count.ly/images/logos/countly-logo.svg
+sources:
+  - https://github.com/Countly/countly-server
+keywords:
+  - migration
+  - clickhouse
+  - mongodb
+  - countly
+  - batch-migration
+maintainers:
+  - name: Countly
+    url: https://countly.com
+dependencies:
+  - name: redis
+    version: ">=25.0.0"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+annotations:
+  artifacthub.io/license: AGPL-3.0
+  artifacthub.io/links: |
+    - name: Documentation
+      url: https://github.com/Countly/helm
