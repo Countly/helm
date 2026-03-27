@@ -1,24 +1,42 @@
+# -- Global settings shared across all Countly charts
 global:
+  # -- Override container image registry for all images
   imageRegistry: ""
+  # -- Global image pull secrets
   imagePullSecrets: []
+  # -- Default StorageClass for PVCs (empty = cluster default)
   storageClass: ""
+  # -- Sizing profile name (informational, used by environment overlays)
   sizing: small
+  # -- Global scheduling defaults (merged with per-component settings)
   scheduling:
     nodeSelector: {}
     tolerations: []
 
+# -- Override the chart name used in resource names
 nameOverride: ""
+# -- Override the full resource name
 fullnameOverride: ""
 
+# -- Create the target namespace (disable when ArgoCD manages namespace creation)
 createNamespace: false
 
+# -- ArgoCD integration (adds sync-wave annotations when enabled)
+argocd:
+  enabled: false
+
+# -- Strimzi CRD API version
 strimzi:
   apiVersion: kafka.strimzi.io/v1
 
+# -- Kafka version (must match the Strimzi-supported range)
 version: "4.2.0"
 
+# -- Kafka broker configuration (KRaft mode, no ZooKeeper)
 brokers:
+  # -- Number of broker nodes
   replicas: 3
+  # -- Resource requests and limits per broker
   resources:
     requests:
       cpu: "1"
@@ -26,15 +44,19 @@ brokers:
     limits:
       cpu: "1"
       memory: "4Gi"
+  # -- JVM heap settings for brokers
   jvmOptions:
     xms: "2g"
     xmx: "2g"
+  # -- Persistent storage volumes for broker data
   persistence:
     volumes:
       - id: 0
         size: 100Gi
         storageClass: ""
+    # -- Delete PVCs when the Kafka resource is deleted
     deleteClaim: false
+  # -- Kafka broker config properties (passed to server.properties)
   config:
     default.replication.factor: 2
     min.insync.replicas: 2       # PRODUCTION: Set to 2 for durability
@@ -45,17 +67,22 @@ brokers:
     offsets.topic.replication.factor: 2
     num.partitions: 24
     transaction.state.log.replication.factor: 2
+  # -- Scheduling constraints for broker pods
   scheduling:
     nodeSelector: {}
     tolerations: []
     affinity: {}
+    # -- Topology spread to distribute brokers across nodes
     topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: kubernetes.io/hostname
         whenUnsatisfiable: DoNotSchedule
 
+# -- KRaft controller configuration
 controllers:
+  # -- Number of KRaft controller nodes
   replicas: 3
+  # -- Resource requests and limits per controller
   resources:
     requests:
       cpu: "500m"
@@ -63,9 +90,11 @@ controllers:
     limits:
       cpu: "1"
       memory: "2Gi"
+  # -- Persistent storage for KRaft metadata
   persistence:
     size: 20Gi
     storageClass: ""
+  # -- Scheduling constraints for controller pods
   scheduling:
     nodeSelector: {}
     tolerations: []
@@ -75,13 +104,16 @@ controllers:
         topologyKey: kubernetes.io/hostname
         whenUnsatisfiable: DoNotSchedule
 
+# -- Kafka listeners configuration
 listeners:
   - name: internal
     port: 9092
     type: internal
     tls: false
 
+# -- Cruise Control for automatic partition rebalancing
 cruiseControl:
+  # -- Deploy Cruise Control alongside Kafka
   enabled: true
   resources:
     requests:
@@ -93,16 +125,24 @@ cruiseControl:
   jvmOptions:
     xms: "1g"
     xmx: "2g"
+  # -- Auto-rebalance triggers
   autoRebalance:
     - mode: add-brokers
     - mode: remove-brokers
 
+# -- Kafka Connect with ClickHouse sink connector
 kafkaConnect:
+  # -- Deploy Kafka Connect
   enabled: true
+  # -- Connect cluster name (used in Strimzi resource name)
   name: connect-ch
+  # -- Container image with the ClickHouse sink connector baked in
   image: "gcr.io/countly-dev-313620/strimzi/kafka-connect-clickhouse:4.2.0-1.3.5-strimzi-amd64"
+  # -- Number of Connect worker replicas
   replicas: 2
+  # -- Override bootstrap servers (empty = auto-resolve from this Kafka cluster)
   bootstrapServers: ""
+  # -- Resource requests and limits per Connect worker
   resources:
     requests:
       cpu: "2"
@@ -110,9 +150,11 @@ kafkaConnect:
     limits:
       cpu: "2"
       memory: "8Gi"
+  # -- JVM heap settings for Connect workers
   jvmOptions:
     xms: "5g"
     xmx: "5g"
+  # -- Kafka Connect worker-level configuration
   workerConfig:
     group.id: connect-ch
     config.storage.topic: connect_ch_configs
@@ -129,15 +171,25 @@ kafkaConnect:
     connector.client.config.override.policy: All
     config.providers: env
     config.providers.env.class: org.apache.kafka.common.config.provider.EnvVarConfigProvider
+  # -- ClickHouse connection details for the sink connector
   clickhouse:
+    # -- Use a pre-created Secret instead of creating one from values
     existingSecret: ""
+    # -- Name of the Secret to create (when existingSecret is empty)
     secretName: clickhouse-auth
+    # -- ClickHouse host (empty = auto-resolve from clickhouseNamespace)
     host: ""
+    # -- ClickHouse HTTP port
     port: "8123"
+    # -- Enable SSL for ClickHouse connection
     ssl: "false"
+    # -- Target database
     database: "countly_drill"
+    # -- ClickHouse username
     username: "default"
+    # -- ClickHouse password (REQUIRED on first install unless existingSecret is set)
     password: ""
+  # -- Environment variables injected into Connect worker pods (connector config)
   env:
     EXACTLY_ONCE: "false"
     ERRORS_RETRY_TIMEOUT: "300"
@@ -157,6 +209,7 @@ kafkaConnect:
     KAFKA_CONSUMER_SESSION_TIMEOUT_MS: "45000"
     KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS: "15000"
     KAFKA_CONSUMER_REQUEST_TIMEOUT_MS: "120000"
+  # -- HPA for Kafka Connect workers
   hpa:
     enabled: false
     minReplicas: 1
@@ -192,22 +245,32 @@ kafkaConnect:
   # When enabled, JAVA_TOOL_OPTIONS activates it. Creates spans for Kafka consumer/producer
   # and outbound HTTP (ClickHouse sink).
   otel:
+    # -- Enable OpenTelemetry Java agent instrumentation
     enabled: false
+    # -- Service name reported in traces
     serviceName: "kafka-connect"
+    # -- OTLP exporter endpoint
     exporterEndpoint: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4317"
+    # -- OTLP exporter protocol (grpc or http/protobuf)
     exporterProtocol: "grpc"
+    # -- Trace sampling strategy
     sampler: "parentbased_traceidratio"
+    # -- Sampling ratio (0.0 - 1.0)
     samplerArg: "1.0"
+    # -- Additional OTEL resource attributes
     resourceAttributes: ""   # e.g. "deployment.environment=production,k8s.cluster.name=my-cluster"
+  # -- Scheduling constraints for Connect worker pods
   scheduling:
     nodeSelector: {}
     tolerations: []
     affinity: {}
+    # -- Pod anti-affinity to spread Connect workers across nodes
     antiAffinity:
       enabled: true
       type: preferred
       topologyKey: kubernetes.io/hostname
       weight: 100
+  # -- KafkaConnector resources deployed alongside Kafka Connect
   connectors:
     - name: ch-sink-drill-events
       enabled: true
@@ -252,18 +315,27 @@ kafkaConnect:
         healthcheck.interval: "10000"
       dlq: {}
 
+# -- Enable JMX metrics exposure on Kafka brokers
 metrics:
   enabled: true
 
+# -- Namespace where ClickHouse is deployed (for auto-resolving Connect sink host)
 clickhouseNamespace: clickhouse
 
+# -- Network policy restricting ingress to Kafka pods
 networkPolicy:
+  # -- Enable the NetworkPolicy
   enabled: false
+  # -- Namespaces allowed to connect to Kafka
   allowedNamespaces:
     - countly
+  # -- Allow ingress from the monitoring namespace
   allowMonitoring: false
+  # -- Label selector for the monitoring namespace
   monitoringNamespaceSelector:
     kubernetes.io/metadata.name: monitoring
 
+# -- Secret retention settings
 secrets:
+  # -- Preserve secrets on helm uninstall/upgrade
   keep: true

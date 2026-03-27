@@ -4,6 +4,10 @@ metadata:
   name: {{ include "countly.fullname" . }}-config-jobserver
   labels:
     {{- include "countly.labels" . | nindent 4 }}
+  {{- if ((.Values.argocd).enabled) }}
+  annotations:
+    {{- include "countly.syncWave" (dict "wave" "2" "root" .) | nindent 4 }}
+  {{- end }}
 data:
   NODE_OPTIONS: {{ .Values.nodeOptions.jobserver | quote }}
   {{- range $key, $value := .Values.config.jobserver }}

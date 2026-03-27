@@ -81,3 +81,7 @@ kubectl get pods -n ingress-nginx
 The `countly-observability` chart does **not** require any operators — it deploys standard Kubernetes workloads (Deployments, StatefulSets, DaemonSets). No additional prerequisites are needed.
 
 See [charts/countly-observability/README.md](../charts/countly-observability/README.md) for configuration.
+
+## 6. ArgoCD (optional)
+
+If deploying via ArgoCD instead of Helmfile, install ArgoCD (v2.8+) on a management cluster and configure custom health checks for operator CRDs. See [ARGOCD.md](ARGOCD.md) for full setup instructions.

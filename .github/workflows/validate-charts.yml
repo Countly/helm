@@ -33,6 +33,15 @@ jobs:
         with:
           version: v3.17.0
 
+      - name: Build chart dependencies
+        run: |
+          for chart in charts/*/; do
+            if grep -q '^dependencies:' "${chart}Chart.yaml" 2>/dev/null; then
+              echo "Building dependencies for $(basename "${chart}")..."
+              helm dependency build "${chart}"
+            fi
+          done
+
       - name: Lint all charts
         run: |
           exit_code=0
@@ -56,6 +65,15 @@ jobs:
         uses: azure/setup-helm@v4
         with:
           version: v3.17.0
+
+      - name: Build chart dependencies
+        run: |
+          for chart in charts/*/; do
+            if grep -q '^dependencies:' "${chart}Chart.yaml" 2>/dev/null; then
+              echo "Building dependencies for $(basename "${chart}")..."
+              helm dependency build "${chart}"
+            fi
+          done
 
       - name: Template render all charts
         run: |
@@ -88,6 +106,12 @@ jobs:
                 helm template test-release "${chart}" \
                   --set users.app.password=test \
                   --set users.metrics.password=test \
+                  > /dev/null || exit_code=1
+                ;;
+              countly-migration)
+                helm template test-release "${chart}" \
+                  --set backingServices.mongodb.password=test \
+                  --set backingServices.clickhouse.password=test \
                   > /dev/null || exit_code=1
                 ;;
               *)

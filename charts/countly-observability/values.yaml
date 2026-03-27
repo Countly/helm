@@ -1,3 +1,7 @@
+# -- ArgoCD integration (optional)
+argocd:
+  enabled: false
+
 # -- Deployment mode: "full" (all in-cluster), "hybrid" (no Grafana), "external" (no backends)
 mode: full
 
