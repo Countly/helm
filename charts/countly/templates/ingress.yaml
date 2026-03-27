@@ -8,6 +8,7 @@ metadata:
   labels:
     {{- include "countly.labels" . | nindent 4 }}
   annotations:
+    {{- include "countly.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}

@@ -4,6 +4,7 @@ metadata:
   name: {{ include "countly-mongodb.fullname" . }}
   annotations:
     "helm.sh/resource-policy": keep
+    {{- include "countly-mongodb.syncWave" (dict "wave" "5" "root" .) | nindent 4 }}
   labels:
     {{- include "countly-mongodb.labels" . | nindent 4 }}
 spec:

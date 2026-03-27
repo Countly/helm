@@ -12,6 +12,9 @@ environments:
   example-production:
     values:
       - environments/example-production/global.yaml
+  test-local-full:
+    values:
+      - environments/test-local-full/global.yaml
 ---
 
 repositories: []
@@ -92,3 +95,17 @@ releases:
       - environments/{{ .Environment.Name }}/secrets-observability.yaml
     needs:
       - countly/countly
+
+  # Optional: MongoDB to ClickHouse batch migration service (with bundled Redis)
+  # Set migration.enabled: true in your environment's global.yaml to deploy
+  - name: countly-migration
+    installed: {{ .Values | get "migration.enabled" false }}
+    chart: ./charts/countly-migration
+    namespace: countly-migration
+    values:
+      - environments/{{ .Environment.Name }}/global.yaml
+      - environments/{{ .Environment.Name }}/migration.yaml
+      - environments/{{ .Environment.Name }}/secrets-migration.yaml
+    needs:
+      - mongodb/countly-mongodb
+      - clickhouse/countly-clickhouse

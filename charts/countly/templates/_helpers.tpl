@@ -184,3 +184,12 @@ Called from NOTES.txt to surface errors during install.
   {{- end -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+ArgoCD sync-wave annotation (only when argocd.enabled).
+*/}}
+{{- define "countly.syncWave" -}}
+{{- if ((.root.Values.argocd).enabled) }}
+argocd.argoproj.io/sync-wave: {{ .wave | quote }}
+{{- end }}
+{{- end -}}

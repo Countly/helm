@@ -1,0 +1,32 @@
+# Example ArgoCD Application for countly-migration.
+# Namespace is created by ArgoCD (CreateNamespace=true), not by the chart.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: countly-migration
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Countly/helm.git
+    targetRevision: main
+    path: charts/countly-migration
+    helm:
+      releaseName: countly-migration
+      valueFiles:
+        - ../../environments/prod/migration.yaml
+      parameters:
+        - name: argocd.enabled
+          value: "true"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: countly-migration
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+    managedNamespaceMetadata:
+      labels:
+        app.kubernetes.io/part-of: countly
+      annotations:
+        owner: data-platform

@@ -1,0 +1,41 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "countly-migration.fullname" . }}
+  labels:
+    {{- include "countly-migration.labels" . | nindent 4 }}
+  {{- if or (and .Values.externalLink.enabled .Values.externalLink.url) ((.Values.argocd).enabled) .Values.ingress.annotations }}
+  annotations:
+    {{- if and .Values.externalLink.enabled .Values.externalLink.url }}
+    link.argocd.argoproj.io/external-link: {{ .Values.externalLink.url | quote }}
+    {{- end }}
+    {{- include "countly-migration.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "countly-migration.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          {{- end }}
+    {{- end }}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

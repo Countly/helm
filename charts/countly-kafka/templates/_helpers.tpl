@@ -78,6 +78,16 @@ countly-clickhouse-clickhouse-headless.{{ .Values.clickhouseNamespace | default 
 {{- end -}}
 
 {{/*
+ArgoCD sync-wave annotation (only when argocd.enabled).
+Usage: {{- include "countly-kafka.syncWave" (dict "wave" "5" "root" .) | nindent 4 }}
+*/}}
+{{- define "countly-kafka.syncWave" -}}
+{{- if ((.root.Values.argocd).enabled) }}
+argocd.argoproj.io/sync-wave: {{ .wave | quote }}
+{{- end }}
+{{- end -}}
+
+{{/*
 ClickHouse Connect secret name
 */}}
 {{- define "countly-kafka.clickhouseSecretName" -}}

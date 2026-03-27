@@ -1,0 +1,37 @@
+# Multi-pod values example for countly-migration.
+# Runs 3 replicas with Redis-based collection locking and range splitting.
+
+deployment:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+# Backing service passwords (must match sibling charts)
+backingServices:
+  mongodb:
+    password: "your-mongodb-password"
+  clickhouse:
+    password: "your-clickhouse-password"
+
+# Worker coordination settings (defaults are sane for most deployments)
+worker:
+  enabled: true
+  lockTtlSec: 300
+  podDeadAfterSec: 180
+  rangeParallelThreshold: 500000
+  rangeCount: 100
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "2"
+    memory: "3Gi"

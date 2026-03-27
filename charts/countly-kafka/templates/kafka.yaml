@@ -43,6 +43,7 @@ metadata:
   name: {{ include "countly-kafka.fullname" . }}-brokers
   annotations:
     "helm.sh/resource-policy": keep
+    {{- include "countly-kafka.syncWave" (dict "wave" "5" "root" .) | nindent 4 }}
   labels:
     strimzi.io/cluster: {{ include "countly-kafka.fullname" . }}
     {{- include "countly-kafka.labels" . | nindent 4 }}
@@ -100,6 +101,7 @@ metadata:
   name: {{ include "countly-kafka.fullname" . }}-controllers
   annotations:
     "helm.sh/resource-policy": keep
+    {{- include "countly-kafka.syncWave" (dict "wave" "5" "root" .) | nindent 4 }}
   labels:
     strimzi.io/cluster: {{ include "countly-kafka.fullname" . }}
     {{- include "countly-kafka.labels" . | nindent 4 }}
@@ -152,6 +154,7 @@ metadata:
     "helm.sh/resource-policy": keep
     strimzi.io/kraft: enabled
     strimzi.io/node-pools: enabled
+    {{- include "countly-kafka.syncWave" (dict "wave" "5" "root" .) | nindent 4 }}
 spec:
   kafka:
     version: {{ .Values.version | quote }}

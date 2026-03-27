@@ -1,0 +1,32 @@
+# External mode: only deploy collectors, forward telemetry to external backends.
+# Use this when you have Grafana Cloud, Mimir, or other external observability.
+
+mode: external
+
+metrics:
+  enabled: true
+
+traces:
+  enabled: true
+
+logs:
+  enabled: true
+
+profiling:
+  enabled: true
+
+prometheus:
+  external:
+    remoteWriteUrl: "https://mimir.corp.com/api/v1/push"
+
+loki:
+  external:
+    pushUrl: "https://loki.corp.com/loki/api/v1/push"
+
+tempo:
+  external:
+    otlpGrpcEndpoint: "tempo.corp.com:4317"
+
+pyroscope:
+  external:
+    ingestUrl: "https://pyroscope.corp.com"

@@ -1,0 +1,19 @@
+# Minimal observability stack for development.
+# All signals enabled, default resources, no ingress.
+
+mode: full
+clusterName: dev-cluster
+
+metrics:
+  enabled: true
+
+traces:
+  enabled: true
+  sampling:
+    strategy: "AlwaysOn"
+
+logs:
+  enabled: true
+
+profiling:
+  enabled: true

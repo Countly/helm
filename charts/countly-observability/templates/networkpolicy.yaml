@@ -8,6 +8,10 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "obs.labels" . | nindent 4 }}
+  {{- if ((.Values.argocd).enabled) }}
+  annotations:
+    {{- include "obs.syncWave" (dict "wave" "0" "root" .) | nindent 4 }}
+  {{- end }}
 spec:
   podSelector: {}
   policyTypes:

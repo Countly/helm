@@ -3,10 +3,9 @@
 # Deployment mode: full | hybrid | external | disabled
 mode: full
 
-# Grafana admin credentials
-grafana:
-  auth:
-    adminPassword: "countly-local-2026"
+# Grafana admin password is auto-generated and stored in a Secret.
+# To retrieve it: kubectl get secret -n observability <release>-countly-observability-grafana -o jsonpath='{.data.admin-password}' | base64 -d
+# To use your own secret: set grafana.admin.existingSecret and grafana.admin.passwordKey
 
 # Grafana ingress with self-signed TLS
 ingress:
