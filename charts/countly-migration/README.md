@@ -224,10 +224,12 @@ externalLink:
   url: "https://migration.example.internal/runs/current"
 ```
 
-Sync-wave ordering:
-- Wave 0: ServiceAccount, ConfigMap
+Sync-wave ordering (within this chart):
+- Wave 0: Redis subchart resources, ConfigMap
 - Wave 1: Secret
 - Wave 10: Deployment, Service, Ingress, ServiceMonitor
+
+At the **stack level** (in `countly-argocd`), migration deploys **last** at wave 20 — after all other charts (databases, Kafka, Countly, observability) are healthy. This ensures the full system is stable before migration begins.
 
 Namespace is created by the ArgoCD Application (`CreateNamespace=true`), not by the chart.
 
@@ -350,15 +352,52 @@ kubectl logs -n countly-migration -l app.kubernetes.io/name=countly-migration -f
 
 ---
 
+## Multi-Pod Mode
+
+Scale the migration across multiple pods for faster throughput. Pods coordinate via Redis-based collection locking and range splitting.
+
+```yaml
+deployment:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+
+pdb:
+  enabled: true
+  minAvailable: 1
+```
+
+When `replicas > 1`, the chart automatically:
+- Switches to `RollingUpdate` strategy support
+- Adds pod anti-affinity (spread across nodes)
+- Injects `POD_ID` from pod name for coordination
+- Configures preStop drain hook
+
+### Worker settings
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `worker.enabled` | `true` | Enable multi-pod coordination |
+| `worker.lockTtlSec` | `300` | Collection lock TTL (seconds) |
+| `worker.lockRenewMs` | `60000` | Lock renewal interval (ms) |
+| `worker.podHeartbeatMs` | `30000` | Heartbeat interval (ms) |
+| `worker.podDeadAfterSec` | `180` | Dead pod threshold (seconds) |
+| `worker.rangeParallelThreshold` | `500000` | Doc count to trigger range splitting |
+| `worker.rangeCount` | `100` | Time ranges per collection |
+| `worker.rangeLeaseTtlSec` | `300` | Range lease TTL (seconds) |
+
+For a comprehensive guide on multi-pod operations, scaling, and troubleshooting, see [docs/migration-guide.md](../../docs/migration-guide.md#multi-pod-mode).
+
+---
+
 ## Schema Guardrails
 
 The chart includes `values.schema.json` that enforces:
 
-- **`deployment.replicas`** must be `1` — this is a singleton workload
-- **`deployment.strategy.type`** must be `Recreate` — prevents concurrent pods during rollout
+- **`deployment.replicas`** must be `>= 1` — set to 1 for single-pod, or higher for multi-pod
+- **`deployment.strategy.type`** must be `Recreate` or `RollingUpdate` — use `RollingUpdate` for multi-pod
 - **`secrets.mode`** must be one of: `values`, `existingSecret`, `externalSecret`
-
-Attempting to set `replicas: 2` or `strategy.type: RollingUpdate` will fail at `helm install/upgrade/template` time.
+- **Worker settings** have minimum value constraints (e.g., `lockTtlSec >= 30`, `podHeartbeatMs >= 1000`)
 
 ---
 
@@ -366,6 +405,13 @@ Attempting to set `replicas: 2` or `strategy.type: RollingUpdate` will fail at `
 
 See the `examples/` directory:
 
+- **`values-development.yaml`** — Minimal development setup with bundled backing services
 - **`values-production.yaml`** — Production setup with `existingSecret` mode
-- **`values-development.yaml`** — Development setup with bundled backing services
+- **`values-multipod.yaml`** — Multi-pod setup with 3 replicas, RollingUpdate, PDB
 - **`argocd-application.yaml`** — ArgoCD Application manifest with `CreateNamespace=true`
+
+---
+
+## Full Documentation
+
+For architecture details, configuration reference, operations playbook, API reference, and troubleshooting, see [docs/migration-guide.md](../../docs/migration-guide.md).

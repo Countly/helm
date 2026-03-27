@@ -260,6 +260,9 @@ serviceMonitor:
 redis:
   enabled: true
   architecture: standalone
+  # -- Explicit sync-wave ensures Redis is healthy before the migration Deployment (wave 10)
+  commonAnnotations:
+    argocd.argoproj.io/sync-wave: "0"
   auth:
     enabled: false
   master:
