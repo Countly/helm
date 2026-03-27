@@ -17,3 +17,26 @@ helmfile.lock
 
 # OS junk
 .DS_Store
+CLAUDE.md
+countly-tls.env
+devops-cluster-deploy-key.json
+helmfile.yaml.gotmpl
+New Architecture spec calculation (1).xlsx
+.github/copilot-instructions.md
+environments/stats-clone/clickhouse.yaml
+environments/stats-clone/countly.yaml
+environments/stats-clone/external-secrets.example.yaml
+environments/stats-clone/global.yaml
+environments/stats-clone/kafka.yaml
+environments/stats-clone/mongodb.yaml
+environments/stats-clone/observability.yaml
+environments/stats-clone/README.md
+environments/stats-clone/secrets.example.yaml
+environments/stats-clone/secrets.sops.example.yaml
+environments/stats-countly/clickhouse.yaml
+environments/stats-countly/countly.yaml
+environments/stats-countly/global.yaml
+environments/stats-countly/kafka.yaml
+environments/stats-countly/mongodb.yaml
+environments/stats-countly/observability.yaml
+helmfile.yaml.gotmpl
