@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mongodb-fix-disk-permissions
+  namespace: mongodb
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsUser: 0
+      containers:
+        - name: fix
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              echo "Fixing ownership..."
+              chown -R 2000:2000 /data
+              echo "Removing stale lock files..."
+              rm -f /data/mongo.lock /data/WiredTiger.lock
+              echo "Done."
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: data-volume-countly-mongodb-0
