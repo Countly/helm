@@ -101,7 +101,7 @@ Bundled mode: construct from sibling countly-mongodb chart DNS.
 {{- $host := $bs.host | default (printf "%s-mongodb-svc.%s.svc.cluster.local" $prefix ($bs.namespace | default "mongodb")) -}}
 {{- $port := $bs.port | default "27017" -}}
 {{- $user := $bs.username | default "app" -}}
-{{- $pass := required "backingServices.mongodb.password is required when mode=bundled" $bs.password -}}
+{{- $pass := $bs.password | default "" -}}
 {{- $db := $bs.database | default "admin" -}}
 {{- $rs := $bs.replicaSet | default (printf "%s-mongodb" $prefix) -}}
 mongodb://{{ $user }}:{{ $pass }}@{{ $host }}:{{ $port }}/{{ $db }}?replicaSet={{ $rs }}&ssl=false
