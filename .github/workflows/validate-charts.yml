@@ -110,8 +110,8 @@ jobs:
                 ;;
               countly-migration)
                 helm template test-release "${chart}" \
-                  --set backingServices.mongodb.uri=mongodb://test \
-                  --set backingServices.clickhouse.url=http://test \
+                  --set backingServices.mongodb.password=test \
+                  --set backingServices.clickhouse.password=test \
                   > /dev/null || exit_code=1
                 ;;
               *)
