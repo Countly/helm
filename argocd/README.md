@@ -43,7 +43,7 @@ kubectl apply -f argocd/root-application.yaml -n argocd
 
 ## Generated Application Order
 
-- Wave `-30` to `-26`: cert-manager, MongoDB CRDs/operator, ClickHouse operator, Strimzi operator
+- Wave `-30` to `-25`: cert-manager, MongoDB CRDs/operator, ClickHouse operator, Strimzi operator, NGINX ingress
 - Wave `0`: MongoDB, ClickHouse
 - Wave `5`: Kafka
 - Wave `10`: Countly
