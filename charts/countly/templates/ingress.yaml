@@ -14,6 +14,8 @@ metadata:
     {{- end }}
     {{- if eq $tlsMode "letsencrypt" }}
     cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | default "letsencrypt-prod" | quote }}
+    acme.cert-manager.io/http01-ingress-class: {{ .Values.ingress.className | default "nginx" | quote }}
+    acme.cert-manager.io/http01-edit-in-place: "true"
     {{- end }}
     {{- if eq $tlsMode "selfSigned" }}
     cert-manager.io/cluster-issuer: {{ (.Values.ingress.tls.selfSigned).issuerName | default (printf "%s-ca-issuer" (include "countly.fullname" .)) | quote }}
