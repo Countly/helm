@@ -21,6 +21,8 @@ spec:
     - server: https://34.135.156.216
       namespace: countly-migration
   clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
     - group: storage.k8s.io
       kind: StorageClass
     - group: rbac.authorization.k8s.io
