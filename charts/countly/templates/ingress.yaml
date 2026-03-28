@@ -14,7 +14,6 @@ metadata:
     {{- end }}
     {{- if eq $tlsMode "letsencrypt" }}
     cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | default "letsencrypt-prod" | quote }}
-    acme.cert-manager.io/http01-ingress-class: {{ .Values.ingress.className | default "nginx" | quote }}
     acme.cert-manager.io/http01-edit-in-place: "true"
     cert-manager.io/issue-temporary-certificate: "true"
     {{- end }}
