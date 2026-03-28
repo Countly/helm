@@ -1,0 +1,7 @@
+# Kafka overrides for helm-argocd
+#
+# Runtime sizing comes from:
+# - profiles/sizing/production/kafka.yaml
+# - profiles/kafka-connect/balanced/kafka.yaml
+# - profiles/observability/full/kafka.yaml
+# - profiles/security/open/kafka.yaml

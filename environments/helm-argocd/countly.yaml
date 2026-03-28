@@ -1,0 +1,7 @@
+# Countly overrides for helm-argocd
+#
+# Most runtime sizing comes from:
+# - profiles/sizing/production/countly.yaml
+# - profiles/tls/letsencrypt/countly.yaml
+# - profiles/observability/full/countly.yaml
+# - profiles/security/open/countly.yaml

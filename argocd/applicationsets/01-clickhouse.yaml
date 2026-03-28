@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: countly-clickhouse
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - customer: helm-argocd
+            project: helm-argocd
+            server: https://34.135.156.216
+            sizing: production
+            security: open
+  template:
+    metadata:
+      name: "{{customer}}-clickhouse"
+      annotations:
+        argocd.argoproj.io/sync-wave: "0"
+    spec:
+      project: "{{project}}"
+      source:
+        repoURL: https://github.com/Countly/helm.git
+        targetRevision: deploy-test-ui
+        path: charts/countly-clickhouse
+        helm:
+          releaseName: countly-clickhouse
+          valueFiles:
+            - "../../environments/{{customer}}/global.yaml"
+            - "../../profiles/sizing/{{sizing}}/clickhouse.yaml"
+            - "../../profiles/security/{{security}}/clickhouse.yaml"
+            - "../../environments/{{customer}}/clickhouse.yaml"
+            - "../../environments/{{customer}}/secrets-clickhouse.yaml"
+          parameters:
+            - name: argocd.enabled
+              value: "true"
+      destination:
+        server: "{{server}}"
+        namespace: clickhouse
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+      ignoreDifferences:
+        - group: clickhouse.com
+          kind: ClickHouseCluster
+          jsonPointers:
+            - /status
+        - group: clickhouse.com
+          kind: KeeperCluster
+          jsonPointers:
+            - /status

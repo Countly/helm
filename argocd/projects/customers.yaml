@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: helm-argocd
+  namespace: argocd
+spec:
+  description: "Countly deployment for helm-argocd test environment"
+  sourceRepos:
+    - '*'
+  destinations:
+    - server: https://34.135.156.216
+      namespace: mongodb
+    - server: https://34.135.156.216
+      namespace: clickhouse
+    - server: https://34.135.156.216
+      namespace: kafka
+    - server: https://34.135.156.216
+      namespace: countly
+    - server: https://34.135.156.216
+      namespace: observability
+    - server: https://34.135.156.216
+      namespace: countly-migration
+  clusterResourceWhitelist:
+    - group: storage.k8s.io
+      kind: StorageClass
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: cert-manager.io
+      kind: ClusterIssuer
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'

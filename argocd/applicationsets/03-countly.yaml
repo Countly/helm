@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: countly-app
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - customer: helm-argocd
+            project: helm-argocd
+            server: https://34.135.156.216
+            sizing: production
+            security: open
+            tls: letsencrypt
+            observability: full
+  template:
+    metadata:
+      name: "{{customer}}-countly"
+      annotations:
+        argocd.argoproj.io/sync-wave: "10"
+    spec:
+      project: "{{project}}"
+      source:
+        repoURL: https://github.com/Countly/helm.git
+        targetRevision: deploy-test-ui
+        path: charts/countly
+        helm:
+          releaseName: countly
+          valueFiles:
+            - "../../environments/{{customer}}/global.yaml"
+            - "../../profiles/sizing/{{sizing}}/countly.yaml"
+            - "../../profiles/tls/{{tls}}/countly.yaml"
+            - "../../profiles/observability/{{observability}}/countly.yaml"
+            - "../../profiles/security/{{security}}/countly.yaml"
+            - "../../environments/{{customer}}/countly.yaml"
+            - "../../environments/{{customer}}/secrets-countly.yaml"
+          parameters:
+            - name: argocd.enabled
+              value: "true"
+      destination:
+        server: "{{server}}"
+        namespace: countly
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+      ignoreDifferences:
+        - group: networking.k8s.io
+          kind: Ingress
+          jsonPointers:
+            - /status

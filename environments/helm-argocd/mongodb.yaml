@@ -1,0 +1,5 @@
+# MongoDB overrides for helm-argocd
+#
+# Runtime sizing comes from:
+# - profiles/sizing/production/mongodb.yaml
+# - profiles/security/open/mongodb.yaml
