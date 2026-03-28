@@ -4,6 +4,7 @@ This folder bootstraps Countly for multiple customers using ArgoCD `ApplicationS
 
 ## What This Layout Does
 
+- `operators/` bootstraps required platform operators into the target cluster.
 - `projects/` creates one ArgoCD `AppProject` per customer.
 - `applicationsets/` generates one ArgoCD `Application` per component per customer.
 - `environments/<customer>/` stores the Helm values used by those Applications.
@@ -20,6 +21,7 @@ For the initial rollout, ArgoCD is scoped to:
 3. Update the cluster API servers in:
    - `argocd/projects/customers.yaml`
    - `argocd/applicationsets/*.yaml`
+   - `argocd/operators/*.yaml`
    - The `server:` value must match the cluster entry registered in ArgoCD.
 4. Replace the environment hostname in:
    - `environments/helm-argocd/global.yaml`
@@ -41,6 +43,7 @@ kubectl apply -f argocd/root-application.yaml -n argocd
 
 ## Generated Application Order
 
+- Wave `-30` to `-26`: cert-manager, MongoDB CRDs/operator, ClickHouse operator, Strimzi operator
 - Wave `0`: MongoDB, ClickHouse
 - Wave `5`: Kafka
 - Wave `10`: Countly

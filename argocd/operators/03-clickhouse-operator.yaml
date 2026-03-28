@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: clickhouse-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-27"
+spec:
+  project: default
+  source:
+    repoURL: ghcr.io/clickhouse
+    chart: clickhouse-operator-helm
+    targetRevision: 0.0.2
+    helm:
+      releaseName: clickhouse-operator
+      valuesObject:
+        certManager:
+          install: false
+  destination:
+    server: https://34.135.156.216
+    namespace: clickhouse-operator-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+
