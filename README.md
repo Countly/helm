@@ -172,6 +172,23 @@ Install required operators before deploying Countly. See [docs/PREREQUISITES.md]
    helmfile -e my-deployment apply
    ```
 
+### GitOps Customer Onboarding
+
+For Argo CD managed deployments, scaffold a new customer/cluster with:
+
+```bash
+./scripts/new-argocd-customer.sh <customer> <server> <hostname>
+```
+
+This creates:
+- `environments/<customer>/`
+- `argocd/customers/<customer>.yaml`
+
+Then:
+1. fill in `environments/<customer>/secrets-*.yaml`
+2. commit
+3. sync `countly-bootstrap`
+
 ### Manual Installation (without Helmfile)
 
 ```bash

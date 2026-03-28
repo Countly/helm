@@ -1,29 +1,41 @@
 apiVersion: argoproj.io/v1alpha1
-kind: Application
+kind: ApplicationSet
 metadata:
-  name: cert-manager
+  name: customer-cert-manager
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "-30"
 spec:
-  project: default
-  source:
-    repoURL: https://charts.jetstack.io
-    chart: cert-manager
-    targetRevision: v1.17.2
-    helm:
-      releaseName: cert-manager
-      parameters:
-        - name: installCRDs
-          value: "true"
-  destination:
-    server: https://34.135.156.216
-    namespace: cert-manager
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-      - ServerSideApply=true
-
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/Countly/helm.git
+        revision: deploy-test-ui
+        files:
+          - path: argocd/customers/*.yaml
+  template:
+    metadata:
+      name: "{{ .customer }}-cert-manager"
+      annotations:
+        argocd.argoproj.io/sync-wave: "-30"
+    spec:
+      project: default
+      source:
+        repoURL: https://charts.jetstack.io
+        chart: cert-manager
+        targetRevision: v1.17.2
+        helm:
+          releaseName: cert-manager
+          parameters:
+            - name: installCRDs
+              value: "true"
+      destination:
+        server: "{{ .server }}"
+        namespace: cert-manager
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

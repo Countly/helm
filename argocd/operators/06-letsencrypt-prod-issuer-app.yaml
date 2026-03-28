@@ -1,24 +1,37 @@
 apiVersion: argoproj.io/v1alpha1
-kind: Application
+kind: ApplicationSet
 metadata:
-  name: letsencrypt-prod-issuer
+  name: customer-letsencrypt-prod-issuer
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "-24"
 spec:
-  project: default
-  source:
-    repoURL: https://github.com/Countly/helm.git
-    targetRevision: deploy-test-ui
-    path: argocd/operator-manifests/letsencrypt-prod-issuer
-    directory:
-      recurse: true
-  destination:
-    server: https://34.135.156.216
-    namespace: cert-manager
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - ServerSideApply=true
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/Countly/helm.git
+        revision: deploy-test-ui
+        files:
+          - path: argocd/customers/*.yaml
+  template:
+    metadata:
+      name: "{{ .customer }}-letsencrypt-prod-issuer"
+      annotations:
+        argocd.argoproj.io/sync-wave: "-24"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/Countly/helm.git
+        targetRevision: deploy-test-ui
+        path: argocd/operator-manifests/letsencrypt-prod-issuer
+        directory:
+          recurse: true
+      destination:
+        server: "{{ .server }}"
+        namespace: cert-manager
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - ServerSideApply=true

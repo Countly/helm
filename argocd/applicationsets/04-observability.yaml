@@ -4,22 +4,22 @@ metadata:
   name: countly-observability
   namespace: argocd
 spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
   generators:
-    - list:
-        elements:
-          - customer: helm-argocd
-            project: helm-argocd
-            server: https://34.135.156.216
-            sizing: production
-            security: open
-            observability: full
+    - git:
+        repoURL: https://github.com/Countly/helm.git
+        revision: deploy-test-ui
+        files:
+          - path: argocd/customers/*.yaml
   template:
     metadata:
-      name: "{{customer}}-observability"
+      name: "{{ .customer }}-observability"
       annotations:
         argocd.argoproj.io/sync-wave: "15"
     spec:
-      project: "{{project}}"
+      project: "{{ .project }}"
       source:
         repoURL: https://github.com/Countly/helm.git
         targetRevision: deploy-test-ui
@@ -27,17 +27,17 @@ spec:
         helm:
           releaseName: countly-observability
           valueFiles:
-            - "../../environments/{{customer}}/global.yaml"
-            - "../../profiles/sizing/{{sizing}}/observability.yaml"
-            - "../../profiles/observability/{{observability}}/observability.yaml"
-            - "../../profiles/security/{{security}}/observability.yaml"
-            - "../../environments/{{customer}}/observability.yaml"
-            - "../../environments/{{customer}}/secrets-observability.yaml"
+            - "../../environments/{{ .environment }}/global.yaml"
+            - "../../profiles/sizing/{{ .sizing }}/observability.yaml"
+            - "../../profiles/observability/{{ .observability }}/observability.yaml"
+            - "../../profiles/security/{{ .security }}/observability.yaml"
+            - "../../environments/{{ .environment }}/observability.yaml"
+            - "../../environments/{{ .environment }}/secrets-observability.yaml"
           parameters:
             - name: argocd.enabled
               value: "true"
       destination:
-        server: "{{server}}"
+        server: "{{ .server }}"
         namespace: observability
       syncPolicy:
         automated:

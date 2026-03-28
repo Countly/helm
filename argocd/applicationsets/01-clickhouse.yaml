@@ -4,21 +4,22 @@ metadata:
   name: countly-clickhouse
   namespace: argocd
 spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
   generators:
-    - list:
-        elements:
-          - customer: helm-argocd
-            project: helm-argocd
-            server: https://34.135.156.216
-            sizing: production
-            security: open
+    - git:
+        repoURL: https://github.com/Countly/helm.git
+        revision: deploy-test-ui
+        files:
+          - path: argocd/customers/*.yaml
   template:
     metadata:
-      name: "{{customer}}-clickhouse"
+      name: "{{ .customer }}-clickhouse"
       annotations:
         argocd.argoproj.io/sync-wave: "0"
     spec:
-      project: "{{project}}"
+      project: "{{ .project }}"
       source:
         repoURL: https://github.com/Countly/helm.git
         targetRevision: deploy-test-ui
@@ -26,16 +27,16 @@ spec:
         helm:
           releaseName: countly-clickhouse
           valueFiles:
-            - "../../environments/{{customer}}/global.yaml"
-            - "../../profiles/sizing/{{sizing}}/clickhouse.yaml"
-            - "../../profiles/security/{{security}}/clickhouse.yaml"
-            - "../../environments/{{customer}}/clickhouse.yaml"
-            - "../../environments/{{customer}}/secrets-clickhouse.yaml"
+            - "../../environments/{{ .environment }}/global.yaml"
+            - "../../profiles/sizing/{{ .sizing }}/clickhouse.yaml"
+            - "../../profiles/security/{{ .security }}/clickhouse.yaml"
+            - "../../environments/{{ .environment }}/clickhouse.yaml"
+            - "../../environments/{{ .environment }}/secrets-clickhouse.yaml"
           parameters:
             - name: argocd.enabled
               value: "true"
       destination:
-        server: "{{server}}"
+        server: "{{ .server }}"
         namespace: clickhouse
       syncPolicy:
         automated:

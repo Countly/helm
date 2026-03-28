@@ -1,24 +1,24 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: helm-argocd
+  name: countly-customers
   namespace: argocd
 spec:
-  description: "Countly deployment for helm-argocd test environment"
+  description: "Shared AppProject for GitOps-managed Countly customer environments"
   sourceRepos:
     - '*'
   destinations:
-    - server: https://34.135.156.216
+    - server: '*'
       namespace: mongodb
-    - server: https://34.135.156.216
+    - server: '*'
       namespace: clickhouse
-    - server: https://34.135.156.216
+    - server: '*'
       namespace: kafka
-    - server: https://34.135.156.216
+    - server: '*'
       namespace: countly
-    - server: https://34.135.156.216
+    - server: '*'
       namespace: observability
-    - server: https://34.135.156.216
+    - server: '*'
       namespace: countly-migration
   clusterResourceWhitelist:
     - group: ""

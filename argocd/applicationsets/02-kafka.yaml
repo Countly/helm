@@ -4,23 +4,22 @@ metadata:
   name: countly-kafka
   namespace: argocd
 spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
   generators:
-    - list:
-        elements:
-          - customer: helm-argocd
-            project: helm-argocd
-            server: https://34.135.156.216
-            sizing: production
-            security: open
-            observability: full
-            kafkaConnect: balanced
+    - git:
+        repoURL: https://github.com/Countly/helm.git
+        revision: deploy-test-ui
+        files:
+          - path: argocd/customers/*.yaml
   template:
     metadata:
-      name: "{{customer}}-kafka"
+      name: "{{ .customer }}-kafka"
       annotations:
         argocd.argoproj.io/sync-wave: "5"
     spec:
-      project: "{{project}}"
+      project: "{{ .project }}"
       source:
         repoURL: https://github.com/Countly/helm.git
         targetRevision: deploy-test-ui
@@ -28,18 +27,18 @@ spec:
         helm:
           releaseName: countly-kafka
           valueFiles:
-            - "../../environments/{{customer}}/global.yaml"
-            - "../../profiles/sizing/{{sizing}}/kafka.yaml"
-            - "../../profiles/kafka-connect/{{kafkaConnect}}/kafka.yaml"
-            - "../../profiles/observability/{{observability}}/kafka.yaml"
-            - "../../profiles/security/{{security}}/kafka.yaml"
-            - "../../environments/{{customer}}/kafka.yaml"
-            - "../../environments/{{customer}}/secrets-kafka.yaml"
+            - "../../environments/{{ .environment }}/global.yaml"
+            - "../../profiles/sizing/{{ .sizing }}/kafka.yaml"
+            - "../../profiles/kafka-connect/{{ .kafkaConnect }}/kafka.yaml"
+            - "../../profiles/observability/{{ .observability }}/kafka.yaml"
+            - "../../profiles/security/{{ .security }}/kafka.yaml"
+            - "../../environments/{{ .environment }}/kafka.yaml"
+            - "../../environments/{{ .environment }}/secrets-kafka.yaml"
           parameters:
             - name: argocd.enabled
               value: "true"
       destination:
-        server: "{{server}}"
+        server: "{{ .server }}"
         namespace: kafka
       syncPolicy:
         automated:
