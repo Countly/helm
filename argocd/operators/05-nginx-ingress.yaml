@@ -28,3 +28,37 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+      - RespectIgnoreDifferences=true
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: apdoslogconfs.appprotectdos.f5.com
+      jsonPointers:
+        - /spec/preserveUnknownFields
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: apdospolicies.appprotectdos.f5.com
+      jsonPointers:
+        - /spec/preserveUnknownFields
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: aplogconfs.appprotect.f5.com
+      jsonPointers:
+        - /spec/preserveUnknownFields
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: appolicies.appprotect.f5.com
+      jsonPointers:
+        - /spec/preserveUnknownFields
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: apusersigs.appprotect.f5.com
+      jsonPointers:
+        - /spec/preserveUnknownFields
+    - group: ""
+      kind: Service
+      name: nginx-ingress-controller
+      namespace: ingress-nginx
+      jsonPointers:
+        - /metadata/annotations/cloud.google.com~1neg
+        - /spec/healthCheckNodePort
