@@ -11,6 +11,7 @@ spec:
     path: argocd
     directory:
       recurse: true
+      exclude: operator-manifests/**
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
