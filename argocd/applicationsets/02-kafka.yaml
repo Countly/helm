@@ -10,7 +10,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/Countly/helm.git
-        revision: deploy-test-ui
+        revision: obs-test
         files:
           - path: argocd/customers/*.yaml
   template:
@@ -22,7 +22,7 @@ spec:
       project: "{{ .project }}"
       source:
         repoURL: https://github.com/Countly/helm.git
-        targetRevision: deploy-test-ui
+        targetRevision: obs-test
         path: charts/countly-kafka
         helm:
           releaseName: countly-kafka
