@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Countly/helm.git
-    targetRevision: deploy-test-ui
+    targetRevision: obs-test
     path: argocd
     directory:
       recurse: true
