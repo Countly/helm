@@ -1,0 +1,9 @@
+customer: test
+environment: test
+project: countly-customers
+server: https://34.79.235.117
+sizing: small
+security: open
+tls: none
+observability: disabled
+kafkaConnect: balanced

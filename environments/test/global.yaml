@@ -1,0 +1,26 @@
+# =============================================================================
+# Countly Deployment — Global Configuration
+# =============================================================================
+
+global:
+  sizing: small
+  observability: disabled
+  kafkaConnect: balanced
+  tls: none
+  security: open
+
+  imageRegistry: ""
+  storageClass: ""
+  imagePullSecrets: []
+
+ingress:
+  hostname: test.local
+  className: nginx
+
+backingServices:
+  mongodb:
+    mode: bundled
+  clickhouse:
+    mode: bundled
+  kafka:
+    mode: bundled
