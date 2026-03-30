@@ -35,6 +35,10 @@ spec:
           parameters:
             - name: argocd.enabled
               value: "true"
+            - name: global.sizing
+              value: "{{ .sizing }}"
+            - name: global.security
+              value: "{{ .security }}"
       destination:
         server: "{{ .server }}"
         namespace: clickhouse
