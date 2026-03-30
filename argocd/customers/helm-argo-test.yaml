@@ -7,4 +7,5 @@ security: open
 tls: letsencrypt
 observability: disabled
 kafkaConnect: balanced
+migration: disabled
 secretBackend: direct

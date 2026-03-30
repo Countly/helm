@@ -45,6 +45,8 @@ spec:
               value: "{{ .observability }}"
             - name: global.kafkaConnect
               value: "{{ .kafkaConnect }}"
+            - name: kafkaConnect.connectors[0].enabled
+              value: '{{ if eq .migration "enabled" }}true{{ else }}false{{ end }}'
       destination:
         server: "{{ .server }}"
         namespace: kafka

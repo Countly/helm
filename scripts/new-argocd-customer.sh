@@ -22,6 +22,7 @@ Defaults:
   tls           letsencrypt
   observability full
   kafkaConnect  balanced
+  migration     disabled
 EOF
 }
 
@@ -90,6 +91,7 @@ security: open
 tls: letsencrypt
 observability: full
 kafkaConnect: balanced
+migration: disabled
 EOF
 
 cat <<EOF
