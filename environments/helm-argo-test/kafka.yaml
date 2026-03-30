@@ -1,0 +1,7 @@
+# Kafka overrides for helm-argo-test
+#
+# Runtime sizing comes from:
+# - profiles/sizing/tier1/kafka.yaml
+# - profiles/kafka-connect/balanced/kafka.yaml
+# - profiles/observability/disabled/kafka.yaml
+# - profiles/security/open/kafka.yaml

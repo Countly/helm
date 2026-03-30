@@ -1,9 +1,0 @@
-customer: helm-argocd
-environment: helm-argocd
-project: countly-customers
-server: https://34.135.156.216
-sizing: production
-security: open
-tls: letsencrypt
-observability: full
-kafkaConnect: balanced

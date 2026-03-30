@@ -1,0 +1,5 @@
+# ClickHouse overrides for helm-argo-test
+#
+# Runtime sizing comes from:
+# - profiles/sizing/tier1/clickhouse.yaml
+# - profiles/security/open/clickhouse.yaml
