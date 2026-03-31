@@ -75,8 +75,7 @@ spec:
             - /status
         - group: external-secrets.io
           kind: ExternalSecret
-          name: countly-registry
-          jsonPointers:
-            - /spec/data/0/remoteRef/conversionStrategy
-            - /spec/data/0/remoteRef/decodingStrategy
-            - /spec/data/0/remoteRef/metadataPolicy
+          jqPathExpressions:
+            - .spec.data[]?.remoteRef.conversionStrategy
+            - .spec.data[]?.remoteRef.decodingStrategy
+            - .spec.data[]?.remoteRef.metadataPolicy

@@ -20,10 +20,10 @@ This directory is a complete starting point for a new Countly deployment.
   - For GAR, set `global.imageSource`, `global.imagePullSecrets`, and optionally `global.imagePullSecretExternalSecret`
 
 3. Fill in required secrets in the chart-specific files:
-  - `countly.yaml` → `secrets.common.*` and `secrets.clickhouse.password`, `secrets.mongodb.password`
-  - `mongodb.yaml` → `users.app.password`, `users.metrics.password`
-  - `clickhouse.yaml` → `auth.defaultUserPassword.password`
-  - `kafka.yaml` → `kafkaConnect.clickhouse.password`
+  - `secrets-countly.yaml` → `secrets.common.*` and `secrets.clickhouse.password`, `secrets.mongodb.password`
+  - `secrets-mongodb.yaml` → `users.app.password`, `users.metrics.password`
+  - `secrets-clickhouse.yaml` → `auth.defaultUserPassword.password`
+  - `secrets-kafka.yaml` → `kafkaConnect.clickhouse.password`
   - `image-pull-secrets.example.yaml` → private registry pull secret manifests for `countly` and `kafka`
 
    Or use `secrets.example.yaml` as a complete reference.
@@ -48,7 +48,7 @@ See `secrets.example.yaml` for a complete list of all required secrets.
 For production, choose one of:
 - **Direct values**: Fill secrets in chart-specific YAML files (split into `secrets-countly.yaml`, `secrets-mongodb.yaml`, etc.)
 - **existingSecret**: Pre-create Kubernetes secrets and reference them
-- **externalSecret**: Use External Secrets Operator (see `external-secrets.example.yaml`)
+- **externalSecret**: Use External Secrets Operator and Secret Manager-backed remote refs in the same `secrets-*.yaml` files
 - **SOPS**: Encrypt secret files with SOPS (see `secrets.sops.example.yaml`)
 
 For private registries such as GAR, also create namespaced image pull secrets.

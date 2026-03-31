@@ -69,7 +69,41 @@
     "secrets": {
       "type": "object",
       "properties": {
-        "keep": { "type": "boolean" }
+        "keep": { "type": "boolean" },
+        "mode": {
+          "type": "string",
+          "enum": ["values", "existingSecret", "externalSecret"]
+        },
+        "externalSecret": {
+          "type": "object",
+          "properties": {
+            "refreshInterval": { "type": "string" },
+            "secretStoreRef": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "kind": { "type": "string" }
+              }
+            },
+            "remoteRefs": {
+              "type": "object",
+              "properties": {
+                "app": {
+                  "type": "object",
+                  "properties": {
+                    "password": { "type": "string" }
+                  }
+                },
+                "metrics": {
+                  "type": "object",
+                  "properties": {
+                    "password": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }

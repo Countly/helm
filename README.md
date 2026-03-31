@@ -160,6 +160,7 @@ Install required operators before deploying Countly. See [docs/PREREQUISITES.md]
    - Set `global.imagePullSecrets` when pulling from a private registry such as GAR
 
 3. **Fill in required secrets** in the chart-specific files. See `environments/reference/secrets.example.yaml` for a complete reference.
+   Keep `secrets.mode: values` for direct YAML values, switch to `secrets.mode: externalSecret` to have the charts create `ExternalSecret` resources backed by your Secret Manager store.
 
 4. **Register your environment** in `helmfile.yaml.gotmpl`:
    ```yaml
@@ -177,6 +178,7 @@ Install required operators before deploying Countly. See [docs/PREREQUISITES.md]
 For a GAR-backed production example, see [environments/example-production/global.yaml](/Users/admin/cly/helm/environments/example-production/global.yaml) and replace `countly-gar` with your Kubernetes docker-registry secret name.
 For GitOps-managed pull secrets, start from [environments/reference/image-pull-secrets.example.yaml](/Users/admin/cly/helm/environments/reference/image-pull-secrets.example.yaml) and encrypt or template it before committing.
 For Secret Manager + External Secrets Operator, set `global.imagePullSecretExternalSecret` in your environment `global.yaml` so Countly and Kafka Connect each create their own namespaced `dockerconfigjson` pull secret.
+Application secrets can use the same pattern in `secrets-countly.yaml`, `secrets-kafka.yaml`, `secrets-clickhouse.yaml`, and `secrets-mongodb.yaml` by switching `secrets.mode` to `externalSecret` and filling `secrets.externalSecret.remoteRefs`.
 
 ### GitOps Customer Onboarding
 

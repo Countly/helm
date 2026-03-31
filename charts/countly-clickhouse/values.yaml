@@ -144,3 +144,11 @@ serviceMonitor:
 
 secrets:
   keep: true
+  mode: values           # values | existingSecret | externalSecret
+  externalSecret:
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: ""
+      kind: ClusterSecretStore
+    remoteRefs:
+      defaultUserPassword: ""
