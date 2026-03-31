@@ -54,20 +54,27 @@ secrets:
       kind: ClusterSecretStore
     remoteRefs:
       common:
-        encryptionReportsKey: "countly/encryption-reports-key"
-        webSessionSecret: "countly/web-session-secret"
-        passwordSecret: "countly/password-secret"
+        encryptionReportsKey: "acme-countly-encryption-reports-key"
+        webSessionSecret: "acme-countly-web-session-secret"
+        passwordSecret: "acme-countly-password-secret"
       clickhouse:
-        url: "countly/clickhouse-url"
-        username: "countly/clickhouse-username"
-        password: "countly/clickhouse-password"
-        database: "countly/clickhouse-database"
-      kafka:
-        brokers: "countly/kafka-brokers"
-        securityProtocol: "countly/kafka-security-protocol"
+        password: "acme-countly-clickhouse-password"
       mongodb:
-        connectionString: "countly/mongodb-connection-string"
+        password: "acme-countly-mongodb-password"
 ```
+
+Recommended naming convention:
+- `<customer>-gar-dockerconfig`
+- `<customer>-countly-encryption-reports-key`
+- `<customer>-countly-web-session-secret`
+- `<customer>-countly-password-secret`
+- `<customer>-countly-clickhouse-password`
+- `<customer>-countly-mongodb-password`
+- `<customer>-kafka-connect-clickhouse-password`
+- `<customer>-clickhouse-default-user-password`
+- `<customer>-mongodb-admin-password`
+- `<customer>-mongodb-app-password`
+- `<customer>-mongodb-metrics-password`
 
 ## Required Secrets
 

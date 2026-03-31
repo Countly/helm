@@ -180,6 +180,19 @@ For GitOps-managed pull secrets, start from [environments/reference/image-pull-s
 For Secret Manager + External Secrets Operator, set `global.imagePullSecretExternalSecret` in your environment `global.yaml` so Countly and Kafka Connect each create their own namespaced `dockerconfigjson` pull secret.
 Application secrets can use the same pattern in `secrets-countly.yaml`, `secrets-kafka.yaml`, `secrets-clickhouse.yaml`, and `secrets-mongodb.yaml` by switching `secrets.mode` to `externalSecret` and filling `secrets.externalSecret.remoteRefs`.
 
+Recommended Secret Manager naming convention:
+- `<customer>-gar-dockerconfig`
+- `<customer>-countly-encryption-reports-key`
+- `<customer>-countly-web-session-secret`
+- `<customer>-countly-password-secret`
+- `<customer>-countly-clickhouse-password`
+- `<customer>-countly-mongodb-password`
+- `<customer>-kafka-connect-clickhouse-password`
+- `<customer>-clickhouse-default-user-password`
+- `<customer>-mongodb-admin-password`
+- `<customer>-mongodb-app-password`
+- `<customer>-mongodb-metrics-password`
+
 ### GitOps Customer Onboarding
 
 For Argo CD managed deployments, scaffold a new customer/cluster with:

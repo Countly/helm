@@ -11,6 +11,8 @@ The short version:
 5. Sync `countly-bootstrap`.
 6. Argo CD creates the per-customer apps automatically.
 
+For a slower, step-by-step walkthrough, see [ONBOARDING.md](/Users/admin/cly/helm/argocd/ONBOARDING.md).
+
 ## Folder Overview
 
 - `root-application.yaml`
@@ -150,6 +152,26 @@ For external secret deployments:
 - use your external secret setup instead of committing direct values
 - set `gcpServiceAccountEmail` in the customer metadata so the per-customer External Secrets operator can use Workload Identity
 - for GAR image pulls, store Docker config JSON in Google Secret Manager and point `global.imagePullSecretExternalSecret.remoteRef.key` to that secret
+- use the flat secret naming convention `<customer>-<component>-<secret>`
+
+Recommended secret names:
+
+- `<customer>-gar-dockerconfig`
+- `<customer>-countly-encryption-reports-key`
+- `<customer>-countly-web-session-secret`
+- `<customer>-countly-password-secret`
+- `<customer>-countly-clickhouse-password`
+- `<customer>-countly-mongodb-password`
+- `<customer>-kafka-connect-clickhouse-password`
+- `<customer>-clickhouse-default-user-password`
+- `<customer>-mongodb-admin-password`
+- `<customer>-mongodb-app-password`
+- `<customer>-mongodb-metrics-password`
+
+Note:
+- existing customer environments may still use older secret names
+- use the new convention for all new customers
+- migrate older customers only as a planned change
 
 ## Important Rules
 
