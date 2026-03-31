@@ -555,14 +555,14 @@ ingress:
       proxy_next_upstream_tries 3;
       proxy_temp_file_write_size 1m;
       client_body_timeout 120s;
-  hostname: countly.example.com
+  hostname: argo1.count.ly
   tls:
     # TLS mode: letsencrypt | existingSecret | selfSigned | http
     #   http:            No TLS
     #   letsencrypt:     cert-manager + Let's Encrypt (recommended for production)
     #   existingSecret:  Bring your own TLS secret
     #   selfSigned:      cert-manager self-signed CA (for development)
-    mode: http
+    mode: letsencrypt
     clusterIssuer: letsencrypt-prod       # Used with mode=letsencrypt
     secretName: ""                        # Auto-derived if empty: <fullname>-tls
     selfSigned:

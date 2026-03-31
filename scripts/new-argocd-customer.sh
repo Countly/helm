@@ -86,6 +86,7 @@ customer: ${customer}
 environment: ${customer}
 project: ${project}
 server: ${server}
+hostname: ${hostname}
 sizing: production
 security: open
 tls: letsencrypt

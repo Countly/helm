@@ -37,6 +37,10 @@ spec:
           parameters:
             - name: argocd.enabled
               value: "true"
+            - name: ingress.hostname
+              value: "{{ .hostname }}"
+            - name: ingress.tls.mode
+              value: '{{ if eq .tls "none" }}http{{ else if eq .tls "provided" }}existingSecret{{ else }}{{ .tls }}{{ end }}'
             - name: global.sizing
               value: "{{ .sizing }}"
             - name: global.security

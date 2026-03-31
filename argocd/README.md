@@ -22,8 +22,9 @@ For the initial rollout, ArgoCD is scoped to one customer metadata file:
 3. Create or update one customer metadata file in:
    - `argocd/customers/<customer>.yaml`
    - The `server:` value must match the cluster entry registered in ArgoCD.
+   - Set `hostname:` to the customer domain.
 4. Replace the environment hostname in:
-   - `environments/helm-argocd/global.yaml`
+   - `environments/<customer>/global.yaml`
 5. Populate the direct values in the customer `secrets-*.yaml` files before the first deploy.
 6. Configure ArgoCD custom health checks for MongoDB, ClickHouse, and Strimzi CRs.
 
@@ -61,3 +62,13 @@ kubectl apply -f argocd/root-application.yaml -n argocd
 Only two Git-managed inputs are required per new customer:
 - `environments/<customer>/`
 - `argocd/customers/<customer>.yaml`
+
+Customer metadata is the source of truth for:
+- `server`
+- `hostname`
+- `sizing`
+- `security`
+- `tls`
+- `observability`
+- `kafkaConnect`
+- `migration`

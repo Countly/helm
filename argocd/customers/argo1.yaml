@@ -2,6 +2,7 @@ customer: argo1
 environment: argo1
 project: countly-customers
 server: https://35.226.153.84
+hostname: argo1.count.ly
 sizing: tier1
 security: open
 tls: letsencrypt
