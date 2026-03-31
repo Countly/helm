@@ -45,7 +45,7 @@ mongodb:
 
 users:
   admin:
-    enabled: false
+    enabled: true
     name: admin
     database: admin
     roles:
