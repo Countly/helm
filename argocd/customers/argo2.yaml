@@ -1,0 +1,11 @@
+customer: argo2
+environment: argo2
+project: countly-customers
+server: https://34.60.146.65
+hostname: argo2.count.ly
+sizing: tier1
+security: open
+tls: letsencrypt
+observability: disabled
+kafkaConnect: balanced
+migration: disabled
