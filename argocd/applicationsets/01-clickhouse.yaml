@@ -65,3 +65,5 @@ spec:
           kind: KeeperCluster
           jsonPointers:
             - /status
+            - /spec/containerTemplate/resources/requests/memory
+            - /spec/containerTemplate/resources/limits/memory
