@@ -72,3 +72,6 @@ Customer metadata is the source of truth for:
 - `observability`
 - `kafkaConnect`
 - `migration`
+
+Do not set `ingress.hostname` or `ingress.tls.mode` in `environments/<customer>/countly.yaml`.
+Those are driven from the customer metadata file and passed explicitly by the Countly ApplicationSet.
