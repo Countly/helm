@@ -458,6 +458,7 @@ secrets:
         saslPassword: ""
       mongodb:
         connectionString: ""
+        password: ""
 
 # --- Network Policy ---
 

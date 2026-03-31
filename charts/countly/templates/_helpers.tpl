@@ -143,6 +143,30 @@ mongodb://{{ $user }}:{{ $pass }}@{{ $host }}:{{ $port }}/{{ $db }}?replicaSet={
 {{- end -}}
 
 {{/*
+MongoDB connection string computation using an explicit password value.
+Used by ExternalSecret templates where the password may come from the secret backend.
+*/}}
+{{- define "countly.mongodb.connectionStringWithPassword" -}}
+{{- $root := .root -}}
+{{- $pass := .password -}}
+{{- $bs := ($root.Values.backingServices).mongodb | default dict -}}
+{{- $connStr := $bs.connectionString -}}
+{{- if $connStr -}}
+{{- $connStr -}}
+{{- else -}}
+{{- if not $pass -}}
+{{- fail "MongoDB password is required. Set backingServices.mongodb.password, secrets.mongodb.password, or secrets.externalSecret.remoteRefs.mongodb.password." -}}
+{{- end -}}
+{{- $host := $bs.host | default (printf "%s-mongodb-svc.%s.svc.cluster.local" $root.Release.Name ($root.Values.mongodbNamespace | default "mongodb")) -}}
+{{- $port := $bs.port | default "27017" -}}
+{{- $user := $bs.username | default "app" -}}
+{{- $db := $bs.database | default "admin" -}}
+{{- $rs := $bs.replicaSet | default (printf "%s-mongodb" $root.Release.Name) -}}
+mongodb://{{ $user }}:{{ $pass }}@{{ $host }}:{{ $port }}/{{ $db }}?replicaSet={{ $rs }}&ssl=false
+{{- end -}}
+{{- end -}}
+
+{{/*
 Kafka Connect API URL computation.
 Reads from backingServices.kafka.connectApiUrl; falls back to in-cluster DNS.
 */}}
