@@ -1,69 +1,97 @@
-# ArgoCD Bootstrap For Customer Deployments
+# Argo CD Customer Deployment Guide
 
-This folder bootstraps Countly for multiple customers using ArgoCD `ApplicationSet`.
+This folder contains the GitOps setup used to deploy Countly to many customer clusters with Argo CD.
 
-## What This Layout Does
+The short version:
 
-- `operators/` bootstraps required platform operators into the target cluster.
-- `projects/` defines the shared ArgoCD `AppProject` used by customer apps.
-- `customers/` contains one metadata file per customer/cluster.
-- `applicationsets/` generates one ArgoCD `Application` per component per customer.
-- `environments/<customer>/` stores the Helm values used by those Applications.
-- `root-application.yaml` creates one parent ArgoCD Application that syncs this whole `argocd/` folder.
+1. Register the customer cluster in Argo CD.
+2. Create a customer scaffold with the helper script.
+3. Fill in the customer secrets and profile choices.
+4. Commit the customer files.
+5. Sync `countly-bootstrap`.
+6. Argo CD creates the per-customer apps automatically.
 
-For the initial rollout, ArgoCD is scoped to one customer metadata file:
+## Folder Overview
 
-- `argocd/customers/helm-argocd.yaml`
+- `root-application.yaml`
+  - The parent Argo CD application.
+  - Sync this when you want Argo CD to pick up Git changes in `argocd/`.
+- `projects/customers.yaml`
+  - Shared Argo CD project for customer apps.
+- `operators/`
+  - Per-customer platform apps such as cert-manager, ingress, MongoDB operator, ClickHouse operator, and Strimzi.
+- `applicationsets/`
+  - Generates one Argo CD `Application` per component per customer.
+- `customers/`
+  - One small metadata file per customer.
+- `../environments/<customer>/`
+  - Helm values and secrets for that customer.
 
-## Before You Sync
+## What Gets Created For Each Customer
 
-1. Install ArgoCD and the ApplicationSet controller.
-2. Register each target cluster in ArgoCD.
-3. Create or update one customer metadata file in:
-   - `argocd/customers/<customer>.yaml`
-   - The `server:` value must match the cluster entry registered in ArgoCD.
-   - Set `hostname:` to the customer domain.
-4. Replace the environment hostname in:
-   - `environments/<customer>/global.yaml`
-5. Populate the direct values in the customer `secrets-*.yaml` files before the first deploy.
-6. Configure ArgoCD custom health checks for MongoDB, ClickHouse, and Strimzi CRs.
+Core apps:
+- MongoDB
+- ClickHouse
+- Kafka
+- Countly
 
-## Apply Order
+Optional apps:
+- Observability
+- Migration
+
+Platform apps:
+- cert-manager
+- MongoDB CRDs/operator
+- ClickHouse operator
+- Strimzi Kafka operator
+- NGINX ingress
+- Let’s Encrypt issuer
+
+## Before You Start
+
+Make sure these are already true:
+
+1. Argo CD is installed in the tools cluster.
+2. `countly-bootstrap` exists and is healthy.
+3. The target customer cluster is registered in Argo CD.
+4. DNS for the customer hostname points to the ingress load balancer you expect to use.
+
+Helpful checks:
 
 ```bash
-kubectl apply -f argocd/projects/customers.yaml -n argocd
-kubectl apply -f argocd/applicationsets/ -n argocd
+argocd app list
+argocd cluster list
 ```
 
-Or bootstrap everything with one parent app:
+## Add A New Customer
+
+### 1. Create the customer scaffold
+
+Run:
 
 ```bash
-kubectl apply -f argocd/root-application.yaml -n argocd
+./scripts/new-argocd-customer.sh <customer> <server> <hostname>
 ```
 
-## Generated Application Order
+Example:
 
-- Wave `-30` to `-24`: per-customer cert-manager, MongoDB CRDs/operator, ClickHouse operator, Strimzi operator, NGINX ingress, Let’s Encrypt ClusterIssuer
-- Wave `0`: MongoDB, ClickHouse
-- Wave `5`: Kafka
-- Wave `10`: Countly
-- Wave `15`: Observability
+```bash
+./scripts/new-argocd-customer.sh acme https://1.2.3.4 acme.count.ly
+```
 
-## Add A New Customer Later
+This creates:
 
-1. Run:
-   ```bash
-   ./scripts/new-argocd-customer.sh <customer> <server> <hostname>
-   ```
-2. Fill in `environments/<customer>/secrets-*.yaml`.
-3. Adjust any customer-specific overrides in `environments/<customer>/*.yaml`.
-4. Commit and let ArgoCD reconcile.
-
-Only two Git-managed inputs are required per new customer:
+- `argocd/customers/<customer>.yaml`
 - `environments/<customer>/`
+
+### 2. Edit the customer metadata
+
+File:
+
 - `argocd/customers/<customer>.yaml`
 
-Customer metadata is the source of truth for:
+This file is the source of truth for:
+
 - `server`
 - `hostname`
 - `sizing`
@@ -73,5 +101,167 @@ Customer metadata is the source of truth for:
 - `kafkaConnect`
 - `migration`
 
-Do not set `ingress.hostname` or `ingress.tls.mode` in `environments/<customer>/countly.yaml`.
-Those are driven from the customer metadata file and passed explicitly by the Countly ApplicationSet.
+Typical example:
+
+```yaml
+customer: acme
+environment: acme
+project: countly-customers
+server: https://1.2.3.4
+hostname: acme.count.ly
+sizing: tier1
+security: open
+tls: letsencrypt
+observability: disabled
+kafkaConnect: balanced
+migration: disabled
+```
+
+### 3. Fill in the customer secrets
+
+Files to review:
+
+- `environments/<customer>/secrets-countly.yaml`
+- `environments/<customer>/secrets-clickhouse.yaml`
+- `environments/<customer>/secrets-kafka.yaml`
+- `environments/<customer>/secrets-mongodb.yaml`
+- `environments/<customer>/secrets-observability.yaml`
+- `environments/<customer>/secrets-migration.yaml`
+
+For direct-value deployments:
+
+- set `secrets.mode: values` where used
+- fill in the real passwords and secrets
+- keep matching passwords consistent across Countly, ClickHouse, Kafka, and MongoDB
+
+For external secret deployments:
+
+- use your external secret setup instead of committing direct values
+
+## Important Rules
+
+### Customer metadata wins
+
+The customer file in `argocd/customers/` is the source of truth for:
+
+- cluster destination
+- domain
+- sizing
+- TLS mode
+- observability mode
+- migration mode
+
+### Do not set these in `environments/<customer>/countly.yaml`
+
+Do not manually set:
+
+- `ingress.hostname`
+- `ingress.tls.mode`
+
+These are passed from customer metadata by the Countly `ApplicationSet`.
+
+### Kafka when migration is disabled
+
+If `migration: disabled`, make sure the drill ClickHouse sink connector is not enabled in:
+
+- `environments/<customer>/kafka.yaml`
+
+This avoids creating a Kafka connector that depends on migration-owned tables.
+
+## Commit And Deploy
+
+After the customer files are ready:
+
+```bash
+git add argocd/customers/<customer>.yaml environments/<customer>
+git commit -m "Add <customer> customer"
+git push origin <branch>
+```
+
+Then tell Argo CD to pick it up:
+
+```bash
+argocd app get countly-bootstrap --refresh
+argocd app sync countly-bootstrap
+kubectl get applications -n argocd | grep <customer>
+```
+
+## Expected App Order
+
+The apps are designed to settle roughly in this order:
+
+1. Platform operators and ingress
+2. MongoDB and ClickHouse
+3. Kafka
+4. Countly
+5. Observability
+6. Migration
+
+It is normal for some apps to show `Progressing` for a while during first rollout.
+
+## Quick Verification
+
+After sync, useful checks are:
+
+```bash
+kubectl get applications -n argocd | grep <customer>
+kubectl get pods -A
+kubectl get ingress -n countly
+kubectl get certificate -n countly
+curl -Ik https://<hostname>
+```
+
+## Removing A Customer
+
+1. Delete:
+   - `argocd/customers/<customer>.yaml`
+   - `environments/<customer>/`
+2. Commit and push.
+3. Sync `countly-bootstrap`.
+4. Confirm the customer apps disappear from Argo CD.
+
+## Common Problems
+
+### Countly still renders `countly.example.com`
+
+Cause:
+- stale customer env overrides, or the `countly-app` `ApplicationSet` has not refreshed yet
+
+Fix:
+- sync `countly-bootstrap`
+- make sure the generated Countly app includes `ingress.hostname` and `ingress.tls.mode`
+
+### Kafka fails because of the drill sink connector
+
+Cause:
+- migration is disabled, but the connector is still enabled
+
+Fix:
+- disable `ch-sink-drill-events` in `environments/<customer>/kafka.yaml`
+
+### Bootstrap changes are not reaching generated apps
+
+Cause:
+- `countly-bootstrap` was not refreshed or synced
+
+Fix:
+
+```bash
+argocd app get countly-bootstrap --refresh
+argocd app sync countly-bootstrap
+```
+
+## Recommended Workflow For Engineers
+
+For each new customer:
+
+1. Register the cluster in Argo CD.
+2. Run the scaffold script.
+3. Edit `argocd/customers/<customer>.yaml`.
+4. Fill in `environments/<customer>/secrets-*.yaml`.
+5. Review `environments/<customer>/kafka.yaml` if migration is disabled.
+6. Commit and push.
+7. Sync `countly-bootstrap`.
+8. Verify the generated apps, ingress, and certificate.
+
+If you follow that flow, you should not need to manually create Argo CD apps one by one.
