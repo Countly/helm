@@ -19,6 +19,17 @@ spec:
       enabled: true
     {{- end }}
   users:
+    {{- if .Values.users.admin.enabled }}
+    - name: {{ .Values.users.admin.name }}
+      db: {{ .Values.users.admin.database }}
+      passwordSecretRef:
+        name: {{ .Values.users.admin.passwordSecretName }}
+        key: {{ .Values.users.admin.passwordSecretKey }}
+      roles:
+        {{- toYaml .Values.users.admin.roles | nindent 8 }}
+      scramCredentialsSecretName: {{ .Values.users.admin.name }}-scram
+      connectionStringSecretName: {{ include "countly-mongodb.fullname" . }}-{{ .Values.users.admin.name }}-mongodb-conn
+    {{- end }}
     - name: {{ .Values.users.app.name }}
       db: {{ .Values.users.app.database }}
       passwordSecretRef:

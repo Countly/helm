@@ -44,6 +44,21 @@ mongodb:
     enabled: false
 
 users:
+  admin:
+    enabled: false
+    name: admin
+    database: admin
+    roles:
+      - name: root
+        db: admin
+      - name: userAdminAnyDatabase
+        db: admin
+      - name: dbAdminAnyDatabase
+        db: admin
+    passwordSecretName: admin-user-password
+    passwordSecretKey: password
+    password: ""
+
   app:
     name: app
     database: admin
@@ -113,6 +128,8 @@ secrets:
       name: ""
       kind: ClusterSecretStore
     remoteRefs:
+      admin:
+        password: ""
       app:
         password: ""
       metrics:
