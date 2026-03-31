@@ -94,6 +94,34 @@ backingServices:
     mode: bundled
 EOF
 
+cat > "${env_dir}/countly.yaml" <<'EOF'
+# Customer-specific Countly overrides only.
+# Leave this file minimal so sizing / TLS / observability / security profiles apply cleanly.
+EOF
+
+cat > "${env_dir}/kafka.yaml" <<'EOF'
+# Customer-specific Kafka overrides only.
+# Leave this file minimal so sizing / kafka-connect / observability / security profiles apply cleanly.
+EOF
+
+cat > "${env_dir}/clickhouse.yaml" <<'EOF'
+# Customer-specific ClickHouse overrides only.
+# Leave this file minimal so sizing / security profiles apply cleanly.
+EOF
+
+cat > "${env_dir}/mongodb.yaml" <<'EOF'
+# Customer-specific MongoDB overrides only.
+# Leave this file minimal so sizing / security profiles apply cleanly.
+EOF
+
+cat > "${env_dir}/observability.yaml" <<'EOF'
+# Customer-specific observability overrides only.
+EOF
+
+cat > "${env_dir}/migration.yaml" <<'EOF'
+# Customer-specific migration overrides only.
+EOF
+
 cat > "${customer_file}" <<EOF
 customer: ${customer}
 environment: ${customer}
