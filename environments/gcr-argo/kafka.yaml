@@ -9,12 +9,21 @@
 global:
   imageRegistry: ""
   imageSource:
-    mode: direct
+    mode: gcpArtifactRegistry
     gcpArtifactRegistry:
-      repositoryPrefix: ""
-  imagePullSecrets: []
+      repositoryPrefix: us-docker.pkg.dev/countly-01/countly-unified
+  imagePullSecretExternalSecret:
+    enabled: true
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: gcp-secrets
+      kind: ClusterSecretStore
+    remoteRef:
+      key: customers-gcr-argo-gar-dockerconfig
+  imagePullSecrets:
+    - name: countly-registry
   storageClass: ""
-  sizing: small                           # local | small | production
+  sizing: tier1                           # local | small | production
   scheduling:
     nodeSelector: {}
     tolerations: []
