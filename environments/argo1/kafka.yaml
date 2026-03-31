@@ -343,3 +343,43 @@ kafkaConnect:
   connectors:
     - name: ch-sink-drill-events
       enabled: false
+      state: running
+      class: com.clickhouse.kafka.connect.ClickHouseSinkConnector
+      tasksMax: 1
+      autoRestart:
+        enabled: true
+        maxRestarts: 10
+      config:
+        topics: drill-events
+        topic2TableMap: "drill-events=drill_events"
+        hostname: "${env:CLICKHOUSE_HOST}"
+        port: "${env:CLICKHOUSE_PORT}"
+        ssl: "${env:CLICKHOUSE_SSL}"
+        database: "${env:CLICKHOUSE_DB}"
+        username: "${env:CLICKHOUSE_USER}"
+        password: "${env:CLICKHOUSE_PASSWORD}"
+        exactlyOnce: "${env:EXACTLY_ONCE}"
+        errors.retry.timeout: "${env:ERRORS_RETRY_TIMEOUT}"
+        errors.tolerance: "${env:ERRORS_TOLERANCE}"
+        clickhouseSettings: "${env:CLICKHOUSE_SETTINGS}"
+        bypassRowBinary: "${env:BYPASS_ROW_BINARY}"
+        tableRefreshInterval: "${env:TABLE_REFRESH_INTERVAL}"
+        key.converter: "${env:KEY_CONVERTER}"
+        value.converter: "${env:VALUE_CONVERTER}"
+        value.converter.schemas.enable: "${env:VALUE_CONVERTER_SCHEMAS_ENABLE}"
+        consumer.override.fetch.min.bytes: "${env:KAFKA_CONSUMER_FETCH_MIN_BYTES}"
+        consumer.override.fetch.max.wait.ms: "${env:KAFKA_CONSUMER_FETCH_MAX_WAIT_MS}"
+        consumer.override.max.poll.records: "${env:KAFKA_CONSUMER_MAX_POLL_RECORDS}"
+        consumer.override.max.partition.fetch.bytes: "${env:KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES}"
+        consumer.override.fetch.max.bytes: "${env:KAFKA_CONSUMER_FETCH_MAX_BYTES}"
+        consumer.override.request.timeout.ms: "${env:KAFKA_CONSUMER_REQUEST_TIMEOUT_MS}"
+        consumer.override.max.poll.interval.ms: "${env:KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS}"
+        consumer.override.session.timeout.ms: "${env:KAFKA_CONSUMER_SESSION_TIMEOUT_MS}"
+        consumer.override.heartbeat.interval.ms: "${env:KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS}"
+        connection.timeout: "60"
+        socket.timeout: "30000"
+        retry.count: "3"
+        connection.pool.size: "10"
+        healthcheck.enabled: "true"
+        healthcheck.interval: "10000"
+      dlq: {}
