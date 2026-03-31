@@ -1,0 +1,345 @@
+# =============================================================================
+# Kafka Chart — Comprehensive Reference Configuration
+# =============================================================================
+# Every configurable key from charts/countly-kafka/values.yaml is listed here.
+# Override only what differs from the profile defaults in your environment.
+# =============================================================================
+
+# --- Global Settings (inherited from helmfile globals) ---
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+  sizing: small                           # local | small | production
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+createNamespace: false
+
+# --- Strimzi Operator API Version ---
+strimzi:
+  apiVersion: kafka.strimzi.io/v1
+
+# --- Kafka Version ---
+version: "4.2.0"
+
+# =============================================================================
+# Brokers
+# =============================================================================
+brokers:
+  replicas: 3
+  resources:
+    requests:
+      cpu: "1"
+      memory: "4Gi"
+    limits:
+      cpu: "1"
+      memory: "4Gi"
+  jvmOptions:
+    xms: "2g"
+    xmx: "2g"
+
+  # --- Persistence ---
+  persistence:
+    volumes:
+      - id: 0
+        size: 100Gi
+        storageClass: ""
+    deleteClaim: false                    # Delete PVC when broker is removed
+
+  # --- Broker Config ---
+  config:
+    default.replication.factor: 2
+    min.insync.replicas: 2
+    log.retention.hours: 168              # 7 days
+    log.segment.bytes: "1073741824"       # 1 GiB
+    compression.type: lz4
+    auto.create.topics.enable: false
+    offsets.topic.replication.factor: 2
+    num.partitions: 24
+    transaction.state.log.replication.factor: 2
+
+  # --- Scheduling ---
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+
+# =============================================================================
+# Controllers (KRaft)
+# =============================================================================
+controllers:
+  replicas: 3
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "2Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+
+  persistence:
+    size: 20Gi
+    storageClass: ""
+
+  # --- Scheduling ---
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+
+# =============================================================================
+# Listeners
+# =============================================================================
+listeners:
+  - name: internal
+    port: 9092
+    type: internal
+    tls: false
+
+# =============================================================================
+# Cruise Control
+# =============================================================================
+cruiseControl:
+  enabled: true
+  resources:
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  jvmOptions:
+    xms: "1g"
+    xmx: "2g"
+  autoRebalance:
+    - mode: add-brokers
+    - mode: remove-brokers
+
+# =============================================================================
+# Kafka Connect (ClickHouse Sink)
+# =============================================================================
+kafkaConnect:
+  enabled: true
+  name: connect-ch
+  image: "gcr.io/countly-dev-313620/strimzi/kafka-connect-clickhouse:4.2.0-1.3.5-strimzi-amd64"
+  replicas: 2
+  bootstrapServers: ""                    # Auto-derived from cluster if empty
+
+  resources:
+    requests:
+      cpu: "2"
+      memory: "8Gi"
+    limits:
+      cpu: "2"
+      memory: "8Gi"
+  jvmOptions:
+    xms: "5g"
+    xmx: "5g"
+
+  # --- Worker Configuration ---
+  workerConfig:
+    group.id: connect-ch
+    config.storage.topic: connect_ch_configs
+    offset.storage.topic: connect_ch_offsets
+    status.storage.topic: connect_ch_status
+    config.storage.replication.factor: 2
+    offset.storage.replication.factor: 2
+    status.storage.replication.factor: 2
+    offset.storage.partitions: 25
+    status.storage.partitions: 5
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: org.apache.kafka.connect.json.JsonConverter
+    value.converter.schemas.enable: "false"
+    connector.client.config.override.policy: All
+    config.providers: env
+    config.providers.env.class: org.apache.kafka.common.config.provider.EnvVarConfigProvider
+
+  # --- ClickHouse Connection (for the sink connector) ---
+  clickhouse:
+    existingSecret: ""
+    secretName: clickhouse-auth
+    host: ""                              # Auto-derived from clickhouseNamespace if empty
+    port: "8123"
+    ssl: "false"
+    database: "countly_drill"
+    username: "default"
+    password: ""                          # REQUIRED: must match ClickHouse default user password
+
+  # --- Environment Variables (injected into Connect pods) ---
+  env:
+    EXACTLY_ONCE: "false"
+    ERRORS_RETRY_TIMEOUT: "300"
+    ERRORS_TOLERANCE: "none"              # none | all
+    CLICKHOUSE_SETTINGS: "input_format_binary_read_json_as_string=1,allow_experimental_json_type=1,enable_json_type=1,async_insert=1,wait_for_async_insert=1,async_insert_use_adaptive_busy_timeout=1,async_insert_busy_timeout_ms=10000,async_insert_max_data_size=268435456,async_insert_max_query_number=64,min_insert_block_size_rows=250000,min_insert_block_size_bytes=268435456,max_partitions_per_insert_block=500"
+    BYPASS_ROW_BINARY: "false"
+    TABLE_REFRESH_INTERVAL: "300"         # seconds
+    KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+    VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+    VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+    KAFKA_CONSUMER_FETCH_MIN_BYTES: "33554432"         # 32 MiB
+    KAFKA_CONSUMER_FETCH_MAX_WAIT_MS: "60000"
+    KAFKA_CONSUMER_MAX_POLL_RECORDS: "250000"
+    KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES: "134217728"   # 128 MiB
+    KAFKA_CONSUMER_FETCH_MAX_BYTES: "536870912"             # 512 MiB
+    KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS: "900000"
+    KAFKA_CONSUMER_SESSION_TIMEOUT_MS: "45000"
+    KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS: "15000"
+    KAFKA_CONSUMER_REQUEST_TIMEOUT_MS: "120000"
+
+  # --- HPA ---
+  hpa:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    metrics:
+      cpu:
+        averageUtilization: 70
+      memory:
+        averageUtilization: 80
+    behavior:
+      scaleUp:
+        stabilizationWindowSeconds: 120
+        policies:
+          - type: Percent
+            value: 50
+            periodSeconds: 120
+          - type: Pods
+            value: 2
+            periodSeconds: 120
+        selectPolicy: Min
+      scaleDown:
+        stabilizationWindowSeconds: 600
+        policies:
+          - type: Percent
+            value: 25
+            periodSeconds: 300
+          - type: Pods
+            value: 1
+            periodSeconds: 300
+        selectPolicy: Min
+
+  # --- OpenTelemetry Java Agent ---
+  # Baked into the Docker image at /opt/otel/opentelemetry-javaagent.jar.
+  # When enabled, JAVA_TOOL_OPTIONS activates it for Kafka consumer/producer
+  # and outbound HTTP (ClickHouse sink) span creation.
+  otel:
+    enabled: false
+    serviceName: "kafka-connect"
+    exporterEndpoint: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4317"
+    exporterProtocol: "grpc"
+    sampler: "parentbased_traceidratio"
+    samplerArg: "1.0"
+    resourceAttributes: ""                # e.g. "deployment.environment=production,k8s.cluster.name=my-cluster"
+
+  # --- Scheduling ---
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    antiAffinity:
+      enabled: true
+      type: preferred
+      topologyKey: kubernetes.io/hostname
+      weight: 100
+
+  # --- Connectors ---
+  connectors:
+    - name: ch-sink-drill-events
+      enabled: true
+      state: running                      # running | paused | stopped
+      class: com.clickhouse.kafka.connect.ClickHouseSinkConnector
+      tasksMax: 1
+      autoRestart:
+        enabled: true
+        maxRestarts: 10
+      config:
+        topics: drill-events
+        topic2TableMap: "drill-events=drill_events"
+        hostname: "${env:CLICKHOUSE_HOST}"
+        port: "${env:CLICKHOUSE_PORT}"
+        ssl: "${env:CLICKHOUSE_SSL}"
+        database: "${env:CLICKHOUSE_DB}"
+        username: "${env:CLICKHOUSE_USER}"
+        password: "${env:CLICKHOUSE_PASSWORD}"
+        exactlyOnce: "${env:EXACTLY_ONCE}"
+        errors.retry.timeout: "${env:ERRORS_RETRY_TIMEOUT}"
+        errors.tolerance: "${env:ERRORS_TOLERANCE}"
+        clickhouseSettings: "${env:CLICKHOUSE_SETTINGS}"
+        bypassRowBinary: "${env:BYPASS_ROW_BINARY}"
+        tableRefreshInterval: "${env:TABLE_REFRESH_INTERVAL}"
+        key.converter: "${env:KEY_CONVERTER}"
+        value.converter: "${env:VALUE_CONVERTER}"
+        value.converter.schemas.enable: "${env:VALUE_CONVERTER_SCHEMAS_ENABLE}"
+        consumer.override.fetch.min.bytes: "${env:KAFKA_CONSUMER_FETCH_MIN_BYTES}"
+        consumer.override.fetch.max.wait.ms: "${env:KAFKA_CONSUMER_FETCH_MAX_WAIT_MS}"
+        consumer.override.max.poll.records: "${env:KAFKA_CONSUMER_MAX_POLL_RECORDS}"
+        consumer.override.max.partition.fetch.bytes: "${env:KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES}"
+        consumer.override.fetch.max.bytes: "${env:KAFKA_CONSUMER_FETCH_MAX_BYTES}"
+        consumer.override.request.timeout.ms: "${env:KAFKA_CONSUMER_REQUEST_TIMEOUT_MS}"
+        consumer.override.max.poll.interval.ms: "${env:KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS}"
+        consumer.override.session.timeout.ms: "${env:KAFKA_CONSUMER_SESSION_TIMEOUT_MS}"
+        consumer.override.heartbeat.interval.ms: "${env:KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS}"
+        connection.timeout: "60"
+        socket.timeout: "30000"
+        retry.count: "3"
+        connection.pool.size: "10"
+        healthcheck.enabled: "true"
+        healthcheck.interval: "10000"
+      dlq: {}                             # Dead-letter queue config (empty = disabled)
+
+# =============================================================================
+# Metrics
+# =============================================================================
+metrics:
+  enabled: true
+
+# --- Cross-Namespace Reference ---
+clickhouseNamespace: clickhouse
+
+# =============================================================================
+# Network Policy
+# =============================================================================
+networkPolicy:
+  enabled: false
+  allowedNamespaces:
+    - countly
+  allowMonitoring: false
+  monitoringNamespaceSelector:
+    kubernetes.io/metadata.name: monitoring
+  additionalIngress: []
+  # additionalIngress:
+  #   - from:
+  #       - namespaceSelector:
+  #           matchLabels:
+  #             kubernetes.io/metadata.name: my-app-namespace
+  #     ports:
+  #       - port: 9092
+  #         protocol: TCP
+
+# =============================================================================
+# Secrets
+# =============================================================================
+secrets:
+  keep: true                              # Retain secrets on helm uninstall
+# Kafka overrides for argo1
+#
+# Migration is disabled for this customer, so the drill ClickHouse sink
+# connector must stay off to avoid waiting on migration-owned tables.
+
+kafkaConnect:
+  connectors:
+    - name: ch-sink-drill-events
+      enabled: false

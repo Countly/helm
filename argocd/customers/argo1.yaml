@@ -1,0 +1,10 @@
+customer: argo1
+environment: argo1
+project: countly-customers
+server: https://35.226.153.84
+sizing: tier1
+security: open
+tls: letsencrypt
+observability: disabled
+kafkaConnect: balanced
+migration: disabled

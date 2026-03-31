@@ -1,0 +1,26 @@
+# =============================================================================
+# Countly Deployment — Global Configuration
+# =============================================================================
+
+global:
+  sizing: tier1
+  observability: disabled
+  kafkaConnect: balanced
+  tls: letsencrypt
+  security: open
+
+  imageRegistry: ""
+  storageClass: ""
+  imagePullSecrets: []
+
+ingress:
+  hostname: argo1.count.ly
+  className: nginx
+
+backingServices:
+  mongodb:
+    mode: bundled
+  clickhouse:
+    mode: bundled
+  kafka:
+    mode: bundled
