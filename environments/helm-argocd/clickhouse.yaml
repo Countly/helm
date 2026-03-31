@@ -1,5 +1,0 @@
-# ClickHouse overrides for helm-argocd
-#
-# Runtime sizing comes from:
-# - profiles/sizing/production/clickhouse.yaml
-# - profiles/security/open/clickhouse.yaml

@@ -1,3 +1,0 @@
-# Migration overrides for optional countly-migration app.
-# Enable per customer by setting `migration: enabled` in argocd/customers/<customer>.yaml
-# and then filling this file with environment-specific overrides as needed.

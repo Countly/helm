@@ -10,9 +10,6 @@ secrets-*.yaml
 
 # Exception: reference environment templates (contain no real secrets)
 !environments/reference/secrets-*.yaml
-!environments/argo1/secrets-*.yaml
-!environments/argo2/secrets-*.yaml
-!environments/argo3/secrets-*.yaml
 
 # Helmfile state
 helmfile.lock

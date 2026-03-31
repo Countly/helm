@@ -1,7 +1,0 @@
-# Countly overrides for helm-argo-test
-#
-# Most runtime sizing comes from:
-# - profiles/sizing/tier1/countly.yaml
-# - profiles/tls/letsencrypt/countly.yaml
-# - profiles/observability/disabled/countly.yaml
-# - profiles/security/open/countly.yaml
