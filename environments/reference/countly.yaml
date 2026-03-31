@@ -29,7 +29,8 @@ serviceAccount:
 # --- Image ---
 image:
   repository: gcr.io/countly-dev-313620/countly-unified
-  digest: "sha256:f81b39d4488c596f76a5c385d088a8998b7c1b20933366ad994f5315597ec48b"
+  artifactRepository: countly-unified
+  digest: "sha256:b42efb9713ee11d173fe409924fb9e2a208b5c0beafed9e42f349b996b6650a4"
   tag: "26.01"                                # Fallback when digest is empty
   pullPolicy: IfNotPresent
 

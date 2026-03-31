@@ -10,7 +10,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/Countly/helm.git
-        revision: deploy-test-ui
+        revision: gcp-artifact-rep-integration
         files:
           - path: argocd/customers/*.yaml
   template:
@@ -22,7 +22,7 @@ spec:
       project: "{{ .project }}"
       source:
         repoURL: https://github.com/Countly/helm.git
-        targetRevision: deploy-test-ui
+        targetRevision: gcp-artifact-rep-integration
         path: charts/countly
         helm:
           releaseName: countly

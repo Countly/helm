@@ -193,3 +193,13 @@ ArgoCD sync-wave annotation (only when argocd.enabled).
 argocd.argoproj.io/sync-wave: {{ .wave | quote }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Resolve the first configured imagePullSecret name.
+*/}}
+{{- define "countly.imagePullSecretName" -}}
+{{- $pullSecrets := .Values.global.imagePullSecrets | default list -}}
+{{- if gt (len $pullSecrets) 0 -}}
+{{- (index $pullSecrets 0).name -}}
+{{- end -}}
+{{- end -}}

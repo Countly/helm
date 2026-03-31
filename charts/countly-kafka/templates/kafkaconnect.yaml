@@ -20,7 +20,7 @@ spec:
         name: {{ include "countly-kafka.fullname" . }}-metrics
         key: connect-metrics-config.yml
   {{- end }}
-  image: {{ .Values.kafkaConnect.image }}
+  image: {{ include "countly-kafka.connectImage" . | quote }}
   groupId: {{ .Values.kafkaConnect.workerConfig | dig "group.id" "connect-cluster" }}
   offsetStorageTopic: {{ .Values.kafkaConnect.workerConfig | dig "offset.storage.topic" "connect-offsets" }}
   configStorageTopic: {{ .Values.kafkaConnect.workerConfig | dig "config.storage.topic" "connect-configs" }}
@@ -36,6 +36,10 @@ spec:
     {{- end }}
   template:
     pod:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- $scheduling := .Values.kafkaConnect.scheduling | default dict }}
       {{- $antiAffinity := $scheduling.antiAffinity | default dict }}
       {{- if (and (hasKey $antiAffinity "enabled") $antiAffinity.enabled) }}

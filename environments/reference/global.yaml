@@ -18,6 +18,18 @@ global:
 
   # --- Registry & Storage ---
   imageRegistry: ""               # Private registry prefix (leave empty for public images)
+  imageSource:
+    mode: direct                  # direct | gcpArtifactRegistry
+    gcpArtifactRegistry:
+      repositoryPrefix: ""        # e.g. us-central1-docker.pkg.dev/my-project/my-repo
+  imagePullSecretExternalSecret:
+    enabled: false
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: ""                    # e.g. gcp-secrets
+      kind: ClusterSecretStore
+    remoteRef:
+      key: ""                     # Secret Manager key containing the Docker config JSON
   storageClass: ""                # Default storage class for all PVCs (leave empty for cluster default)
   imagePullSecrets: []            # Docker config secrets for private registries
 

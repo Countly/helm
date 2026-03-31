@@ -23,6 +23,7 @@ Defaults:
   observability full
   kafkaConnect  balanced
   migration     disabled
+  gcpSA         set after scaffold for External Secrets Workload Identity
 EOF
 }
 
@@ -65,6 +66,18 @@ global:
   security: open
 
   imageRegistry: ""
+  imageSource:
+    mode: direct
+    gcpArtifactRegistry:
+      repositoryPrefix: ""
+  imagePullSecretExternalSecret:
+    enabled: false
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: ""
+      kind: ClusterSecretStore
+    remoteRef:
+      key: ""
   storageClass: ""
   imagePullSecrets: []
 
@@ -86,6 +99,11 @@ customer: ${customer}
 environment: ${customer}
 project: ${project}
 server: ${server}
+gcpServiceAccountEmail: change-me@your-project.iam.gserviceaccount.com
+secretManagerProjectID: change-me-secret-manager-project
+clusterProjectID: change-me-cluster-project
+clusterName: change-me-cluster-name
+clusterLocation: change-me-cluster-location
 hostname: ${hostname}
 sizing: production
 security: open
@@ -102,6 +120,7 @@ Created:
 
 Next:
   1. Fill in environments/${customer}/secrets-*.yaml
-  2. Review environments/${customer}/*.yaml for customer-specific overrides
-  3. Commit and sync countly-bootstrap
+  2. Set argocd/customers/${customer}.yaml GCP and cluster metadata for External Secrets
+  3. Review environments/${customer}/*.yaml for customer-specific overrides
+  4. Commit and sync countly-bootstrap
 EOF

@@ -10,7 +10,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/Countly/helm.git
-        revision: deploy-test-ui
+        revision: gcp-artifact-rep-integration
         files:
           - path: argocd/customers/*.yaml
   template:
@@ -29,7 +29,7 @@ spec:
             valueFiles:
               - $values/nginx-ingress-values.yaml
         - repoURL: https://github.com/Countly/helm.git
-          targetRevision: deploy-test-ui
+          targetRevision: gcp-artifact-rep-integration
           ref: values
       destination:
         server: "{{ .server }}"

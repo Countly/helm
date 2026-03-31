@@ -46,6 +46,7 @@ Platform apps:
 - Strimzi Kafka operator
 - NGINX ingress
 - Let’s Encrypt issuer
+- ClusterSecretStore for Google Secret Manager
 
 ## Before You Start
 
@@ -93,6 +94,11 @@ File:
 This file is the source of truth for:
 
 - `server`
+- `gcpServiceAccountEmail`
+- `secretManagerProjectID`
+- `clusterProjectID`
+- `clusterName`
+- `clusterLocation`
 - `hostname`
 - `sizing`
 - `security`
@@ -108,6 +114,11 @@ customer: acme
 environment: acme
 project: countly-customers
 server: https://1.2.3.4
+gcpServiceAccountEmail: eso-acme@my-project.iam.gserviceaccount.com
+secretManagerProjectID: countly-tools
+clusterProjectID: countly-dev-313620
+clusterName: acme-prod
+clusterLocation: us-central1
 hostname: acme.count.ly
 sizing: tier1
 security: open
@@ -137,6 +148,8 @@ For direct-value deployments:
 For external secret deployments:
 
 - use your external secret setup instead of committing direct values
+- set `gcpServiceAccountEmail` in the customer metadata so the per-customer External Secrets operator can use Workload Identity
+- for GAR image pulls, store Docker config JSON in Google Secret Manager and point `global.imagePullSecretExternalSecret.remoteRef.key` to that secret
 
 ## Important Rules
 

@@ -97,3 +97,26 @@ ClickHouse Connect secret name
 {{ .Values.kafkaConnect.clickhouse.secretName }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve the Kafka Connect image based on the selected source mode.
+*/}}
+{{- define "countly-kafka.connectImage" -}}
+{{- $mode := .Values.global.imageSource.mode | default "direct" -}}
+{{- if eq $mode "gcpArtifactRegistry" -}}
+{{- $prefix := required "global.imageSource.gcpArtifactRegistry.repositoryPrefix is required when global.imageSource.mode is gcpArtifactRegistry" .Values.global.imageSource.gcpArtifactRegistry.repositoryPrefix -}}
+{{- printf "%s/%s" ($prefix | trimSuffix "/") .Values.kafkaConnect.artifactImage -}}
+{{- else -}}
+{{- .Values.kafkaConnect.image -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve the first configured imagePullSecret name.
+*/}}
+{{- define "countly-kafka.imagePullSecretName" -}}
+{{- $pullSecrets := .Values.global.imagePullSecrets | default list -}}
+{{- if gt (len $pullSecrets) 0 -}}
+{{- (index $pullSecrets 0).name -}}
+{{- end -}}
+{{- end -}}

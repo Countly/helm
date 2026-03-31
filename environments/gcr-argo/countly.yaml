@@ -1,20 +1,16 @@
+# =============================================================================
+# Countly Chart — Comprehensive Reference Configuration
+# =============================================================================
+# Every configurable key from charts/countly/values.yaml is listed here.
+# Override only what differs from the profile defaults in your environment.
+# =============================================================================
+
+# --- Global Settings (inherited from helmfile globals) ---
 global:
   imageRegistry: ""
-  imageSource:
-    mode: direct
-    gcpArtifactRegistry:
-      repositoryPrefix: ""
-  imagePullSecretExternalSecret:
-    enabled: false
-    refreshInterval: "1h"
-    secretStoreRef:
-      name: ""
-      kind: ClusterSecretStore
-    remoteRef:
-      key: ""
   imagePullSecrets: []
   storageClass: ""
-  sizing: small
+  sizing: small                           # local | small | production
   scheduling:
     nodeSelector: {}
     tolerations: []
@@ -24,28 +20,28 @@ fullnameOverride: ""
 
 createNamespace: false
 
-argocd:
-  enabled: false
-
+# --- Service Account ---
 serviceAccount:
   create: true
-  name: ""
+  name: ""                                # Auto-derived from release name if empty
   annotations: {}
 
+# --- Image ---
 image:
   repository: gcr.io/countly-dev-313620/countly-unified
   artifactRepository: countly-unified
-  digest: "sha256:b42efb9713ee11d173fe409924fb9e2a208b5c0beafed9e42f349b996b6650a4"
-  tag: "26.01"
+  digest: "sha256:f81b39d4488c596f76a5c385d088a8998b7c1b20933366ad994f5315597ec48b"
+  tag: "26.01"                                # Fallback when digest is empty
   pullPolicy: IfNotPresent
 
-# Cross-namespace references
+# --- Cross-Namespace References ---
 clickhouseNamespace: clickhouse
 kafkaNamespace: kafka
 mongodbNamespace: mongodb
 
-# --- Component Definitions ---
-
+# =============================================================================
+# Component: API
+# =============================================================================
 api:
   enabled: true
   replicaCount: 1
@@ -83,12 +79,15 @@ api:
     topologySpreadConstraints: []
     antiAffinity:
       enabled: true
-      type: preferred
+      type: preferred                     # preferred | required
       topologyKey: kubernetes.io/hostname
-      weight: 100
+      weight: 100                         # 1-100, only used with type=preferred
   extraEnv: []
   extraEnvFrom: []
 
+# =============================================================================
+# Component: Frontend
+# =============================================================================
 frontend:
   enabled: true
   replicaCount: 1
@@ -131,6 +130,9 @@ frontend:
   extraEnv: []
   extraEnvFrom: []
 
+# =============================================================================
+# Component: Ingestor
+# =============================================================================
 ingestor:
   enabled: true
   replicaCount: 1
@@ -174,12 +176,15 @@ ingestor:
   extraEnv: []
   extraEnvFrom: []
 
+# =============================================================================
+# Component: Aggregator
+# =============================================================================
 aggregator:
   enabled: true
   replicaCount: 4
   command: ["npm", "run", "start:aggregator"]
-  port: 0  # No HTTP port exposed
-  healthCheck: {}
+  port: 0                                 # No HTTP port exposed
+  healthCheck: {}                         # No HTTP health check (no port)
   terminationGracePeriodSeconds: 60
   resources:
     requests:
@@ -226,6 +231,9 @@ aggregator:
   extraEnv: []
   extraEnvFrom: []
 
+# =============================================================================
+# Component: Job Server
+# =============================================================================
 jobserver:
   enabled: true
   replicaCount: 1
@@ -266,9 +274,11 @@ jobserver:
   extraEnv: []
   extraEnvFrom: []
 
-# --- Configuration ---
-
+# =============================================================================
+# Configuration (ConfigMaps)
+# =============================================================================
 config:
+  # --- Common (shared by all components) ---
   common:
     NODE_ENV: production
     COUNTLY_PLUGINS: "mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crash-analytics,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides,heatmaps,retention_segments,formulas,funnels,cohorts,ab-testing,performance-monitoring,config-transfer,data-migration,two-factor-auth,blocking,concurrent_users,revenue,activity-map,flows,surveys,event-timeline,drill,multi,active_users,ip-blocker,kafka,clickhouse"
@@ -281,33 +291,45 @@ config:
     COUNTLY_CONFIG__DATABASE_FAILONCONNECTIONERROR: "true"
     COUNTLY_CONFIG__EVENTSINK_SINKS: '["kafka"]'
     COUNTLY_CONFIG__RELOADCONFIGAFTER: "10000"
+
+  # --- API ---
   api:
     COUNTLY_CONTAINER: api
     COUNTLY_CONFIG__API_PORT: "3001"
     COUNTLY_CONFIG__API_HOST: "0.0.0.0"
     COUNTLY_CONFIG__API_MAX_SOCKETS: "1024"
-    COUNTLY_CONFIG__API_MAX_UPLOAD_FILE_SIZE: "209715200"
-    COUNTLY_CONFIG__API_TIMEOUT: "120000"
+    COUNTLY_CONFIG__API_MAX_UPLOAD_FILE_SIZE: "209715200"     # 200 MiB
+    COUNTLY_CONFIG__API_TIMEOUT: "120000"                     # ms
+
+  # --- Frontend ---
   frontend:
     COUNTLY_CONTAINER: frontend
     COUNTLY_CONFIG__WEB_PORT: "6001"
     COUNTLY_CONFIG__WEB_HOST: "0.0.0.0"
     COUNTLY_CONFIG__WEB_SECURE_COOKIES: "false"
-    COUNTLY_CONFIG__COOKIE_MAXAGE: "86400000"
+    COUNTLY_CONFIG__COOKIE_MAXAGE: "86400000"                 # 24 hours in ms
+
+  # --- Ingestor ---
   ingestor:
     COUNTLY_CONTAINER: ingestor
     COUNTLY_CONFIG__INGESTOR_PORT: "3010"
     COUNTLY_CONFIG__INGESTOR_HOST: "0.0.0.0"
+
+  # --- Aggregator ---
   aggregator:
     COUNTLY_CONTAINER: aggregator
     UV_THREADPOOL_SIZE: "6"
+
+  # --- Job Server ---
   jobserver:
     COUNTLY_CONTAINER: jobserver
     COUNTLY_CONFIG__JOBSERVER_PORT: "3020"
     COUNTLY_CONFIG__JOBSERVER_HOST: "0.0.0.0"
+
+  # --- ClickHouse Connection ---
   clickhouse:
     COUNTLY_CONFIG__CLICKHOUSE_QUERYOPTIONS_MAX_EXECUTION_TIME: "600"
-    COUNTLY_CONFIG__CLICKHOUSE_REQUEST_TIMEOUT: "1200000"
+    COUNTLY_CONFIG__CLICKHOUSE_REQUEST_TIMEOUT: "1200000"     # ms
     COUNTLY_CONFIG__CLICKHOUSE_MAX_OPEN_CONNECTIONS: "10"
     COUNTLY_CONFIG__CLICKHOUSE_APPLICATION: countly_drill
     COUNTLY_CONFIG__CLICKHOUSE_COMPRESSION_REQUEST: "false"
@@ -330,13 +352,15 @@ config:
     COUNTLY_CONFIG__CLICKHOUSE_IDENTITY_DAYSOLD: "30"
     COUNTLY_CONFIG__CLICKHOUSE_IDENTITY_LIFETIME_MIN: "60"
     COUNTLY_CONFIG__CLICKHOUSE_IDENTITY_LIFETIME_MAX: "120"
+
+  # --- Kafka Connection ---
   kafka:
     COUNTLY_CONFIG__KAFKA_ENABLED: "true"
     COUNTLY_CONFIG__KAFKA_DRILLEVENTSTOPIC: drill-events
     COUNTLY_CONFIG__KAFKA_CLUSTER_NAME: cly-kafka
     COUNTLY_CONFIG__KAFKA_PARTITIONS: "100"
     COUNTLY_CONFIG__KAFKA_REPLICATIONFACTOR: "2"
-    COUNTLY_CONFIG__KAFKA_RETENTIONMS: "604800000"
+    COUNTLY_CONFIG__KAFKA_RETENTIONMS: "604800000"            # 7 days in ms
     COUNTLY_CONFIG__KAFKA_ENABLETRANSACTIONS: "false"
     COUNTLY_CONFIG__KAFKA_TRANSACTIONTIMEOUT: "60000"
     COUNTLY_CONFIG__KAFKA_RDKAFKA_CLIENTID: countly-app
@@ -344,7 +368,7 @@ config:
     COUNTLY_CONFIG__KAFKA_RDKAFKA_CONNECTIONTIMEOUTMS: "8000"
     COUNTLY_CONFIG__KAFKA_RDKAFKA_LINGERMS: "10"
     COUNTLY_CONFIG__KAFKA_RDKAFKA_RETRIES: "5"
-    COUNTLY_CONFIG__KAFKA_RDKAFKA_ACKS: "-1"
+    COUNTLY_CONFIG__KAFKA_RDKAFKA_ACKS: "-1"                  # -1 = all ISR replicas must acknowledge
     COUNTLY_CONFIG__KAFKA_CONSUMER_FETCHMINBYTES: "1024000"
     COUNTLY_CONFIG__KAFKA_CONSUMER_FETCHMAXWAITMS: "1200"
     COUNTLY_CONFIG__KAFKA_CONSUMER_SESSIONTIMEOUTMS: "120000"
@@ -353,15 +377,17 @@ config:
     COUNTLY_CONFIG__KAFKA_CONSUMER_ENABLEAUTOCOMMIT: "false"
     COUNTLY_CONFIG__KAFKA_CONSUMER_MAXPOLLINTERVALMS: "600000"
     COUNTLY_CONFIG__KAFKA_CONNECTCONSUMERGROUPID: "connect-ch"
+
+  # --- OpenTelemetry ---
   otel:
     OTEL_ENABLED: "false"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4318"
     OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
     OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
-    OTEL_TRACES_SAMPLER_ARG: "1.0"
+    OTEL_TRACES_SAMPLER_ARG: "1.0"                            # 0.0-1.0, fraction of traces to sample
     PYROSCOPE_ENABLED: "false"
 
-# Node options per component (injected into configmap)
+# --- Node.js Options (injected into configmap per component) ---
 nodeOptions:
   api: "--max-old-space-size=3072 --max-semi-space-size=256"
   frontend: "--max-old-space-size=2048"
@@ -369,24 +395,29 @@ nodeOptions:
   aggregator: "--max-old-space-size=3072 --max-semi-space-size=128"
   jobserver: "--max-old-space-size=2048 --max-semi-space-size=256"
 
-# --- Backing Service Modes ---
-# Control whether each backing service is deployed in-cluster (bundled) or provided externally.
-# When mode=external, the corresponding chart is not deployed and connection details must be provided.
+# =============================================================================
+# Backing Service Modes
+# =============================================================================
+# When mode=external, the corresponding chart is not deployed and connection
+# details below are used instead.
 
 backingServices:
   mongodb:
-    mode: bundled       # bundled | external
-    # External-mode connection (used only when mode=external):
+    mode: bundled                         # bundled | external
     host: ""
     port: "27017"
-    connectionString: ""    # If set, used as-is (bypasses host/port/user/pass)
+    connectionString: ""                  # If set, used as-is (bypasses host/port/user/pass)
     username: "app"
     password: ""
     database: "admin"
     replicaSet: ""
     existingSecret: ""
+    # --- External MongoDB Atlas example ---
+    # mode: external
+    # connectionString: "mongodb+srv://user:pass@cluster0.example.mongodb.net/admin?retryWrites=true&w=majority"
+
   clickhouse:
-    mode: bundled       # bundled | external
+    mode: bundled                         # bundled | external
     host: ""
     port: "8123"
     tls: "false"
@@ -394,27 +425,39 @@ backingServices:
     password: ""
     database: "countly_drill"
     existingSecret: ""
+    # --- External ClickHouse Cloud example ---
+    # mode: external
+    # host: "abc123.us-east-1.aws.clickhouse.cloud"
+    # port: "8443"
+    # tls: "true"
+
   kafka:
-    mode: bundled       # bundled | external
-    brokers: ""
-    securityProtocol: "PLAINTEXT"
+    mode: bundled                         # bundled | external
+    brokers: ""                           # Comma-separated broker list
+    securityProtocol: "PLAINTEXT"         # PLAINTEXT | SSL | SASL_PLAINTEXT | SASL_SSL
     saslMechanism: ""
     saslUsername: ""
     saslPassword: ""
     existingSecret: ""
+    # --- External Confluent Cloud example ---
+    # mode: external
+    # brokers: "pkc-12345.us-east-1.aws.confluent.cloud:9092"
+    # securityProtocol: "SASL_SSL"
+    # saslMechanism: "PLAIN"
 
-# --- Secrets ---
-
+# =============================================================================
+# Secrets
+# =============================================================================
 secrets:
-  mode: values           # values | existingSecret | externalSecret
-  keep: true
-  rotationId: ""
+  mode: values                            # values | existingSecret | externalSecret
+  keep: true                              # Retain secrets on helm uninstall
+  rotationId: ""                          # Change to force secret re-creation
 
   common:
     existingSecret: ""
-    encryptionReportsKey: ""
-    webSessionSecret: ""
-    passwordSecret: ""
+    encryptionReportsKey: ""              # REQUIRED: min 8 chars
+    webSessionSecret: ""                  # REQUIRED: min 8 chars
+    passwordSecret: ""                    # REQUIRED: min 8 chars
 
   clickhouse:
     existingSecret: ""
@@ -431,8 +474,8 @@ secrets:
 
   mongodb:
     existingSecret: ""
-    key: "connectionString.standard"
-    password: ""  # REQUIRED on first install (must match users.app.password in countly-mongodb chart)
+    key: "connectionString.standard"      # Key within the secret to read
+    password: ""                          # REQUIRED on first install (must match users.app.password in countly-mongodb)
 
   # --- ExternalSecret configuration (used only when mode=externalSecret) ---
   externalSecret:
@@ -459,16 +502,26 @@ secrets:
       mongodb:
         connectionString: ""
 
-# --- Network Policy ---
-
+# =============================================================================
+# Network Policy
+# =============================================================================
 networkPolicy:
   enabled: false
   ingressNamespaceSelector:
     kubernetes.io/metadata.name: ingress-nginx
   additionalIngress: []
+  # additionalIngress:
+  #   - from:
+  #       - namespaceSelector:
+  #           matchLabels:
+  #             kubernetes.io/metadata.name: my-custom-namespace
+  #     ports:
+  #       - port: 3001
+  #         protocol: TCP
 
-# --- Ingress ---
-
+# =============================================================================
+# Ingress
+# =============================================================================
 ingress:
   enabled: true
   className: nginx
@@ -503,16 +556,16 @@ ingress:
       proxy_next_upstream_tries 3;
       proxy_temp_file_write_size 1m;
       client_body_timeout 120s;
-  hostname: countly.example.com
+  hostname: ""                         # Set via argocd/customers/<customer>.yaml
   tls:
     # TLS mode: letsencrypt | existingSecret | selfSigned | http
-    # - http:            No TLS (default)
-    # - letsencrypt:     cert-manager + Let's Encrypt (recommended for production)
-    # - existingSecret:  Bring your own TLS secret
-    # - selfSigned:      cert-manager self-signed CA (for development)
-    mode: http
-    clusterIssuer: letsencrypt-prod
-    secretName: ""                 # Auto-derived if empty: <fullname>-tls
+    #   http:            No TLS
+    #   letsencrypt:     cert-manager + Let's Encrypt (recommended for production)
+    #   existingSecret:  Bring your own TLS secret
+    #   selfSigned:      cert-manager self-signed CA (for development)
+    mode: ""                           # Set via argocd/customers/<customer>.yaml
+    clusterIssuer: letsencrypt-prod       # Used with mode=letsencrypt
+    secretName: ""                        # Auto-derived if empty: <fullname>-tls
     selfSigned:
-      issuerName: ""       # Auto-derived if empty: <fullname>-ca-issuer
-      caSecretName: ""     # Auto-derived if empty: <fullname>-ca-keypair
+      issuerName: ""                      # Auto-derived if empty: <fullname>-ca-issuer
+      caSecretName: ""                    # Auto-derived if empty: <fullname>-ca-keypair

@@ -156,6 +156,8 @@ Install required operators before deploying Countly. See [docs/PREREQUISITES.md]
    - Choose `global.observability`: `disabled`, `full`, `external-grafana`, or `external`
    - Choose `global.kafkaConnect`: `throughput`, `balanced`, or `low-latency`
    - Choose `global.security`: `open` or `hardened`
+   - Keep `global.imageSource.mode: direct` for the current direct-pull flow, or switch to `gcpArtifactRegistry` and set `global.imageSource.gcpArtifactRegistry.repositoryPrefix`
+   - Set `global.imagePullSecrets` when pulling from a private registry such as GAR
 
 3. **Fill in required secrets** in the chart-specific files. See `environments/reference/secrets.example.yaml` for a complete reference.
 
@@ -171,6 +173,10 @@ Install required operators before deploying Countly. See [docs/PREREQUISITES.md]
    ```bash
    helmfile -e my-deployment apply
    ```
+
+For a GAR-backed production example, see [environments/example-production/global.yaml](/Users/admin/cly/helm/environments/example-production/global.yaml) and replace `countly-gar` with your Kubernetes docker-registry secret name.
+For GitOps-managed pull secrets, start from [environments/reference/image-pull-secrets.example.yaml](/Users/admin/cly/helm/environments/reference/image-pull-secrets.example.yaml) and encrypt or template it before committing.
+For Secret Manager + External Secrets Operator, set `global.imagePullSecretExternalSecret` in your environment `global.yaml` so Countly and Kafka Connect each create their own namespaced `dockerconfigjson` pull secret.
 
 ### GitOps Customer Onboarding
 
