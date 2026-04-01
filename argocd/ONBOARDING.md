@@ -333,7 +333,27 @@ After customer metadata is committed, `countly-bootstrap` will create them.
 
 ### 5.2 Enable Workload Identity On The Cluster
 
-Check:
+This is the part that usually feels confusing the first time.
+
+Simple version:
+- Kubernetes pods inside the customer cluster need a safe way to prove who they are
+- Google Secret Manager only gives secrets to identities it trusts
+- Workload Identity is the bridge between those two things
+
+If this is not configured, External Secrets will not be able to read passwords from Google Secret Manager.
+
+#### 5.2.1 Check Whether Workload Identity Is Already Enabled
+
+Who runs this:
+- the person onboarding the customer cluster
+
+What this does:
+- asks GKE whether the cluster already supports Workload Identity
+
+Why this matters:
+- without this, the `external-secrets` pod cannot authenticate to Google Secret Manager
+
+Command:
 
 ```bash
 gcloud container clusters describe <cluster> \
@@ -342,13 +362,61 @@ gcloud container clusters describe <cluster> \
   --format="value(workloadIdentityConfig.workloadPool)"
 ```
 
-Expected:
+What good looks like:
 
 ```text
 <cluster-project>.svc.id.goog
 ```
 
-Then check node pool metadata mode:
+If the output is empty:
+- Workload Identity is not enabled yet
+- you must enable it before moving on
+
+#### 5.2.2 Turn Workload Identity On If It Is Missing
+
+Who runs this:
+- the cluster administrator
+
+What this does:
+- tells the cluster to trust Kubernetes service accounts as Google identities
+
+Why this matters:
+- this is what allows the `external-secrets` pod to read from Google Secret Manager without using a static key file
+
+Command:
+
+```bash
+gcloud container clusters update <cluster> \
+  --zone <zone> \
+  --project <cluster-project> \
+  --workload-pool=<cluster-project>.svc.id.goog
+```
+
+What good looks like:
+- the command succeeds
+- running the check again shows `<cluster-project>.svc.id.goog`
+
+#### 5.2.3 Check The Node Pool Metadata Mode
+
+Who runs this:
+- the cluster administrator
+
+What this does:
+- checks whether the node pool is exposing the GKE metadata server in the correct way
+
+Why this matters:
+- even if Workload Identity is enabled on the cluster, pods still need the node pool configured correctly to use it
+
+First list the node pools:
+
+```bash
+gcloud container node-pools list \
+  --cluster <cluster> \
+  --zone <zone> \
+  --project <cluster-project>
+```
+
+Then check each node pool:
 
 ```bash
 gcloud container node-pools describe <nodepool> \
@@ -358,25 +426,126 @@ gcloud container node-pools describe <nodepool> \
   --format="value(config.workloadMetadataConfig.mode)"
 ```
 
-Expected:
+What good looks like:
 
 ```text
 GKE_METADATA
 ```
 
-If these are wrong, External Secrets will fail.
+If it is not `GKE_METADATA`, update it:
+
+```bash
+gcloud container node-pools update <nodepool> \
+  --cluster <cluster> \
+  --zone <zone> \
+  --project <cluster-project> \
+  --workload-metadata=GKE_METADATA
+```
+
+#### 5.2.4 Quick Mental Model
+
+If you want a very simple way to remember this:
+
+- cluster Workload Identity:
+  - lets the cluster speak Google IAM
+- node pool metadata mode:
+  - lets the pod actually use that identity on the node
+
+You need both.
 
 ### 5.3 Bind The Kubernetes Service Account To The GCP Service Account
 
-The External Secrets service account in namespace `external-secrets` must be annotated with:
+This is the second half of the setup.
 
-```yaml
-iam.gke.io/gcp-service-account: <gcpServiceAccountEmail>
+Simple version:
+- the `external-secrets` pod runs as a Kubernetes service account
+- that Kubernetes service account must be linked to a Google service account
+- that Google service account is the one allowed to read secrets
+
+#### 5.3.1 Understand The Two Identities
+
+There are two different identities here:
+
+1. Kubernetes service account:
+   - usually `external-secrets` in namespace `external-secrets`
+   - this is the identity used by the pod inside the cluster
+
+2. Google service account:
+   - something like `northstar-eso@example-secrets-project.iam.gserviceaccount.com`
+   - this is the identity Google Secret Manager trusts
+
+Workload Identity links those two together.
+
+#### 5.3.2 Allow The Kubernetes Service Account To Act As The Google Service Account
+
+Who runs this:
+- someone with IAM permission on the Google service account project
+
+What this does:
+- tells Google IAM that the `external-secrets` Kubernetes service account is allowed to act as the chosen Google service account
+
+Why this matters:
+- without this, the pod exists, but Google still does not trust it
+
+Command:
+
+```bash
+gcloud iam service-accounts add-iam-policy-binding \
+  <gcp-service-account-email> \
+  --project=<gcp-service-account-project> \
+  --role=roles/iam.workloadIdentityUser \
+  --member="serviceAccount:<cluster-project>.svc.id.goog[external-secrets/external-secrets]"
 ```
 
-The GCP service account also needs:
-- `roles/iam.workloadIdentityUser`
-- access to the Secret Manager secrets you want to read
+What good looks like:
+- the command succeeds
+- the binding appears in the Google service account IAM policy
+
+#### 5.3.3 Allow The Google Service Account To Read Secrets
+
+Who runs this:
+- someone with IAM permission on the Secret Manager project
+
+What this does:
+- gives the Google service account permission to read secrets from the chosen Secret Manager project
+
+Why this matters:
+- the identity link can be correct, but secret reads still fail if this permission is missing
+
+Command:
+
+```bash
+gcloud projects add-iam-policy-binding <secret-manager-project> \
+  --member="serviceAccount:<gcp-service-account-email>" \
+  --role=roles/secretmanager.secretAccessor
+```
+
+What good looks like:
+- the command succeeds
+- the Google service account can read the expected secrets
+
+#### 5.3.4 Verify The Kubernetes Service Account Annotation
+
+Who runs this:
+- the platform operator after Argo has installed the External Secrets Operator
+
+What this does:
+- checks that the in-cluster Kubernetes service account is annotated with the Google service account email
+
+Why this matters:
+- this annotation is how GKE knows which Google service account the pod should use
+
+Command:
+
+```bash
+kubectl get sa -n external-secrets external-secrets -o yaml
+```
+
+What you should see:
+
+```yaml
+iam.gke.io/gcp-service-account: <gcp-service-account-email>
+```
 
 ### 5.4 Verify The ClusterSecretStore
 
