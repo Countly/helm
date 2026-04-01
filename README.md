@@ -159,7 +159,7 @@ Install required operators before deploying Countly. See [docs/PREREQUISITES.md]
    - Keep `global.imageSource.mode: direct` for the current direct-pull flow, or switch to `gcpArtifactRegistry` and set `global.imageSource.gcpArtifactRegistry.repositoryPrefix`
    - Set `global.imagePullSecrets` when pulling from a private registry such as GAR
 
-3. **Fill in required secrets** in the chart-specific files. See `environments/reference/secrets.example.yaml` for a complete reference.
+3. **Fill in required credentials** in the chart-specific files. See `environments/reference/secrets.example.yaml` for a complete reference.
    Keep `secrets.mode: values` for direct YAML values, switch to `secrets.mode: externalSecret` to have the charts create `ExternalSecret` resources backed by your Secret Manager store.
 
 4. **Register your environment** in `helmfile.yaml.gotmpl`:
@@ -178,7 +178,7 @@ Install required operators before deploying Countly. See [docs/PREREQUISITES.md]
 For a GAR-backed production example, see [environments/example-production/global.yaml](/Users/admin/cly/helm/environments/example-production/global.yaml) and replace `countly-gar` with your Kubernetes docker-registry secret name.
 For GitOps-managed pull secrets, start from [environments/reference/image-pull-secrets.example.yaml](/Users/admin/cly/helm/environments/reference/image-pull-secrets.example.yaml) and encrypt or template it before committing.
 For Secret Manager + External Secrets Operator, set `global.imagePullSecretExternalSecret` in your environment `global.yaml` so Countly and Kafka Connect each create their own namespaced `dockerconfigjson` pull secret.
-Application secrets can use the same pattern in `secrets-countly.yaml`, `secrets-kafka.yaml`, `secrets-clickhouse.yaml`, and `secrets-mongodb.yaml` by switching `secrets.mode` to `externalSecret` and filling `secrets.externalSecret.remoteRefs`.
+Application secrets can use the same pattern in `credentials-countly.yaml`, `credentials-kafka.yaml`, `credentials-clickhouse.yaml`, and `credentials-mongodb.yaml` by switching `secrets.mode` to `externalSecret` and filling `secrets.externalSecret.remoteRefs`.
 
 Recommended Secret Manager naming convention:
 - `<customer>-gar-dockerconfig`
@@ -206,7 +206,7 @@ This creates:
 - `argocd/customers/<customer>.yaml`
 
 Then:
-1. fill in `environments/<customer>/secrets-*.yaml`
+1. fill in `environments/<customer>/credentials-*.yaml`
 2. commit
 3. sync `countly-bootstrap`
 
@@ -252,14 +252,14 @@ helm install countly-mongodb ./charts/countly-mongodb -n mongodb --create-namesp
   -f environments/my-deployment/global.yaml \
   -f profiles/sizing/production/mongodb.yaml \
   -f environments/my-deployment/mongodb.yaml \
-  -f environments/my-deployment/secrets-mongodb.yaml
+  -f environments/my-deployment/credentials-mongodb.yaml
 
 helm install countly-clickhouse ./charts/countly-clickhouse -n clickhouse --create-namespace \
   --wait --timeout 10m \
   -f environments/my-deployment/global.yaml \
   -f profiles/sizing/production/clickhouse.yaml \
   -f environments/my-deployment/clickhouse.yaml \
-  -f environments/my-deployment/secrets-clickhouse.yaml
+  -f environments/my-deployment/credentials-clickhouse.yaml
 
 helm install countly-kafka ./charts/countly-kafka -n kafka --create-namespace \
   --wait --timeout 10m \
@@ -267,7 +267,7 @@ helm install countly-kafka ./charts/countly-kafka -n kafka --create-namespace \
   -f profiles/sizing/production/kafka.yaml \
   -f profiles/kafka-connect/balanced/kafka.yaml \
   -f environments/my-deployment/kafka.yaml \
-  -f environments/my-deployment/secrets-kafka.yaml
+  -f environments/my-deployment/credentials-kafka.yaml
 
 helm install countly ./charts/countly -n countly --create-namespace \
   --wait --timeout 10m \
@@ -275,7 +275,7 @@ helm install countly ./charts/countly -n countly --create-namespace \
   -f profiles/sizing/production/countly.yaml \
   -f profiles/tls/letsencrypt/countly.yaml \
   -f environments/my-deployment/countly.yaml \
-  -f environments/my-deployment/secrets-countly.yaml
+  -f environments/my-deployment/credentials-countly.yaml
 
 helm install countly-observability ./charts/countly-observability -n observability --create-namespace \
   --wait --timeout 10m \
@@ -289,7 +289,7 @@ helm dependency build ./charts/countly-migration
 helm install countly-migration ./charts/countly-migration -n countly-migration --create-namespace \
   --wait --timeout 5m \
   -f environments/my-deployment/migration.yaml \
-  -f environments/my-deployment/secrets-migration.yaml
+  -f environments/my-deployment/credentials-migration.yaml
 ```
 
 ## Configuration Model

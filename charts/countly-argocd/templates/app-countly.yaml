@@ -25,7 +25,7 @@ spec:
         - ../../profiles/observability/{{ .Values.global.observability }}/countly.yaml
         - ../../profiles/security/{{ .Values.global.security }}/countly.yaml
         - ../../environments/{{ .Values.environment }}/countly.yaml
-        - ../../environments/{{ .Values.environment }}/secrets-countly.yaml
+        - ../../environments/{{ .Values.environment }}/credentials-countly.yaml
       parameters:
         - name: argocd.enabled
           value: "true"

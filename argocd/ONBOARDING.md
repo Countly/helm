@@ -264,10 +264,10 @@ Use this when:
 What to do:
 - keep `secrets.mode: values`
 - fill the passwords directly in:
-  - `environments/<customer>/secrets-countly.yaml`
-  - `environments/<customer>/secrets-kafka.yaml`
-  - `environments/<customer>/secrets-clickhouse.yaml`
-  - `environments/<customer>/secrets-mongodb.yaml`
+  - `environments/<customer>/credentials-countly.yaml`
+  - `environments/<customer>/credentials-kafka.yaml`
+  - `environments/<customer>/credentials-clickhouse.yaml`
+  - `environments/<customer>/credentials-mongodb.yaml`
 
 ### Option B: Secret Manager
 
@@ -425,7 +425,7 @@ Create one secret at a time if you are debugging. It is easier to spot mistakes.
 ### Countly
 
 File:
-- `environments/reference/secrets-countly.yaml`
+- `environments/reference/credentials-countly.yaml`
 
 Secret Manager mode example:
 
@@ -455,7 +455,7 @@ secrets:
 ### Kafka
 
 File:
-- `environments/reference/secrets-kafka.yaml`
+- `environments/reference/credentials-kafka.yaml`
 
 ```yaml
 secrets:
@@ -472,7 +472,7 @@ secrets:
 ### ClickHouse
 
 File:
-- `environments/reference/secrets-clickhouse.yaml`
+- `environments/reference/credentials-clickhouse.yaml`
 
 ```yaml
 secrets:
@@ -488,7 +488,7 @@ secrets:
 ### MongoDB
 
 File:
-- `environments/reference/secrets-mongodb.yaml`
+- `environments/reference/credentials-mongodb.yaml`
 
 ```yaml
 secrets:
@@ -605,7 +605,7 @@ This is meant to be easy.
 
 ### To Move From Secret Manager Back To Direct Values
 
-1. Put the values back into the `secrets-*.yaml` files.
+1. Put the values back into the `credentials-*.yaml` files.
 2. Change `secrets.mode: externalSecret` to `secrets.mode: values`.
 3. Remove the `remoteRefs`.
 4. Commit and sync.
@@ -667,7 +667,7 @@ That usually means the shared templates are fine and the customer-specific input
 Check these first:
 - `argocd/customers/<customer>.yaml`
 - `environments/<customer>/global.yaml`
-- `environments/<customer>/secrets-*.yaml`
+- `environments/<customer>/credentials-*.yaml`
 - the Secret Manager secret names for that customer
 - the Argo destination server for that customer
 

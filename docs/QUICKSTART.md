@@ -67,11 +67,11 @@ Important:
 Recommended setup:
 
 ```bash
-cp environments/reference/secrets-countly.yaml environments/local/secrets-countly.yaml
-cp environments/reference/secrets-mongodb.yaml environments/local/secrets-mongodb.yaml
-cp environments/reference/secrets-clickhouse.yaml environments/local/secrets-clickhouse.yaml
-cp environments/reference/secrets-kafka.yaml environments/local/secrets-kafka.yaml
-cp environments/reference/secrets-observability.yaml environments/local/secrets-observability.yaml
+cp environments/reference/credentials-countly.yaml environments/local/credentials-countly.yaml
+cp environments/reference/credentials-mongodb.yaml environments/local/credentials-mongodb.yaml
+cp environments/reference/credentials-clickhouse.yaml environments/local/credentials-clickhouse.yaml
+cp environments/reference/credentials-kafka.yaml environments/local/credentials-kafka.yaml
+cp environments/reference/credentials-observability.yaml environments/local/credentials-observability.yaml
 ```
 
 Then fill in the required passwords.
@@ -90,7 +90,7 @@ helm install countly-mongodb ./charts/countly-mongodb \
   -f profiles/sizing/local/mongodb.yaml \
   -f profiles/security/open/mongodb.yaml \
   -f environments/local/mongodb.yaml \
-  -f environments/local/secrets-mongodb.yaml
+  -f environments/local/credentials-mongodb.yaml
 ```
 
 ### 2. ClickHouse
@@ -103,7 +103,7 @@ helm install countly-clickhouse ./charts/countly-clickhouse \
   -f profiles/sizing/local/clickhouse.yaml \
   -f profiles/security/open/clickhouse.yaml \
   -f environments/local/clickhouse.yaml \
-  -f environments/local/secrets-clickhouse.yaml
+  -f environments/local/credentials-clickhouse.yaml
 ```
 
 ### 3. Kafka
@@ -118,7 +118,7 @@ helm install countly-kafka ./charts/countly-kafka \
   -f profiles/observability/full/kafka.yaml \
   -f profiles/security/open/kafka.yaml \
   -f environments/local/kafka.yaml \
-  -f environments/local/secrets-kafka.yaml
+  -f environments/local/credentials-kafka.yaml
 ```
 
 ### 4. Countly
@@ -133,7 +133,7 @@ helm install countly ./charts/countly \
   -f profiles/observability/full/countly.yaml \
   -f profiles/security/open/countly.yaml \
   -f environments/local/countly.yaml \
-  -f environments/local/secrets-countly.yaml
+  -f environments/local/credentials-countly.yaml
 ```
 
 ### 5. Observability
@@ -147,7 +147,7 @@ helm install countly-observability ./charts/countly-observability \
   -f profiles/observability/full/observability.yaml \
   -f profiles/security/open/observability.yaml \
   -f environments/local/observability.yaml \
-  -f environments/local/secrets-observability.yaml
+  -f environments/local/credentials-observability.yaml
 ```
 
 ## Verify
@@ -197,11 +197,11 @@ environments/local/
   clickhouse.yaml           # ServiceMonitor disabled (no Prometheus Operator CRD)
   kafka.yaml                # JMX metrics disabled (KafkaNodePool CRD limitation)
   observability.yaml        # mode: full, Grafana ingress (grafana.local, selfSigned TLS)
-  secrets-countly.yaml       # Create from environments/reference/
-  secrets-mongodb.yaml       # Create from environments/reference/
-  secrets-clickhouse.yaml    # Create from environments/reference/
-  secrets-kafka.yaml         # Create from environments/reference/
-  secrets-observability.yaml # Create from environments/reference/
+  credentials-countly.yaml       # Create from environments/reference/
+  credentials-mongodb.yaml       # Create from environments/reference/
+  credentials-clickhouse.yaml    # Create from environments/reference/
+  credentials-kafka.yaml         # Create from environments/reference/
+  credentials-observability.yaml # Create from environments/reference/
 ```
 
 ## Known Issues (Local)

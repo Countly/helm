@@ -29,7 +29,7 @@ spec:
           valueFiles:
             - "../../environments/{{ .environment }}/global.yaml"
             - "../../environments/{{ .environment }}/migration.yaml"
-            - "../../environments/{{ .environment }}/secrets-migration.yaml"
+            - "../../environments/{{ .environment }}/credentials-migration.yaml"
           parameters:
             - name: argocd.enabled
               value: "true"

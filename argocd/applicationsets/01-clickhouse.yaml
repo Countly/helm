@@ -31,7 +31,7 @@ spec:
             - "../../profiles/sizing/{{ .sizing }}/clickhouse.yaml"
             - "../../profiles/security/{{ .security }}/clickhouse.yaml"
             - "../../environments/{{ .environment }}/clickhouse.yaml"
-            - "../../environments/{{ .environment }}/secrets-clickhouse.yaml"
+            - "../../environments/{{ .environment }}/credentials-clickhouse.yaml"
           parameters:
             - name: argocd.enabled
               value: "true"

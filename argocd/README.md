@@ -134,12 +134,12 @@ migration: disabled
 
 Files to review:
 
-- `environments/<customer>/secrets-countly.yaml`
-- `environments/<customer>/secrets-clickhouse.yaml`
-- `environments/<customer>/secrets-kafka.yaml`
-- `environments/<customer>/secrets-mongodb.yaml`
-- `environments/<customer>/secrets-observability.yaml`
-- `environments/<customer>/secrets-migration.yaml`
+- `environments/<customer>/credentials-countly.yaml`
+- `environments/<customer>/credentials-clickhouse.yaml`
+- `environments/<customer>/credentials-kafka.yaml`
+- `environments/<customer>/credentials-mongodb.yaml`
+- `environments/<customer>/credentials-observability.yaml`
+- `environments/<customer>/credentials-migration.yaml`
 
 For direct-value deployments:
 
@@ -293,7 +293,7 @@ For each new customer:
 1. Register the cluster in Argo CD.
 2. Run the scaffold script.
 3. Edit `argocd/customers/<customer>.yaml`.
-4. Fill in `environments/<customer>/secrets-*.yaml`.
+4. Fill in `environments/<customer>/credentials-*.yaml`.
 5. Review `environments/<customer>/kafka.yaml` if migration is disabled.
 6. Commit and push.
 7. Sync `countly-bootstrap`.

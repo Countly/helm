@@ -147,7 +147,7 @@ Created:
   ${customer_file}
 
 Next:
-  1. Fill in environments/${customer}/secrets-*.yaml
+  1. Fill in environments/${customer}/credentials-*.yaml
   2. Set argocd/customers/${customer}.yaml GCP and cluster metadata for External Secrets
   3. Review environments/${customer}/*.yaml for customer-specific overrides
   4. Create Secret Manager secrets using the ${customer}-<component>-<secret> convention

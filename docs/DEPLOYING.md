@@ -44,14 +44,14 @@ Fill in the required passwords in the per-chart secret files (`secrets-<chart>.y
 
 | Secret File | Required Secrets |
 |-------------|-----------------|
-| `secrets-countly.yaml` | `secrets.common.*` (3 keys), `secrets.clickhouse.password`, `secrets.mongodb.password` |
-| `secrets-mongodb.yaml` | `users.app.password`, `users.metrics.password` |
-| `secrets-clickhouse.yaml` | `auth.defaultUserPassword.password` |
-| `secrets-kafka.yaml` | `kafkaConnect.clickhouse.password` |
+| `credentials-countly.yaml` | `secrets.common.*` (3 keys), `secrets.clickhouse.password`, `secrets.mongodb.password` |
+| `credentials-mongodb.yaml` | `users.app.password`, `users.metrics.password` |
+| `credentials-clickhouse.yaml` | `auth.defaultUserPassword.password` |
+| `credentials-kafka.yaml` | `kafkaConnect.clickhouse.password` |
 
 See `environments/reference/secrets.example.yaml` for a complete reference.
 
-**Important:** The ClickHouse password must match across `secrets-countly.yaml`, `secrets-clickhouse.yaml`, and `secrets-kafka.yaml`. The MongoDB password must match across `secrets-countly.yaml` and `secrets-mongodb.yaml`.
+**Important:** The ClickHouse password must match across `credentials-countly.yaml`, `credentials-clickhouse.yaml`, and `credentials-kafka.yaml`. The MongoDB password must match across `credentials-countly.yaml` and `credentials-mongodb.yaml`.
 
 For production secret management options, see [SECRET-MANAGEMENT.md](SECRET-MANAGEMENT.md).
 

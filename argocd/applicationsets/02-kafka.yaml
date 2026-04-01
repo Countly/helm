@@ -33,7 +33,7 @@ spec:
             - "../../profiles/observability/{{ .observability }}/kafka.yaml"
             - "../../profiles/security/{{ .security }}/kafka.yaml"
             - "../../environments/{{ .environment }}/kafka.yaml"
-            - "../../environments/{{ .environment }}/secrets-kafka.yaml"
+            - "../../environments/{{ .environment }}/credentials-kafka.yaml"
           parameters:
             - name: argocd.enabled
               value: "true"

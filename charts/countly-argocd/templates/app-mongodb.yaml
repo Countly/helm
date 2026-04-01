@@ -23,7 +23,7 @@ spec:
         - ../../profiles/sizing/{{ .Values.global.sizing }}/mongodb.yaml
         - ../../profiles/security/{{ .Values.global.security }}/mongodb.yaml
         - ../../environments/{{ .Values.environment }}/mongodb.yaml
-        - ../../environments/{{ .Values.environment }}/secrets-mongodb.yaml
+        - ../../environments/{{ .Values.environment }}/credentials-mongodb.yaml
       parameters:
         - name: argocd.enabled
           value: "true"

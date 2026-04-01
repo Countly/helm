@@ -46,7 +46,7 @@ This directory is a complete starting point for a new Countly deployment.
 See `secrets.example.yaml` for a complete list of all required secrets.
 
 For production, choose one of:
-- **Direct values**: Fill secrets in chart-specific YAML files (split into `secrets-countly.yaml`, `secrets-mongodb.yaml`, etc.)
+- **Direct values**: Fill credentials in chart-specific YAML files (split into `credentials-countly.yaml`, `credentials-mongodb.yaml`, etc.)
 - **existingSecret**: Pre-create Kubernetes secrets and reference them
 - **externalSecret**: Use External Secrets Operator (see `external-secrets.example.yaml`)
 - **SOPS**: Encrypt secret files with SOPS (see `secrets.sops.example.yaml`)
@@ -65,11 +65,11 @@ If you use External Secrets Operator with Google Secret Manager, point `global.i
 | `clickhouse.yaml` | ClickHouse chart values (topology, auth, keeper) |
 | `kafka.yaml` | Kafka chart values (brokers, controllers, connect, connectors) |
 | `observability.yaml` | Observability chart values (signals, backends, Grafana, Alloy) |
-| `secrets-countly.yaml` | Countly secrets (encryption keys, DB passwords) |
-| `secrets-mongodb.yaml` | MongoDB user passwords |
-| `secrets-clickhouse.yaml` | ClickHouse auth password |
-| `secrets-kafka.yaml` | Kafka Connect ClickHouse password |
-| `secrets-observability.yaml` | Observability secrets (external backend creds if needed) |
+| `credentials-countly.yaml` | Countly secrets (encryption keys, DB passwords) |
+| `credentials-mongodb.yaml` | MongoDB user passwords |
+| `credentials-clickhouse.yaml` | ClickHouse auth password |
+| `credentials-kafka.yaml` | Kafka Connect ClickHouse password |
+| `credentials-observability.yaml` | Observability secrets (external backend creds if needed) |
 | `secrets.example.yaml` | Combined secrets reference (all charts in one file) |
 | `secrets.sops.example.yaml` | SOPS encryption guide |
 | `external-secrets.example.yaml` | External Secrets Operator guide |

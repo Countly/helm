@@ -24,7 +24,7 @@ spec:
         - ../../profiles/observability/{{ .Values.global.observability }}/observability.yaml
         - ../../profiles/security/{{ .Values.global.security }}/observability.yaml
         - ../../environments/{{ .Values.environment }}/observability.yaml
-        - ../../environments/{{ .Values.environment }}/secrets-observability.yaml
+        - ../../environments/{{ .Values.environment }}/credentials-observability.yaml
       parameters:
         - name: argocd.enabled
           value: "true"

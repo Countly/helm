@@ -31,7 +31,7 @@ spec:
             - "../../profiles/sizing/{{ .sizing }}/mongodb.yaml"
             - "../../profiles/security/{{ .security }}/mongodb.yaml"
             - "../../environments/{{ .environment }}/mongodb.yaml"
-            - "../../environments/{{ .environment }}/secrets-mongodb.yaml"
+            - "../../environments/{{ .environment }}/credentials-mongodb.yaml"
           parameters:
             - name: argocd.enabled
               value: "true"
