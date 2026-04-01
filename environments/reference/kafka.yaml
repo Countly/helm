@@ -138,8 +138,8 @@ cruiseControl:
 kafkaConnect:
   enabled: true
   name: connect-ch
-  image: "gcr.io/countly-dev-313620/strimzi/kafka-connect-clickhouse:4.2.0-1.3.5-strimzi"
-  artifactImage: "strimzi/kafka-connect-clickhouse:4.2.0-1.3.5-strimzi"
+  image: "countly/strimzi-kafka-connect-clickhouse:kafka4.2.0-ch1.3.5-strimzi0.51-otel2.12.0"
+  artifactImage: "strimzi-kafka-connect-clickhouse:kafka4.2.0-ch1.3.5-strimzi0.51-otel2.12.0"
   replicas: 2
   bootstrapServers: ""                    # Auto-derived from cluster if empty
 

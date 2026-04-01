@@ -217,7 +217,7 @@ This table shows which images are used by the platform, where they are pulled fr
 | Component | Image / Pattern | Source Registry | Ownership | Private/GAR Ready |
 |-------|-------|-------|-------|-------|
 | Countly app pods (`api`, `frontend`, `ingestor`, `aggregator`, `jobserver`) | `gcr.io/countly-dev-313620/countly-unified:26.01` or `<repositoryPrefix>/countly-unified` | `gcr.io` or `us-docker.pkg.dev` | Countly-provided | Yes |
-| Kafka Connect ClickHouse | `gcr.io/countly-dev-313620/strimzi/kafka-connect-clickhouse:4.2.0-1.3.5-strimzi` or `<repositoryPrefix>/strimzi/kafka-connect-clickhouse:4.2.0-1.3.5-strimzi` | `gcr.io` or `us-docker.pkg.dev` | Countly-provided custom image | Yes |
+| Kafka Connect ClickHouse | `countly/strimzi-kafka-connect-clickhouse:kafka4.2.0-ch1.3.5-strimzi0.51-otel2.12.0` or `<repositoryPrefix>/strimzi-kafka-connect-clickhouse:kafka4.2.0-ch1.3.5-strimzi0.51-otel2.12.0` | Docker Hub or `us-docker.pkg.dev` | Countly-provided custom image | Yes |
 | ClickHouse server | `clickhouse/clickhouse-server:26.2` | Docker Hub style namespace | Official provider image | No, not via current GAR toggle |
 | ClickHouse keeper | `clickhouse/clickhouse-keeper:26.2` | Docker Hub style namespace | Official provider image | No, not via current GAR toggle |
 | MongoDB database | chosen by MongoDB Kubernetes Operator from `version: 8.2.5` | operator-resolved upstream image | Official provider image | No, not via current chart values |

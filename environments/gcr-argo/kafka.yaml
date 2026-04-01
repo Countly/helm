@@ -3,20 +3,7 @@
 
 global:
   imageSource:
-    mode: gcpArtifactRegistry
-    gcpArtifactRegistry:
-      repositoryPrefix: us-docker.pkg.dev/countly-01/countly-unified
+    mode: direct
   imagePullSecretExternalSecret:
-    enabled: true
-    refreshInterval: "1h"
-    secretStoreRef:
-      name: gcp-secrets
-      kind: ClusterSecretStore
-    remoteRef:
-      key: customers-gcr-argo-gar-dockerconfig
-  imagePullSecrets:
-    - name: countly-registry
-
-kafkaConnect:
-  image: "gcr.io/countly-dev-313620/strimzi/kafka-connect-clickhouse:4.2.0-1.3.5-strimzi"
-  artifactImage: "strimzi/kafka-connect-clickhouse:4.2.0-1.3.5-strimzi"
+    enabled: false
+  imagePullSecrets: []
