@@ -1,7 +1,7 @@
 customer: gcr-argo
 environment: gcr-argo
 project: countly-customers
-server: https://34.123.21.39
+server: https://34.16.108.212
 gcpServiceAccountEmail: gcr-argo@countly-01.iam.gserviceaccount.com
 secretManagerProjectID: countly-tools
 clusterProjectID: countly-dev-313620
