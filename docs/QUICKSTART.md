@@ -60,6 +60,22 @@ environments/local/<chart>.yaml                   # Environment choices (ingress
 environments/local/secrets-<chart>.yaml           # Credentials (gitignored)
 ```
 
+Important:
+- the repo does not ship real local secret files
+- create them before installing by copying from `environments/reference/`
+
+Recommended setup:
+
+```bash
+cp environments/reference/secrets-countly.yaml environments/local/secrets-countly.yaml
+cp environments/reference/secrets-mongodb.yaml environments/local/secrets-mongodb.yaml
+cp environments/reference/secrets-clickhouse.yaml environments/local/secrets-clickhouse.yaml
+cp environments/reference/secrets-kafka.yaml environments/local/secrets-kafka.yaml
+cp environments/reference/secrets-observability.yaml environments/local/secrets-observability.yaml
+```
+
+Then fill in the required passwords.
+
 ## Install Charts
 
 Run from the `helm/` directory. Order matters — each chart must complete before the next starts.
@@ -72,6 +88,7 @@ helm install countly-mongodb ./charts/countly-mongodb \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
   -f profiles/sizing/local/mongodb.yaml \
+  -f profiles/security/open/mongodb.yaml \
   -f environments/local/mongodb.yaml \
   -f environments/local/secrets-mongodb.yaml
 ```
@@ -84,6 +101,7 @@ helm install countly-clickhouse ./charts/countly-clickhouse \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
   -f profiles/sizing/local/clickhouse.yaml \
+  -f profiles/security/open/clickhouse.yaml \
   -f environments/local/clickhouse.yaml \
   -f environments/local/secrets-clickhouse.yaml
 ```
@@ -96,6 +114,9 @@ helm install countly-kafka ./charts/countly-kafka \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
   -f profiles/sizing/local/kafka.yaml \
+  -f profiles/kafka-connect/balanced/kafka.yaml \
+  -f profiles/observability/full/kafka.yaml \
+  -f profiles/security/open/kafka.yaml \
   -f environments/local/kafka.yaml \
   -f environments/local/secrets-kafka.yaml
 ```
@@ -108,6 +129,9 @@ helm install countly ./charts/countly \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
   -f profiles/sizing/local/countly.yaml \
+  -f profiles/tls/selfSigned/countly.yaml \
+  -f profiles/observability/full/countly.yaml \
+  -f profiles/security/open/countly.yaml \
   -f environments/local/countly.yaml \
   -f environments/local/secrets-countly.yaml
 ```
@@ -120,6 +144,8 @@ helm install countly-observability ./charts/countly-observability \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
   -f profiles/sizing/local/observability.yaml \
+  -f profiles/observability/full/observability.yaml \
+  -f profiles/security/open/observability.yaml \
   -f environments/local/observability.yaml \
   -f environments/local/secrets-observability.yaml
 ```
@@ -140,6 +166,12 @@ Grafana: https://grafana.local
 ## Upgrade
 
 Replace `helm install` with `helm upgrade` (same flags, omit `--create-namespace`).
+
+If you install the optional migration chart directly, first run:
+
+```bash
+helm dependency build ./charts/countly-migration
+```
 
 ## Uninstall
 
@@ -165,11 +197,11 @@ environments/local/
   clickhouse.yaml           # ServiceMonitor disabled (no Prometheus Operator CRD)
   kafka.yaml                # JMX metrics disabled (KafkaNodePool CRD limitation)
   observability.yaml        # mode: full, Grafana ingress (grafana.local, selfSigned TLS)
-  secrets-countly.yaml      # App secrets (encryption key, session, password)
-  secrets-mongodb.yaml      # MongoDB user passwords
-  secrets-clickhouse.yaml   # ClickHouse default password
-  secrets-kafka.yaml        # Kafka Connect ClickHouse password
-  secrets-observability.yaml # Empty stub (no secrets needed)
+  secrets-countly.yaml       # Create from environments/reference/
+  secrets-mongodb.yaml       # Create from environments/reference/
+  secrets-clickhouse.yaml    # Create from environments/reference/
+  secrets-kafka.yaml         # Create from environments/reference/
+  secrets-observability.yaml # Create from environments/reference/
 ```
 
 ## Known Issues (Local)

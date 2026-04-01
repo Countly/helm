@@ -38,7 +38,9 @@ See [DEPLOYMENT-MODES.md](DEPLOYMENT-MODES.md) for all mode options.
 
 ## Step 3: Configure Secrets
 
-Fill in the required passwords in per-chart secret files (`secrets-<chart>.yaml`), which are gitignored to prevent accidental credential commits. Every chart needs credentials on first install:
+Your copied environment already includes the chart-specific secret files from `environments/reference/`.
+
+Fill in the required passwords in the per-chart secret files (`secrets-<chart>.yaml`). Every chart needs credentials on first install:
 
 | Secret File | Required Secrets |
 |-------------|-----------------|
@@ -47,7 +49,7 @@ Fill in the required passwords in per-chart secret files (`secrets-<chart>.yaml`
 | `secrets-clickhouse.yaml` | `auth.defaultUserPassword.password` |
 | `secrets-kafka.yaml` | `kafkaConnect.clickhouse.password` |
 
-See `environments/reference/secrets.example.yaml` for a complete template you can copy.
+See `environments/reference/secrets.example.yaml` for a complete reference.
 
 **Important:** The ClickHouse password must match across `secrets-countly.yaml`, `secrets-clickhouse.yaml`, and `secrets-kafka.yaml`. The MongoDB password must match across `secrets-countly.yaml` and `secrets-mongodb.yaml`.
 
@@ -70,6 +72,8 @@ helmfile -e my-deployment apply
 ```
 
 This installs all charts in dependency order with a 10-minute timeout per chart.
+
+If you prefer plain Helm instead of Helmfile, use the same values layering shown in [README.md](/Users/admin/cly/helm/README.md) under manual installation.
 
 ## Step 5: Verify
 
@@ -101,6 +105,27 @@ helmfile -e my-deployment destroy
 Note: PVCs are not deleted by default. Clean up manually if needed.
 
 ## Troubleshooting
+
+### Helmfile is not installed locally
+
+If `helmfile` is not available on your machine, either:
+
+- install Helmfile and keep using this document, or
+- run plain `helm install` / `helm upgrade` commands using the same values files
+
+The charts themselves do not require Argo CD.
+
+### Migration chart fails with missing `redis` dependency
+
+The `countly-migration` chart includes a Redis dependency.
+
+Before rendering or installing it directly with Helm, run:
+
+```bash
+helm dependency build ./charts/countly-migration
+```
+
+If you are not deploying migration, you can ignore this.
 
 ### Kafka startup: UNKNOWN_TOPIC_OR_PARTITION errors
 

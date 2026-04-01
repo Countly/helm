@@ -285,6 +285,7 @@ helm install countly-observability ./charts/countly-observability -n observabili
   -f environments/my-deployment/observability.yaml
 
 # Optional: MongoDB to ClickHouse batch migration (includes bundled Redis)
+helm dependency build ./charts/countly-migration
 helm install countly-migration ./charts/countly-migration -n countly-migration --create-namespace \
   --wait --timeout 5m \
   -f environments/my-deployment/migration.yaml \
