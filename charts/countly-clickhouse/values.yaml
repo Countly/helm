@@ -18,7 +18,7 @@ argocd:
 clickhouseOperator:
   apiVersion: clickhouse.com/v1alpha1
 
-version: "26.2"
+version: "26.3"
 shards: 1
 replicas: 2
 

@@ -90,7 +90,7 @@ users:
 # =============================================================================
 exporter:
   enabled: true
-  image: percona/mongodb_exporter:0.40.0
+  image: percona/mongodb_exporter:0.47.2
   port: 9216
   resources:
     requests:

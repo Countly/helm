@@ -25,7 +25,7 @@ spec:
     spec:
       initContainers:
       - name: init-data-dir
-        image: busybox:1.35
+        image: busybox:1.37.0
         command: ['sh', '-c', 'mkdir -p /loki/chunks /loki/rules /loki/tsdb-shipper-cache /loki/wal && chown -R 10001:10001 /loki && chmod -R 755 /loki']
         volumeMounts:
         - name: data
