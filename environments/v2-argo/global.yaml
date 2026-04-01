@@ -21,7 +21,7 @@ global:
       name: gcp-secrets
       kind: ClusterSecretStore
     remoteRef:
-      key: v2-argo-gar-dockerconfig
+      key: customers-gcr-argo-gar-dockerconfig
   storageClass: ""
   imagePullSecrets:
     - name: countly-registry
