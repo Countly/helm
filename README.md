@@ -210,6 +210,40 @@ Then:
 2. commit
 3. sync `countly-bootstrap`
 
+## Image Sources
+
+This table shows which images are used by the platform, where they are pulled from, and whether they are Countly-provided or official upstream/vendor images.
+
+| Component | Image / Pattern | Source Registry | Ownership | Private/GAR Ready |
+|-------|-------|-------|-------|-------|
+| Countly app pods (`api`, `frontend`, `ingestor`, `aggregator`, `jobserver`) | `gcr.io/countly-dev-313620/countly-unified:26.01` or `<repositoryPrefix>/countly-unified` | `gcr.io` or `us-docker.pkg.dev` | Countly-provided | Yes |
+| Kafka Connect ClickHouse | `gcr.io/countly-dev-313620/strimzi/kafka-connect-clickhouse:4.2.0-1.3.5-strimzi` or `<repositoryPrefix>/strimzi/kafka-connect-clickhouse:4.2.0-1.3.5-strimzi` | `gcr.io` or `us-docker.pkg.dev` | Countly-provided custom image | Yes |
+| ClickHouse server | `clickhouse/clickhouse-server:26.2` | Docker Hub style namespace | Official provider image | No, not via current GAR toggle |
+| ClickHouse keeper | `clickhouse/clickhouse-keeper:26.2` | Docker Hub style namespace | Official provider image | No, not via current GAR toggle |
+| MongoDB database | chosen by MongoDB Kubernetes Operator from `version: 8.2.5` | operator-resolved upstream image | Official provider image | No, not via current chart values |
+| MongoDB exporter | `percona/mongodb_exporter:0.40.0` | Docker Hub style namespace | Official provider/vendor image | No |
+| Migration service | `countly/migration:<appVersion or override>` | configurable, default public-style repo | Countly-provided | Not wired to GAR automatically |
+| Prometheus | `prom/prometheus:v3.10.0` | Docker Hub style namespace | Official provider image | Only via `global.imageRegistry` mirror |
+| Loki | `grafana/loki:3.6.7` | Docker Hub style namespace | Official provider image | Only via `global.imageRegistry` mirror |
+| Tempo | `grafana/tempo:2.10.1` | Docker Hub style namespace | Official provider image | Only via `global.imageRegistry` mirror |
+| Pyroscope | `grafana/pyroscope:1.18.1` | Docker Hub style namespace | Official provider image | Only via `global.imageRegistry` mirror |
+| Grafana | `grafana/grafana:12.4.0` | Docker Hub style namespace | Official provider image | Only via `global.imageRegistry` mirror |
+| Alloy / Alloy OTLP / Alloy Metrics | `grafana/alloy:v1.13.2` | Docker Hub style namespace | Official provider image | Only via `global.imageRegistry` mirror |
+| kube-state-metrics | `registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.18.0` | `registry.k8s.io` | Official provider image | Only via `global.imageRegistry` mirror |
+| node-exporter | `prom/node-exporter:v1.10.2` | Docker Hub style namespace | Official provider image | Only via `global.imageRegistry` mirror |
+| busybox init/test containers | `busybox:1.35` | Docker Hub | Official provider image | No explicit mirror logic |
+
+Operator and platform apps are pinned by Helm chart version in `argocd/operators/`, so this repo controls the chart source and version, but not every underlying container image directly:
+
+| Operator/App | Source | Version | Ownership |
+|-------|-------|-------|-------|
+| cert-manager | Jetstack chart | `v1.17.2` | Official provider |
+| External Secrets Operator | external-secrets chart | `1.3.1` | Official provider |
+| Strimzi Kafka Operator | Strimzi chart | `0.51.0` | Official provider |
+| ClickHouse Operator | GHCR OCI chart | `0.0.2` | Official provider |
+| MongoDB Kubernetes Operator | MongoDB chart | `1.7.0` | Official provider |
+| F5 NGINX Ingress | NGINX chart | `2.1.0` | Official provider |
+
 ### Manual Installation (without Helmfile)
 
 ```bash
