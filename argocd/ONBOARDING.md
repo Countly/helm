@@ -229,6 +229,24 @@ Set these carefully:
 - `kafkaConnect`
 - `migration`
 
+Important for `server`:
+- use the actual cluster API server URL Argo CD knows
+- do not guess or paste a random external IP
+- for GKE, the safest source is:
+
+```bash
+gcloud container clusters describe <cluster> \
+  --zone <zone> \
+  --project <cluster-project> \
+  --format="value(endpoint)"
+```
+
+Then use:
+
+```text
+https://<returned-endpoint>
+```
+
 Example:
 
 ```yaml

@@ -51,6 +51,8 @@ if [[ -e "${customer_file}" ]]; then
   exit 1
 fi
 
+mkdir -p "$(dirname "${customer_file}")"
+
 cp -R "${repo_root}/environments/reference" "${env_dir}"
 
 cat > "${env_dir}/global.yaml" <<EOF
@@ -145,6 +147,14 @@ cat <<EOF
 Created:
   ${env_dir}
   ${customer_file}
+
+Important:
+  - This scaffold creates safe generic defaults, not final production values.
+  - Before syncing Argo, you still must update:
+    * argocd/customers/${customer}.yaml
+    * environments/${customer}/global.yaml
+    * environments/${customer}/credentials-*.yaml
+  - Set server to the actual cluster endpoint Argo knows, not an arbitrary IP.
 
 Next:
   1. Fill in environments/${customer}/credentials-*.yaml
