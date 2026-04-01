@@ -1,0 +1,2 @@
+# Customer-specific ClickHouse overrides only.
+# Leave this file minimal so sizing / security profiles apply cleanly.
