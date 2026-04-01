@@ -99,16 +99,14 @@ ClickHouse Connect secret name
 {{- end -}}
 
 {{/*
-Resolve the Kafka Connect image based on the selected source mode.
+Resolve the Kafka Connect image.
+
+Kafka Connect now uses the public Countly image by default. We intentionally
+do not rewrite it through global.imageSource.mode because Countly app images
+and Kafka Connect images can follow different distribution paths.
 */}}
 {{- define "countly-kafka.connectImage" -}}
-{{- $mode := .Values.global.imageSource.mode | default "direct" -}}
-{{- if eq $mode "gcpArtifactRegistry" -}}
-{{- $prefix := required "global.imageSource.gcpArtifactRegistry.repositoryPrefix is required when global.imageSource.mode is gcpArtifactRegistry" .Values.global.imageSource.gcpArtifactRegistry.repositoryPrefix -}}
-{{- printf "%s/%s" ($prefix | trimSuffix "/") .Values.kafkaConnect.artifactImage -}}
-{{- else -}}
 {{- .Values.kafkaConnect.image -}}
-{{- end -}}
 {{- end -}}
 
 {{/*
