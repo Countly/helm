@@ -8,41 +8,9 @@
       "properties": {
         "imageRegistry": { "type": "string" },
         "imagePullSecrets": { "type": "array" },
-        "imagePullSecretExternalSecret": {
-          "type": "object",
-          "properties": {
-            "enabled": { "type": "boolean" },
-            "refreshInterval": { "type": "string" },
-            "secretStoreRef": {
-              "type": "object",
-              "properties": {
-                "name": { "type": "string" },
-                "kind": { "type": "string" }
-              }
-            },
-            "remoteRef": {
-              "type": "object",
-              "properties": {
-                "key": { "type": "string" }
-              }
-            }
-          }
-        },
-        "imageSource": {
-          "type": "object",
-          "properties": {
-            "mode": {
-              "type": "string",
-              "enum": ["direct", "gcpArtifactRegistry"]
-            },
-            "gcpArtifactRegistry": {
-              "type": "object",
-              "properties": {
-                "repositoryPrefix": { "type": "string" }
-              }
-            }
-          }
-        }
+        "storageClass": { "type": "string" },
+        "sizing": { "type": "string" },
+        "scheduling": { "type": "object" }
       }
     },
     "createNamespace": { "type": "boolean" },
@@ -116,11 +84,6 @@
         "enabled": { "type": "boolean" },
         "name": { "type": "string" },
         "image": { "type": "string", "minLength": 1 },
-        "artifactImage": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Image name appended to global.imageSource.gcpArtifactRegistry.repositoryPrefix when using GCP Artifact Registry"
-        },
         "replicas": { "type": "integer", "minimum": 1 },
         "bootstrapServers": { "type": "string" },
         "resources": { "type": "object" },

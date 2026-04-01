@@ -40,7 +40,7 @@ See [DEPLOYMENT-MODES.md](DEPLOYMENT-MODES.md) for all mode options.
 
 Your copied environment already includes the chart-specific secret files from `environments/reference/`.
 
-Fill in the required passwords in the per-chart secret files (`secrets-<chart>.yaml`). Every chart needs credentials on first install:
+Fill in the required passwords in the per-chart credential files (`credentials-<chart>.yaml`). Every chart needs credentials on first install:
 
 | Secret File | Required Secrets |
 |-------------|-----------------|

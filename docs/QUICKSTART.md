@@ -57,7 +57,7 @@ environments/local/global.yaml                    # Global settings (profile sel
 profiles/sizing/local/<chart>.yaml                # Sizing (resources, replicas, HA)
 profiles/<dimension>/<value>/<chart>.yaml          # Optional dimension profiles
 environments/local/<chart>.yaml                   # Environment choices (ingress, OTEL, etc.)
-environments/local/secrets-<chart>.yaml           # Credentials (gitignored)
+environments/local/credentials-<chart>.yaml       # Credentials overrides
 ```
 
 Important:

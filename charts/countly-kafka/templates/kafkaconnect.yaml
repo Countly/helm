@@ -36,10 +36,6 @@ spec:
     {{- end }}
   template:
     pod:
-      {{- with .Values.global.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       {{- $scheduling := .Values.kafkaConnect.scheduling | default dict }}
       {{- $antiAffinity := $scheduling.antiAffinity | default dict }}
       {{- if (and (hasKey $antiAffinity "enabled") $antiAffinity.enabled) }}

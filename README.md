@@ -177,7 +177,7 @@ Install required operators before deploying Countly. See [docs/PREREQUISITES.md]
 
 For a GAR-backed production example, see [environments/example-production/global.yaml](/Users/admin/cly/helm/environments/example-production/global.yaml) and replace `countly-gar` with your Kubernetes docker-registry secret name.
 For GitOps-managed pull secrets, start from [environments/reference/image-pull-secrets.example.yaml](/Users/admin/cly/helm/environments/reference/image-pull-secrets.example.yaml) and encrypt or template it before committing.
-For Secret Manager + External Secrets Operator, set `global.imagePullSecretExternalSecret` in your environment `global.yaml` so Countly and Kafka Connect each create their own namespaced `dockerconfigjson` pull secret.
+For Secret Manager + External Secrets Operator, set `global.imagePullSecretExternalSecret` in your environment `global.yaml` so Countly can create its namespaced `dockerconfigjson` pull secret.
 Application secrets can use the same pattern in `credentials-countly.yaml`, `credentials-kafka.yaml`, `credentials-clickhouse.yaml`, and `credentials-mongodb.yaml` by switching `secrets.mode` to `externalSecret` and filling `secrets.externalSecret.remoteRefs`.
 
 Recommended Secret Manager naming convention:
@@ -217,7 +217,7 @@ This table shows which images are used by the platform, where they are pulled fr
 | Component | Image / Pattern | Source Registry | Ownership | Private/GAR Ready |
 |-------|-------|-------|-------|-------|
 | Countly app pods (`api`, `frontend`, `ingestor`, `aggregator`, `jobserver`) | `gcr.io/countly-dev-313620/countly-unified:26.01` or `<repositoryPrefix>/countly-unified` | `gcr.io` or `us-docker.pkg.dev` | Countly-provided | Yes |
-| Kafka Connect ClickHouse | `countly/strimzi-kafka-connect-clickhouse:kafka4.2.0-ch1.3.5-strimzi0.51-otel2.12.0` or `<repositoryPrefix>/strimzi-kafka-connect-clickhouse:kafka4.2.0-ch1.3.5-strimzi0.51-otel2.12.0` | Docker Hub or `us-docker.pkg.dev` | Countly-provided custom image | Yes |
+| Kafka Connect ClickHouse | `countly/strimzi-kafka-connect-clickhouse:kafka4.2.0-ch1.3.5-strimzi0.51-otel2.12.0` | Docker Hub | Countly-provided custom image | Public by default |
 | ClickHouse server | `clickhouse/clickhouse-server:26.3` | Docker Hub style namespace | Official provider image | No, not via current GAR toggle |
 | ClickHouse keeper | `clickhouse/clickhouse-keeper:26.3` | Docker Hub style namespace | Official provider image | No, not via current GAR toggle |
 | MongoDB database | chosen by MongoDB Kubernetes Operator from `version: 8.2.5` | operator-resolved upstream image | Official provider image | No, not via current chart values |
@@ -315,7 +315,7 @@ Composable profile dimensions — select one value per dimension in `global.yaml
 Environments contain deployment-specific choices:
 - `global.yaml` — Profile selectors, hostname, backing service modes
 - `<chart>.yaml` — Per-chart overrides (tuning, network policy, OTEL)
-- `secrets-<chart>.yaml` — Per-chart secrets (gitignored)
+- `credentials-<chart>.yaml` — Per-chart credentials overrides
 
 ### Deployment Modes
 

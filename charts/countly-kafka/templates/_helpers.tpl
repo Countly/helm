@@ -108,13 +108,3 @@ and Kafka Connect images can follow different distribution paths.
 {{- define "countly-kafka.connectImage" -}}
 {{- .Values.kafkaConnect.image -}}
 {{- end -}}
-
-{{/*
-Resolve the first configured imagePullSecret name.
-*/}}
-{{- define "countly-kafka.imagePullSecretName" -}}
-{{- $pullSecrets := .Values.global.imagePullSecrets | default list -}}
-{{- if gt (len $pullSecrets) 0 -}}
-{{- (index $pullSecrets 0).name -}}
-{{- end -}}
-{{- end -}}

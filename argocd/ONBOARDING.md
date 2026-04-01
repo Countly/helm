@@ -317,6 +317,8 @@ global:
       key: <customer>-gar-dockerconfig
 ```
 
+This GAR pull-secret path is for Countly application images. Kafka Connect uses the public `countly/strimzi-kafka-connect-clickhouse` image by default.
+
 ## Step 5: If Using Secret Manager, Prepare The Cluster
 
 This is the production path.
