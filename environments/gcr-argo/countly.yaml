@@ -1,0 +1,2 @@
+# Customer-specific Countly overrides only.
+# Leave this file minimal so sizing / TLS / observability / security profiles apply cleanly.
