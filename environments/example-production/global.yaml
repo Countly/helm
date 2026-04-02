@@ -19,7 +19,7 @@ global:
     remoteRef:
       key: customer-a-gar-dockerconfig
   imagePullSecrets:
-    - name: countly-gar
+    - name: countly-registry
   storageClass: gp3
 
 ingress:

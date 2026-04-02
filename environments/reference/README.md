@@ -18,6 +18,7 @@ This directory is a complete starting point for a new Countly deployment.
   - Choose `global.security`: `open` or `hardened`
   - Choose backing service modes (bundled or external)
   - For GAR, set `global.imageSource`, `global.imagePullSecrets`, and optionally `global.imagePullSecretExternalSecret`
+  - For `global.tls: provided`, either point Countly at a pre-created TLS secret or enable `ingress.tls.externalSecret` in `countly.yaml`
 
 3. Fill in required secrets in the chart-specific files:
   - `credentials-countly.yaml` → `secrets.common.*` and `secrets.clickhouse.password`, `secrets.mongodb.password`
@@ -54,6 +55,7 @@ For production, choose one of:
 For private registries such as GAR, also create namespaced image pull secrets.
 Use `image-pull-secrets.example.yaml` as a starting point, then encrypt it with SOPS or manage it through your GitOps secret workflow.
 If you use External Secrets Operator with Google Secret Manager, point `global.imagePullSecretExternalSecret.remoteRef.key` at a secret whose value is the Docker config JSON content for `us-docker.pkg.dev`.
+You can use the same External Secrets pattern for Countly ingress TLS when `global.tls` is `provided`; see `countly.yaml` and `external-secrets.example.yaml`.
 
 ## Files
 
@@ -70,6 +72,7 @@ If you use External Secrets Operator with Google Secret Manager, point `global.i
 | `credentials-clickhouse.yaml` | ClickHouse auth password |
 | `credentials-kafka.yaml` | Kafka Connect ClickHouse password |
 | `credentials-observability.yaml` | Observability secrets (external backend creds if needed) |
+| `countly-tls.env` | Manual TLS secret helper for bring-your-own certificate workflows |
 | `secrets.example.yaml` | Combined secrets reference (all charts in one file) |
 | `secrets.sops.example.yaml` | SOPS encryption guide |
 | `external-secrets.example.yaml` | External Secrets Operator guide |
