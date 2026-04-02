@@ -566,6 +566,15 @@ ingress:
     mode: ""                           # Set via argocd/customers/<customer>.yaml
     clusterIssuer: letsencrypt-prod       # Used with mode=letsencrypt
     secretName: ""                        # Auto-derived if empty: <fullname>-tls
+    externalSecret:
+      enabled: false                      # Create the TLS Secret from External Secrets when mode=existingSecret
+      refreshInterval: "1h"
+      secretStoreRef:
+        name: ""                          # e.g. gcp-secrets
+        kind: ClusterSecretStore
+      remoteRefs:
+        tlsCrt: "countly-prod-tls-crt"
+        tlsKey: "countly-prod-tls-key"
     selfSigned:
       issuerName: ""                      # Auto-derived if empty: <fullname>-ca-issuer
       caSecretName: ""                    # Auto-derived if empty: <fullname>-ca-keypair

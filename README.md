@@ -179,6 +179,7 @@ For a GAR-backed production example, see [environments/example-production/global
 For GitOps-managed pull secrets, start from [environments/reference/image-pull-secrets.example.yaml](/Users/admin/cly/helm/environments/reference/image-pull-secrets.example.yaml) and encrypt or template it before committing.
 For Secret Manager + External Secrets Operator, set `global.imagePullSecretExternalSecret` in your environment `global.yaml` so Countly can create its namespaced `dockerconfigjson` pull secret.
 Application secrets can use the same pattern in `credentials-countly.yaml`, `credentials-kafka.yaml`, `credentials-clickhouse.yaml`, and `credentials-mongodb.yaml` by switching `secrets.mode` to `externalSecret` and filling `secrets.externalSecret.remoteRefs`.
+Countly ingress TLS can also use the same pattern: set customer `tls: provided`, then enable `ingress.tls.externalSecret` in `countly.yaml` to materialize a `kubernetes.io/tls` secret from Secret Manager keys such as `countly-prod-tls-crt` and `countly-prod-tls-key`.
 
 Recommended Secret Manager naming convention:
 - `<customer>-gar-dockerconfig`

@@ -8,7 +8,7 @@ Set in `global.yaml` -> `ingress.tls.mode`:
 |------|-------------|-------------|
 | `http` | No TLS (default) | None |
 | `letsencrypt` | Auto-provisioned via cert-manager | cert-manager + ClusterIssuer, DNS pointing to ingress |
-| `existingSecret` | Pre-created TLS secret | Kubernetes TLS secret in countly namespace |
+| `existingSecret` | Pre-created TLS secret or ExternalSecret-created TLS secret | Kubernetes TLS secret in countly namespace |
 | `selfSigned` | Self-signed CA via cert-manager | cert-manager (dev/local only) |
 
 ### Let's Encrypt Example
@@ -27,6 +27,23 @@ ingress:
   tls:
     mode: existingSecret
     secretName: my-tls-cert    # Must exist in countly namespace
+```
+
+### Existing Certificate From Secret Manager Example
+```yaml
+ingress:
+  hostname: analytics.example.com
+  tls:
+    mode: existingSecret
+    secretName: my-tls-cert
+    externalSecret:
+      enabled: true
+      secretStoreRef:
+        name: gcp-secrets
+        kind: ClusterSecretStore
+      remoteRefs:
+        tlsCrt: countly-prod-tls-crt
+        tlsKey: countly-prod-tls-key
 ```
 
 ## Backing Service Modes

@@ -514,6 +514,15 @@ ingress:
     mode: http
     clusterIssuer: letsencrypt-prod
     secretName: ""                 # Auto-derived if empty: <fullname>-tls
+    externalSecret:
+      enabled: false
+      refreshInterval: "1h"
+      secretStoreRef:
+        name: ""
+        kind: ClusterSecretStore
+      remoteRefs:
+        tlsCrt: "countly-prod-tls-crt"
+        tlsKey: "countly-prod-tls-key"
     selfSigned:
       issuerName: ""       # Auto-derived if empty: <fullname>-ca-issuer
       caSecretName: ""     # Auto-derived if empty: <fullname>-ca-keypair

@@ -148,11 +148,6 @@ backingServices:
     mode: bundled
 EOF
 
-cat > "${env_dir}/countly.yaml" <<'EOF'
-# Customer-specific Countly overrides only.
-# Leave this file minimal so sizing / TLS / observability / security profiles apply cleanly.
-EOF
-
 cat > "${env_dir}/kafka.yaml" <<'EOF'
 # Customer-specific Kafka overrides only.
 # Leave this file minimal so sizing / kafka-connect / observability / security profiles apply cleanly.
@@ -177,6 +172,24 @@ cat > "${env_dir}/migration.yaml" <<'EOF'
 EOF
 
 if [[ "${secret_mode}" == "gcp-secrets" ]]; then
+  cat > "${env_dir}/countly.yaml" <<'EOF'
+# Customer-specific Countly overrides only.
+# TLS Secret Manager support is prewired below and becomes active only when:
+#   - argocd/customers/<customer>.yaml sets tls: provided
+#   - the shared Secret Manager keys exist
+ingress:
+  tls:
+    externalSecret:
+      enabled: true
+      refreshInterval: "1h"
+      secretStoreRef:
+        name: gcp-secrets
+        kind: ClusterSecretStore
+      remoteRefs:
+        tlsCrt: countly-prod-tls-crt
+        tlsKey: countly-prod-tls-key
+EOF
+
   cat > "${env_dir}/credentials-countly.yaml" <<EOF
 # Countly secrets sourced from Google Secret Manager through External Secrets.
 secrets:
@@ -253,6 +266,11 @@ users:
     enabled: true
 EOF
 else
+  cat > "${env_dir}/countly.yaml" <<'EOF'
+# Customer-specific Countly overrides only.
+# Leave this file minimal so sizing / TLS / observability / security profiles apply cleanly.
+EOF
+
   cat > "${env_dir}/credentials-countly.yaml" <<'EOF'
 # Countly secrets — FILL IN before first deploy
 # Passwords must match across charts (see secrets.example.yaml)

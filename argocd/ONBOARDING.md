@@ -346,6 +346,34 @@ global:
 
 This GAR pull-secret path is for Countly application images. Kafka Connect uses the public `countly/strimzi-kafka-connect-clickhouse` image by default.
 
+### Provided TLS + Secret Manager
+
+If you want to use your own certificate instead of Let's Encrypt:
+
+1. set customer `tls: provided`
+2. keep or enable the generated `countly.yaml` TLS External Secret block
+3. create these Secret Manager keys once if you want to reuse the same cert for many customers:
+   - `countly-prod-tls-crt`
+   - `countly-prod-tls-key`
+
+Example:
+
+```yaml
+ingress:
+  tls:
+    externalSecret:
+      enabled: true
+      refreshInterval: "1h"
+      secretStoreRef:
+        name: gcp-secrets
+        kind: ClusterSecretStore
+      remoteRefs:
+        tlsCrt: countly-prod-tls-crt
+        tlsKey: countly-prod-tls-key
+```
+
+This creates the Countly ingress TLS secret automatically in the `countly` namespace, so you do not need a separate manual TLS manifest per customer.
+
 ## Step 5: If Using Secret Manager, Prepare The Cluster
 
 This is the production path.
