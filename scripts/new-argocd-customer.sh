@@ -181,18 +181,11 @@ if [[ "${secret_mode}" == "gcp-secrets" ]]; then
 # Countly secrets sourced from Google Secret Manager through External Secrets.
 secrets:
   mode: externalSecret
-  common:
-    encryptionReportsKey: ""
-    webSessionSecret: ""
-    passwordSecret: ""
   clickhouse:
     username: "default"
-    password: ""
     database: "countly_drill"
   kafka:
     securityProtocol: "PLAINTEXT"
-  mongodb:
-    password: ""
   externalSecret:
     refreshInterval: "1h"
     secretStoreRef:
@@ -221,10 +214,6 @@ secrets:
     remoteRefs:
       clickhouse:
         password: "${customer}-kafka-connect-clickhouse-password"
-
-kafkaConnect:
-  clickhouse:
-    password: ""
 EOF
 
   cat > "${env_dir}/credentials-clickhouse.yaml" <<EOF
@@ -238,10 +227,6 @@ secrets:
       kind: ClusterSecretStore
     remoteRefs:
       defaultUserPassword: "${customer}-clickhouse-default-user-password"
-
-auth:
-  defaultUserPassword:
-    password: ""
 EOF
 
   cat > "${env_dir}/credentials-mongodb.yaml" <<EOF
@@ -264,12 +249,8 @@ secrets:
 users:
   admin:
     enabled: true
-    password: ""
-  app:
-    password: ""
   metrics:
     enabled: true
-    password: ""
 EOF
 else
   cat > "${env_dir}/credentials-countly.yaml" <<'EOF'

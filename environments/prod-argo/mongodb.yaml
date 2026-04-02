@@ -1,0 +1,2 @@
+# Customer-specific MongoDB overrides only.
+# Leave this file minimal so sizing / security profiles apply cleanly.
