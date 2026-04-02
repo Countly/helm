@@ -10,7 +10,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/Countly/helm.git
-        revision: gcp-artifact-rep-integration
+        revision: main
         files:
           - path: argocd/customers/*.yaml
   template:
@@ -22,7 +22,7 @@ spec:
       project: "{{ .project }}"
       source:
         repoURL: https://github.com/Countly/helm.git
-        targetRevision: gcp-artifact-rep-integration
+        targetRevision: main
         path: charts/countly-kafka
         helm:
           releaseName: countly-kafka
