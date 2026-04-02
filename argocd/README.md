@@ -161,12 +161,18 @@ Recommended secret names:
 - `<customer>-countly-web-session-secret`
 - `<customer>-countly-password-secret`
 - `<customer>-countly-clickhouse-password`
-- `<customer>-countly-mongodb-password`
 - `<customer>-kafka-connect-clickhouse-password`
 - `<customer>-clickhouse-default-user-password`
 - `<customer>-mongodb-admin-password`
 - `<customer>-mongodb-app-password`
 - `<customer>-mongodb-metrics-password`
+
+Use the same Secret Manager key for:
+- Countly MongoDB password
+- MongoDB `app` user password
+
+That means new customers should point both charts at:
+- `<customer>-mongodb-app-password`
 
 Note:
 - existing customer environments may still use older secret names

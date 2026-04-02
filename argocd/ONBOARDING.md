@@ -68,7 +68,6 @@ northstar-countly-encryption-reports-key
 northstar-countly-web-session-secret
 northstar-countly-password-secret
 northstar-countly-clickhouse-password
-northstar-countly-mongodb-password
 northstar-kafka-connect-clickhouse-password
 northstar-clickhouse-default-user-password
 northstar-mongodb-admin-password
@@ -589,7 +588,7 @@ northstar-countly-encryption-reports-key
 northstar-countly-web-session-secret
 northstar-countly-password-secret
 northstar-countly-clickhouse-password
-northstar-countly-mongodb-password
+northstar-mongodb-app-password
 northstar-kafka-connect-clickhouse-password
 northstar-clickhouse-default-user-password
 northstar-mongodb-admin-password
@@ -633,7 +632,7 @@ secrets:
       clickhouse:
         password: northstar-countly-clickhouse-password
       mongodb:
-        password: northstar-countly-mongodb-password
+        password: northstar-mongodb-app-password
   clickhouse:
     username: default
     database: countly_drill
@@ -694,6 +693,13 @@ secrets:
       metrics:
         password: northstar-mongodb-metrics-password
 ```
+
+Important:
+- Countly and MongoDB `app` must use the same password
+- for new customers, reuse the same Secret Manager key in both files:
+  - `credentials-countly.yaml`
+  - `credentials-mongodb.yaml`
+- use `<customer>-mongodb-app-password` for both
 
 ## Step 8: Commit And Sync
 

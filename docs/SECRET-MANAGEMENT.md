@@ -60,7 +60,7 @@ secrets:
       clickhouse:
         password: "acme-countly-clickhouse-password"
       mongodb:
-        password: "acme-countly-mongodb-password"
+        password: "acme-mongodb-app-password"
 ```
 
 Recommended naming convention:
@@ -69,7 +69,6 @@ Recommended naming convention:
 - `<customer>-countly-web-session-secret`
 - `<customer>-countly-password-secret`
 - `<customer>-countly-clickhouse-password`
-- `<customer>-countly-mongodb-password`
 - `<customer>-kafka-connect-clickhouse-password`
 - `<customer>-clickhouse-default-user-password`
 - `<customer>-mongodb-admin-password`
@@ -86,7 +85,7 @@ All secrets are required on first install. On upgrades, existing values are pres
 | countly | common | webSessionSecret | Session cookie signing (min 8 chars) |
 | countly | common | passwordSecret | Password hashing (min 8 chars) |
 | countly | clickhouse | password | ClickHouse default user auth |
-| countly | mongodb | password | MongoDB app user auth |
+| countly | mongodb | password | MongoDB app user auth, reuse the same GSM key as `countly-mongodb.users.app.password` |
 | countly-mongodb | users.app | password | Must match countly secrets.mongodb.password |
 | countly-mongodb | users.metrics | password | Prometheus exporter auth |
 | countly-clickhouse | auth.defaultUserPassword | password | Must match countly secrets.clickhouse.password |
