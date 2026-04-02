@@ -10,7 +10,7 @@ apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: {{ $selfSignedIssuerName }}
-  {{- if $.Values.argocd.enabled }}
+  {{- if ((.Values.argocd).enabled) }}
   annotations:
     {{- include "countly.syncWave" (dict "wave" "10" "root" $) | nindent 4 }}
   {{- end }}
@@ -29,7 +29,7 @@ metadata:
   namespace: cert-manager
   labels:
     {{- include "countly.labels" . | nindent 4 }}
-  {{- if $.Values.argocd.enabled }}
+  {{- if ((.Values.argocd).enabled) }}
   annotations:
     {{- include "countly.syncWave" (dict "wave" "11" "root" $) | nindent 4 }}
   {{- end }}
@@ -50,7 +50,7 @@ metadata:
   name: {{ $issuerName }}
   labels:
     {{- include "countly.labels" . | nindent 4 }}
-  {{- if $.Values.argocd.enabled }}
+  {{- if ((.Values.argocd).enabled) }}
   annotations:
     {{- include "countly.syncWave" (dict "wave" "12" "root" $) | nindent 4 }}
   {{- end }}

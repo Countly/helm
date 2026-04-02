@@ -22,7 +22,7 @@ metadata:
   labels:
     {{- include "countly.labels" $root | nindent 4 }}
     app.kubernetes.io/component: {{ $component }}
-  {{- if $root.Values.argocd.enabled }}
+  {{- if (($root.Values.argocd).enabled) }}
   annotations:
     {{- include "countly.syncWave" (dict "wave" "5" "root" $root) | nindent 4 }}
   {{- end }}

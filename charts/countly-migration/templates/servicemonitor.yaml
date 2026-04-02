@@ -5,7 +5,7 @@ metadata:
   name: {{ include "countly-migration.fullname" . }}
   labels:
     {{- include "countly-migration.labels" . | nindent 4 }}
-  {{- if .Values.argocd.enabled }}
+  {{- if ((.Values.argocd).enabled) }}
   annotations:
     {{- include "countly-migration.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
   {{- end }}

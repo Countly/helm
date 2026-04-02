@@ -1,0 +1,73 @@
+# Production values example for the Countly chart.
+# Uses existingSecret mode and external backing services.
+
+image:
+  repository: gcr.io/countly-dev-313620/countly-unified
+  tag: "26.01"
+  pullPolicy: IfNotPresent
+
+argocd:
+  enabled: true
+
+backingServices:
+  mongodb:
+    mode: external
+    connectionString: "mongodb://app:PASSWORD@mongodb-0.mongodb.svc:27017,mongodb-1.mongodb.svc:27017/admin?replicaSet=rs0&ssl=false"
+  clickhouse:
+    mode: external
+    host: "clickhouse.clickhouse.svc"
+    port: "8123"
+    tls: "false"
+  kafka:
+    mode: external
+    brokers: '["kafka-bootstrap.kafka.svc:9092"]'
+
+secrets:
+  mode: existingSecret
+  keep: true
+  common:
+    existingSecret: countly-common-secrets
+  clickhouse:
+    existingSecret: countly-clickhouse-secrets
+  kafka:
+    existingSecret: countly-kafka-secrets
+  mongodb:
+    existingSecret: countly-mongodb-conn
+
+ingress:
+  enabled: true
+  className: nginx
+  hostname: analytics.example.com
+  tls:
+    mode: letsencrypt
+    clusterIssuer: letsencrypt-prod
+
+networkPolicy:
+  enabled: true
+
+api:
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+ingestor:
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 12
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+aggregator:
+  hpa:
+    enabled: true
+    minReplicas: 4
+    maxReplicas: 12
+  pdb:
+    enabled: true
+    minAvailable: 2

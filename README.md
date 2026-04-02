@@ -4,7 +4,7 @@ Helm charts for deploying Countly analytics on Kubernetes.
 
 ## Architecture
 
-Six charts, each in its own namespace:
+Seven charts, each in its own namespace:
 
 | Chart | Namespace | Purpose |
 |-------|-----------|---------|
@@ -14,6 +14,7 @@ Six charts, each in its own namespace:
 | `countly-kafka` | kafka | Kafka via Strimzi Operator |
 | `countly-observability` | observability | Prometheus, Grafana, Loki, Tempo, Pyroscope |
 | `countly-migration` | countly-migration | MongoDB to ClickHouse batch migration (with bundled Redis) |
+| `countly-argocd` | argocd | ArgoCD app-of-apps (AppProject + Applications) |
 
 ### Architecture Overview
 
@@ -187,7 +188,6 @@ Recommended Secret Manager naming convention:
 - `<customer>-countly-web-session-secret`
 - `<customer>-countly-password-secret`
 - `<customer>-countly-clickhouse-password`
-- `<customer>-countly-mongodb-password`
 - `<customer>-kafka-connect-clickhouse-password`
 - `<customer>-clickhouse-default-user-password`
 - `<customer>-mongodb-admin-password`
@@ -253,50 +253,70 @@ Operator and platform apps are pinned by Helm chart version in `argocd/operators
 
 ### Manual Installation (without Helmfile)
 
+Substitute your profile choices from `global.yaml` into the commands below.
+The value file order must match the layering: global → sizing → dimension profiles → security → environment → secrets.
+
 ```bash
+# Shorthand — substitute these from your environments/<env>/global.yaml
+ENV=my-deployment
+SIZING=local          # local | small | production
+SECURITY=open         # open | hardened
+TLS=selfSigned        # none | selfSigned | letsencrypt | provided
+OBS=full              # disabled | full | external-grafana | external
+KC=balanced           # throughput | balanced | low-latency
+
 helm install countly-mongodb ./charts/countly-mongodb -n mongodb --create-namespace \
   --wait --timeout 10m \
-  -f environments/my-deployment/global.yaml \
-  -f profiles/sizing/production/mongodb.yaml \
-  -f environments/my-deployment/mongodb.yaml \
-  -f environments/my-deployment/credentials-mongodb.yaml
+  -f environments/$ENV/global.yaml \
+  -f profiles/sizing/$SIZING/mongodb.yaml \
+  -f profiles/security/$SECURITY/mongodb.yaml \
+  -f environments/$ENV/mongodb.yaml \
+  -f environments/$ENV/credentials-mongodb.yaml
 
 helm install countly-clickhouse ./charts/countly-clickhouse -n clickhouse --create-namespace \
   --wait --timeout 10m \
-  -f environments/my-deployment/global.yaml \
-  -f profiles/sizing/production/clickhouse.yaml \
-  -f environments/my-deployment/clickhouse.yaml \
-  -f environments/my-deployment/credentials-clickhouse.yaml
+  -f environments/$ENV/global.yaml \
+  -f profiles/sizing/$SIZING/clickhouse.yaml \
+  -f profiles/security/$SECURITY/clickhouse.yaml \
+  -f environments/$ENV/clickhouse.yaml \
+  -f environments/$ENV/credentials-clickhouse.yaml
 
 helm install countly-kafka ./charts/countly-kafka -n kafka --create-namespace \
   --wait --timeout 10m \
-  -f environments/my-deployment/global.yaml \
-  -f profiles/sizing/production/kafka.yaml \
-  -f profiles/kafka-connect/balanced/kafka.yaml \
-  -f environments/my-deployment/kafka.yaml \
-  -f environments/my-deployment/credentials-kafka.yaml
+  -f environments/$ENV/global.yaml \
+  -f profiles/sizing/$SIZING/kafka.yaml \
+  -f profiles/kafka-connect/$KC/kafka.yaml \
+  -f profiles/observability/$OBS/kafka.yaml \
+  -f profiles/security/$SECURITY/kafka.yaml \
+  -f environments/$ENV/kafka.yaml \
+  -f environments/$ENV/credentials-kafka.yaml
 
 helm install countly ./charts/countly -n countly --create-namespace \
   --wait --timeout 10m \
-  -f environments/my-deployment/global.yaml \
-  -f profiles/sizing/production/countly.yaml \
-  -f profiles/tls/letsencrypt/countly.yaml \
-  -f environments/my-deployment/countly.yaml \
-  -f environments/my-deployment/credentials-countly.yaml
+  -f environments/$ENV/global.yaml \
+  -f profiles/sizing/$SIZING/countly.yaml \
+  -f profiles/tls/$TLS/countly.yaml \
+  -f profiles/observability/$OBS/countly.yaml \
+  -f profiles/security/$SECURITY/countly.yaml \
+  -f environments/$ENV/countly.yaml \
+  -f environments/$ENV/credentials-countly.yaml
 
 helm install countly-observability ./charts/countly-observability -n observability --create-namespace \
   --wait --timeout 10m \
-  -f environments/my-deployment/global.yaml \
-  -f profiles/sizing/production/observability.yaml \
-  -f profiles/observability/full/observability.yaml \
-  -f environments/my-deployment/observability.yaml
+  -f environments/$ENV/global.yaml \
+  -f profiles/sizing/$SIZING/observability.yaml \
+  -f profiles/observability/$OBS/observability.yaml \
+  -f profiles/security/$SECURITY/observability.yaml \
+  -f environments/$ENV/observability.yaml \
+  -f environments/$ENV/secrets-observability.yaml
 
 # Optional: MongoDB to ClickHouse batch migration (includes bundled Redis)
 helm dependency build ./charts/countly-migration
 helm install countly-migration ./charts/countly-migration -n countly-migration --create-namespace \
   --wait --timeout 5m \
-  -f environments/my-deployment/migration.yaml \
-  -f environments/my-deployment/credentials-migration.yaml
+  -f environments/$ENV/global.yaml \
+  -f environments/$ENV/migration.yaml \
+  -f environments/$ENV/credentials-migration.yaml
 ```
 
 ## Configuration Model
@@ -343,6 +363,7 @@ Environments contain deployment-specific choices:
 - [VERIFICATION.md](docs/VERIFICATION.md) — Chart signature verification, SBOM, provenance
 - [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — Common issues and fixes
 - [VERSION-MATRIX.md](docs/VERSION-MATRIX.md) — Pinned operator and image versions
+- [ARGOCD.md](docs/ARGOCD.md) — ArgoCD deployment, sync waves, custom health checks
 
 ## Repository Structure
 
@@ -354,6 +375,8 @@ helm/
     countly-clickhouse/
     countly-kafka/
     countly-observability/
+    countly-migration/
+    countly-argocd/
   profiles/                         # Composable profile dimensions
     sizing/                         # local | small | production
     observability/                  # disabled | full | external-grafana | external

@@ -223,7 +223,7 @@ Called from NOTES.txt to surface errors during install.
 ArgoCD sync-wave annotation (only when argocd.enabled).
 */}}
 {{- define "countly.syncWave" -}}
-{{- if .root.Values.argocd.enabled }}
+{{- if ((.root.Values.argocd).enabled) }}
 argocd.argoproj.io/sync-wave: {{ .wave | quote }}
 {{- end }}
 {{- end -}}

@@ -5,7 +5,7 @@ metadata:
   name: {{ include "countly-clickhouse.fullname" . }}-server
   labels:
     {{- include "countly-clickhouse.labels" . | nindent 4 }}
-  {{- if .Values.argocd.enabled }}
+  {{- if ((.Values.argocd).enabled) }}
   annotations:
     {{- include "countly-clickhouse.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
   {{- end }}
@@ -28,7 +28,7 @@ metadata:
   name: {{ include "countly-clickhouse.fullname" . }}-keeper
   labels:
     {{- include "countly-clickhouse.labels" . | nindent 4 }}
-  {{- if .Values.argocd.enabled }}
+  {{- if ((.Values.argocd).enabled) }}
   annotations:
     {{- include "countly-clickhouse.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
   {{- end }}

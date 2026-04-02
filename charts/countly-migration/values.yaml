@@ -5,8 +5,8 @@ fullnameOverride: ""
 
 # -- Container image configuration
 image:
-  repository: countly/migration
-  # -- Defaults to Chart.appVersion when empty
+  repository: countly/countly-migration
+  # -- Defaults to "latest" when empty
   tag: ""
   pullPolicy: IfNotPresent
   pullSecrets: []
@@ -21,11 +21,16 @@ serviceAccount:
 argocd:
   enabled: false
 
-# -- Deployment configuration (singleton, Recreate only)
+# -- Deployment configuration
+# For multi-pod mode: set replicas > 1 and strategy.type to RollingUpdate
 deployment:
   replicas: 1
   strategy:
     type: Recreate
+    # RollingUpdate settings (used when strategy.type is RollingUpdate)
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   terminationGracePeriodSeconds: 90
 
 # -- Additional pod annotations
@@ -60,29 +65,35 @@ externalLink:
 # -- Backing services (credential sources for MongoDB, ClickHouse, Redis)
 backingServices:
   mongodb:
-    # -- bundled: construct URI from sibling countly-mongodb chart; external: provide full URI
-    mode: external
-    # -- Full MongoDB connection string (external mode)
+    # -- bundled: auto-discover from sibling countly-mongodb chart; external: provide full URI
+    mode: bundled
+    # -- Full MongoDB connection string (external mode only)
     uri: ""
-    # -- MongoDB host (bundled mode; auto-constructed from release name if empty)
+    # -- Release name prefix of the sibling countly-mongodb chart (bundled mode)
+    releaseName: "countly"
+    # -- MongoDB host override (bundled mode; auto-constructed from releaseName if empty)
     host: ""
     port: "27017"
     username: "app"
+    # -- MongoDB app user password (must match countly-mongodb chart)
     password: ""
     database: "admin"
     replicaSet: ""
     # -- Namespace where countly-mongodb chart is deployed
     namespace: mongodb
   clickhouse:
-    # -- bundled: construct URL from sibling countly-clickhouse chart; external: provide full URL
-    mode: external
-    # -- Full ClickHouse HTTP URL (external mode)
+    # -- bundled: auto-discover from sibling countly-clickhouse chart; external: provide full URL
+    mode: bundled
+    # -- Full ClickHouse HTTP URL (external mode only)
     url: ""
-    # -- ClickHouse host (bundled mode; auto-constructed from release name if empty)
+    # -- Release name prefix of the sibling countly-clickhouse chart (bundled mode)
+    releaseName: "countly"
+    # -- ClickHouse host override (bundled mode; auto-constructed from releaseName if empty)
     host: ""
     port: "8123"
     tls: "false"
     username: "default"
+    # -- ClickHouse default user password (must match countly-clickhouse chart)
     password: ""
     # -- Namespace where countly-clickhouse chart is deployed
     namespace: clickhouse
@@ -215,7 +226,22 @@ networkPolicy:
   ingress: {}
   egress: {}
 
-# -- Pod disruption budget (optional; disabled by default for singleton)
+# -- Multi-pod worker coordination settings
+# These take effect when deployment.replicas > 1.
+worker:
+  enabled: true                      # MULTI_POD_ENABLED
+  lockTtlSec: 300                    # LOCK_TTL_SECONDS — collection lock expiration
+  lockRenewMs: 60000                 # LOCK_RENEW_MS — lock renewal interval
+  podHeartbeatMs: 30000              # POD_HEARTBEAT_MS — heartbeat interval
+  podDeadAfterSec: 180               # POD_DEAD_AFTER_SEC — dead pod threshold
+  rangeParallelThreshold: 500000     # RANGE_PARALLEL_THRESHOLD — split large collections
+  rangeCount: 100                    # RANGE_COUNT — number of time ranges
+  rangeLeaseTtlSec: 300              # RANGE_LEASE_TTL_SEC — range lease expiration
+  progressUpdateMs: 5000             # PROGRESS_UPDATE_MS — progress report interval
+  asyncWriteFlushIntervalMs: 5000    # ASYNC_WRITE_FLUSH_INTERVAL_MS
+  asyncWriteFlushBatchSize: 10       # ASYNC_WRITE_FLUSH_BATCH_SIZE
+
+# -- Pod disruption budget (recommended when replicas > 1)
 pdb:
   enabled: false
   minAvailable: 1
@@ -234,6 +260,9 @@ serviceMonitor:
 redis:
   enabled: true
   architecture: standalone
+  # -- Explicit sync-wave ensures Redis is healthy before the migration Deployment (wave 10)
+  commonAnnotations:
+    argocd.argoproj.io/sync-wave: "0"
   auth:
     enabled: false
   master:

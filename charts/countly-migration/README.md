@@ -36,6 +36,19 @@ The migration service is a **singleton Deployment** with `Recreate` strategy. It
 
 ## Quick Start
 
+**Alongside sibling charts** (default — auto-discovers MongoDB and ClickHouse via DNS):
+
+```bash
+helm install countly-migration ./charts/countly-migration \
+  -n countly-migration --create-namespace \
+  --set backingServices.mongodb.password="YOUR_MONGODB_APP_PASSWORD" \
+  --set backingServices.clickhouse.password="YOUR_CLICKHOUSE_PASSWORD"
+```
+
+Only two values required. Everything else is auto-detected from the sibling `countly-mongodb` and `countly-clickhouse` charts. Redis is bundled automatically.
+
+**Standalone** (external MongoDB and ClickHouse):
+
 ```bash
 helm install countly-migration ./charts/countly-migration \
   -n countly-migration --create-namespace \
@@ -46,7 +59,9 @@ helm install countly-migration ./charts/countly-migration \
   --set backingServices.clickhouse.password="PASSWORD"
 ```
 
-Redis is deployed automatically as a subchart. The migration service auto-discovers all `drill_events*` collections and begins migrating.
+> **Production deployment:** Use the profile-based approach from the [root README](../../README.md#manual-installation-without-helmfile) instead of `--set` flags.
+
+The migration service auto-discovers all `drill_events*` collections in the source MongoDB database and begins migrating.
 
 ---
 
@@ -70,46 +85,50 @@ The chart connects to MongoDB, ClickHouse, and Redis. Each can be configured in 
 
 | Mode | Description |
 |------|-------------|
-| `external` (default) | Provide a full connection URI via `backingServices.mongodb.uri` |
-| `bundled` | Auto-constructs URI from sibling `countly-mongodb` chart using in-cluster DNS |
+| `bundled` (default) | Auto-constructs URI from sibling `countly-mongodb` chart using in-cluster DNS |
+| `external` | Provide a full connection URI via `backingServices.mongodb.uri` |
 
 ```yaml
+# Bundled mode (default — alongside countly-mongodb chart)
+backingServices:
+  mongodb:
+    password: "app-user-password"   # Only required field
+
 # External mode
 backingServices:
   mongodb:
     mode: external
     uri: "mongodb://app:pass@host:27017/admin?replicaSet=rs0&ssl=false"
-
-# Bundled mode (uses countly-mongodb chart in same cluster)
-backingServices:
-  mongodb:
-    mode: bundled
-    password: "app-user-password"
-    namespace: mongodb
 ```
+
+In bundled mode, the chart constructs the URI as:
+`mongodb://app:{password}@{releaseName}-mongodb-svc.{namespace}.svc.cluster.local:27017/admin?replicaSet={releaseName}-mongodb`
+
+Override `releaseName` if your sibling charts use a non-standard prefix (default: `"countly"`).
 
 #### ClickHouse
 
 | Mode | Description |
 |------|-------------|
-| `external` (default) | Provide a full HTTP URL via `backingServices.clickhouse.url` |
-| `bundled` | Auto-constructs URL from sibling `countly-clickhouse` chart using in-cluster DNS |
+| `bundled` (default) | Auto-constructs URL from sibling `countly-clickhouse` chart using in-cluster DNS |
+| `external` | Provide a full HTTP URL via `backingServices.clickhouse.url` |
 
 ```yaml
+# Bundled mode (default — alongside countly-clickhouse chart)
+backingServices:
+  clickhouse:
+    password: "default-password"    # Only required field
+
 # External mode
 backingServices:
   clickhouse:
     mode: external
     url: "http://clickhouse-host:8123"
     password: "default-password"
-
-# Bundled mode
-backingServices:
-  clickhouse:
-    mode: bundled
-    password: "default-password"
-    namespace: clickhouse
 ```
+
+In bundled mode, the chart constructs the URL as:
+`http://{releaseName}-clickhouse-clickhouse-headless.{namespace}.svc:8123`
 
 #### Redis
 
@@ -205,10 +224,12 @@ externalLink:
   url: "https://migration.example.internal/runs/current"
 ```
 
-Sync-wave ordering:
-- Wave 0: ServiceAccount, ConfigMap
+Sync-wave ordering (within this chart):
+- Wave 0: Redis subchart resources, ConfigMap
 - Wave 1: Secret
 - Wave 10: Deployment, Service, Ingress, ServiceMonitor
+
+At the **stack level** (in `countly-argocd`), migration deploys **last** at wave 20 — after all other charts (databases, Kafka, Countly, observability) are healthy. This ensures the full system is stable before migration begins.
 
 Namespace is created by the ArgoCD Application (`CreateNamespace=true`), not by the chart.
 
@@ -331,15 +352,52 @@ kubectl logs -n countly-migration -l app.kubernetes.io/name=countly-migration -f
 
 ---
 
+## Multi-Pod Mode
+
+Scale the migration across multiple pods for faster throughput. Pods coordinate via Redis-based collection locking and range splitting.
+
+```yaml
+deployment:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+
+pdb:
+  enabled: true
+  minAvailable: 1
+```
+
+When `replicas > 1`, the chart automatically:
+- Switches to `RollingUpdate` strategy support
+- Adds pod anti-affinity (spread across nodes)
+- Injects `POD_ID` from pod name for coordination
+- Configures preStop drain hook
+
+### Worker settings
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `worker.enabled` | `true` | Enable multi-pod coordination |
+| `worker.lockTtlSec` | `300` | Collection lock TTL (seconds) |
+| `worker.lockRenewMs` | `60000` | Lock renewal interval (ms) |
+| `worker.podHeartbeatMs` | `30000` | Heartbeat interval (ms) |
+| `worker.podDeadAfterSec` | `180` | Dead pod threshold (seconds) |
+| `worker.rangeParallelThreshold` | `500000` | Doc count to trigger range splitting |
+| `worker.rangeCount` | `100` | Time ranges per collection |
+| `worker.rangeLeaseTtlSec` | `300` | Range lease TTL (seconds) |
+
+For a comprehensive guide on multi-pod operations, scaling, and troubleshooting, see [docs/migration-guide.md](../../docs/migration-guide.md#multi-pod-mode).
+
+---
+
 ## Schema Guardrails
 
 The chart includes `values.schema.json` that enforces:
 
-- **`deployment.replicas`** must be `1` — this is a singleton workload
-- **`deployment.strategy.type`** must be `Recreate` — prevents concurrent pods during rollout
+- **`deployment.replicas`** must be `>= 1` — set to 1 for single-pod, or higher for multi-pod
+- **`deployment.strategy.type`** must be `Recreate` or `RollingUpdate` — use `RollingUpdate` for multi-pod
 - **`secrets.mode`** must be one of: `values`, `existingSecret`, `externalSecret`
-
-Attempting to set `replicas: 2` or `strategy.type: RollingUpdate` will fail at `helm install/upgrade/template` time.
+- **Worker settings** have minimum value constraints (e.g., `lockTtlSec >= 30`, `podHeartbeatMs >= 1000`)
 
 ---
 
@@ -347,6 +405,13 @@ Attempting to set `replicas: 2` or `strategy.type: RollingUpdate` will fail at `
 
 See the `examples/` directory:
 
+- **`values-development.yaml`** — Minimal development setup with bundled backing services
 - **`values-production.yaml`** — Production setup with `existingSecret` mode
-- **`values-development.yaml`** — Development setup with bundled backing services
+- **`values-multipod.yaml`** — Multi-pod setup with 3 replicas, RollingUpdate, PDB
 - **`argocd-application.yaml`** — ArgoCD Application manifest with `CreateNamespace=true`
+
+---
+
+## Full Documentation
+
+For architecture details, configuration reference, operations playbook, API reference, and troubleshooting, see [docs/migration-guide.md](../../docs/migration-guide.md).

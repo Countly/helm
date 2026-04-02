@@ -2,7 +2,7 @@
 # Uses existingSecret mode — credentials are pre-created or managed externally.
 
 image:
-  repository: registry.example.com/countly/migration
+  repository: registry.example.com/countly/countly-migration
   tag: "1.0.0"
 
 argocd:
@@ -13,6 +13,15 @@ deployment:
   strategy:
     type: Recreate
   terminationGracePeriodSeconds: 90
+
+# Uncomment for multi-pod mode:
+# deployment:
+#   replicas: 3
+#   strategy:
+#     type: RollingUpdate
+# pdb:
+#   enabled: true
+#   minAvailable: 1
 
 service:
   port: 8080
