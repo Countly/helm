@@ -1,0 +1,16 @@
+customer: hardik-argo
+environment: hardik-argo
+project: countly-customers
+server: https://34.69.69.19
+gcpServiceAccountEmail: gcr-argo@countly-01.iam.gserviceaccount.com
+secretManagerProjectID: countly-tools
+clusterProjectID: countly-dev-313620
+clusterName: hardik-argo
+clusterLocation: us-central1-a
+hostname: hardik-argo.count.ly
+sizing: tier1
+security: open
+tls: letsencrypt
+observability: disabled
+kafkaConnect: balanced
+migration: disabled
