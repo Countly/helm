@@ -29,8 +29,7 @@ argocd:
 clickhouseOperator:
   apiVersion: clickhouse.com/v1alpha1
 
-# -- ClickHouse server version
-version: "26.2"
+version: "26.3"
 # -- Number of shards in the cluster
 shards: 1
 # -- Number of replicas per shard
@@ -213,3 +212,11 @@ serviceMonitor:
 secrets:
   # -- Preserve secrets on helm uninstall/upgrade
   keep: true
+  mode: values           # values | existingSecret | externalSecret
+  externalSecret:
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: ""
+      kind: ClusterSecretStore
+    remoteRefs:
+      defaultUserPassword: ""

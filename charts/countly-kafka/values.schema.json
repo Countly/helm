@@ -3,7 +3,16 @@
   "type": "object",
   "required": ["version"],
   "properties": {
-    "global": { "type": "object" },
+    "global": {
+      "type": "object",
+      "properties": {
+        "imageRegistry": { "type": "string" },
+        "imagePullSecrets": { "type": "array" },
+        "storageClass": { "type": "string" },
+        "sizing": { "type": "string" },
+        "scheduling": { "type": "object" }
+      }
+    },
     "createNamespace": { "type": "boolean" },
     "strimzi": {
       "type": "object",
@@ -130,7 +139,36 @@
     "secrets": {
       "type": "object",
       "properties": {
-        "keep": { "type": "boolean" }
+        "keep": { "type": "boolean" },
+        "mode": {
+          "type": "string",
+          "enum": ["values", "existingSecret", "externalSecret"]
+        },
+        "externalSecret": {
+          "type": "object",
+          "properties": {
+            "refreshInterval": { "type": "string" },
+            "secretStoreRef": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "kind": { "type": "string" }
+              }
+            },
+            "remoteRefs": {
+              "type": "object",
+              "properties": {
+                "clickhouse": {
+                  "type": "object",
+                  "properties": {
+                    "username": { "type": "string" },
+                    "password": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }

@@ -60,7 +60,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: {{ $component }}
-          image: "{{ if $root.Values.global.imageRegistry }}{{ $root.Values.global.imageRegistry }}/{{ end }}{{ $root.Values.image.repository }}{{ if $root.Values.image.digest }}@{{ $root.Values.image.digest }}{{ else }}:{{ $root.Values.image.tag | default $root.Chart.AppVersion }}{{ end }}"
+          image: "{{ include "countly.image" $root }}{{ if $root.Values.image.digest }}@{{ $root.Values.image.digest }}{{ else }}:{{ $root.Values.image.tag | default $root.Chart.AppVersion }}{{ end }}"
           imagePullPolicy: {{ $root.Values.image.pullPolicy }}
           securityContext:
             runAsNonRoot: true
@@ -174,6 +174,23 @@ spec:
 {{- end -}}
 
 {{/*
+Resolve the Countly image repository based on the selected source mode.
+*/}}
+{{- define "countly.image" -}}
+{{- $mode := .Values.global.imageSource.mode | default "direct" -}}
+{{- if eq $mode "gcpArtifactRegistry" -}}
+{{- $prefix := required "global.imageSource.gcpArtifactRegistry.repositoryPrefix is required when global.imageSource.mode is gcpArtifactRegistry" .Values.global.imageSource.gcpArtifactRegistry.repositoryPrefix -}}
+{{- printf "%s/%s" ($prefix | trimSuffix "/") .Values.image.artifactRepository -}}
+{{- else -}}
+{{- if .Values.global.imageRegistry -}}
+{{- printf "%s/%s" (.Values.global.imageRegistry | trimSuffix "/") .Values.image.repository -}}
+{{- else -}}
+{{- .Values.image.repository -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Service for a Countly component
 */}}
 {{- define "countly.component.service" -}}
@@ -218,6 +235,10 @@ metadata:
   labels:
     {{- include "countly.labels" $root | nindent 4 }}
     app.kubernetes.io/component: {{ $component }}
+  {{- if $root.Values.argocd.enabled }}
+  annotations:
+    {{- include "countly.syncWave" (dict "wave" "6" "root" $root) | nindent 4 }}
+  {{- end }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

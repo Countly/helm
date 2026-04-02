@@ -97,3 +97,14 @@ ClickHouse Connect secret name
 {{ .Values.kafkaConnect.clickhouse.secretName }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve the Kafka Connect image.
+
+Kafka Connect now uses the public Countly image by default. We intentionally
+do not rewrite it through global.imageSource.mode because Countly app images
+and Kafka Connect images can follow different distribution paths.
+*/}}
+{{- define "countly-kafka.connectImage" -}}
+{{- .Values.kafkaConnect.image -}}
+{{- end -}}

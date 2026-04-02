@@ -104,8 +104,17 @@ jobs:
                 ;;
               countly-mongodb)
                 helm template test-release "${chart}" \
+                  --set users.admin.password=test \
                   --set users.app.password=test \
                   --set users.metrics.password=test \
+                  > /dev/null || exit_code=1
+                ;;
+              countly-cluster-secret-store)
+                helm template test-release "${chart}" \
+                  --set secretStore.secretManagerProjectID=test-project \
+                  --set secretStore.clusterProjectID=test-cluster-project \
+                  --set secretStore.clusterName=test-cluster \
+                  --set secretStore.clusterLocation=test-location \
                   > /dev/null || exit_code=1
                 ;;
               countly-migration)

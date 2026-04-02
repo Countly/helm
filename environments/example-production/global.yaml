@@ -6,6 +6,20 @@ global:
   tls: letsencrypt
   observability: full
   kafkaConnect: balanced
+  imageSource:
+    mode: gcpArtifactRegistry
+    gcpArtifactRegistry:
+      repositoryPrefix: us-docker.pkg.dev/countly-01/countly-unified
+  imagePullSecretExternalSecret:
+    enabled: true
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: gcp-secrets
+      kind: ClusterSecretStore
+    remoteRef:
+      key: customer-a-gar-dockerconfig
+  imagePullSecrets:
+    - name: countly-registry
   storageClass: gp3
 
 ingress:

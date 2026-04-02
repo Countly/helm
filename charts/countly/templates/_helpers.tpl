@@ -120,6 +120,16 @@ Effective TLS secret name.
 {{- end -}}
 
 {{/*
+Escape MongoDB URI user-info values safely.
+urlquery handles reserved characters but encodes spaces as "+", which is
+query-style encoding. Replace "+" with "%20" so the result is safe in URI
+user-info segments too.
+*/}}
+{{- define "countly.mongodb.escapeUserInfo" -}}
+{{- . | urlquery | replace "+" "%20" -}}
+{{- end -}}
+
+{{/*
 MongoDB connection string computation.
 Reads from backingServices.mongodb; constructs from service DNS if not provided.
 */}}
@@ -138,7 +148,31 @@ Reads from backingServices.mongodb; constructs from service DNS if not provided.
 {{- $user := $bs.username | default "app" -}}
 {{- $db := $bs.database | default "admin" -}}
 {{- $rs := $bs.replicaSet | default (printf "%s-mongodb" .Release.Name) -}}
-mongodb://{{ $user }}:{{ $pass }}@{{ $host }}:{{ $port }}/{{ $db }}?replicaSet={{ $rs }}&ssl=false
+mongodb://{{ include "countly.mongodb.escapeUserInfo" $user }}:{{ include "countly.mongodb.escapeUserInfo" $pass }}@{{ $host }}:{{ $port }}/{{ $db }}?replicaSet={{ $rs }}&ssl=false
+{{- end -}}
+{{- end -}}
+
+{{/*
+MongoDB connection string computation using an explicit password value.
+Used by ExternalSecret templates where the password may come from the secret backend.
+*/}}
+{{- define "countly.mongodb.connectionStringWithPassword" -}}
+{{- $root := .root -}}
+{{- $pass := .password -}}
+{{- $bs := ($root.Values.backingServices).mongodb | default dict -}}
+{{- $connStr := $bs.connectionString -}}
+{{- if $connStr -}}
+{{- $connStr -}}
+{{- else -}}
+{{- if not $pass -}}
+{{- fail "MongoDB password is required. Set backingServices.mongodb.password, secrets.mongodb.password, or secrets.externalSecret.remoteRefs.mongodb.password." -}}
+{{- end -}}
+{{- $host := $bs.host | default (printf "%s-mongodb-svc.%s.svc.cluster.local" $root.Release.Name ($root.Values.mongodbNamespace | default "mongodb")) -}}
+{{- $port := $bs.port | default "27017" -}}
+{{- $user := $bs.username | default "app" -}}
+{{- $db := $bs.database | default "admin" -}}
+{{- $rs := $bs.replicaSet | default (printf "%s-mongodb" $root.Release.Name) -}}
+mongodb://{{ include "countly.mongodb.escapeUserInfo" $user }}:{{ $pass }}@{{ $host }}:{{ $port }}/{{ $db }}?replicaSet={{ $rs }}&ssl=false
 {{- end -}}
 {{- end -}}
 
@@ -192,4 +226,14 @@ ArgoCD sync-wave annotation (only when argocd.enabled).
 {{- if ((.root.Values.argocd).enabled) }}
 argocd.argoproj.io/sync-wave: {{ .wave | quote }}
 {{- end }}
+{{- end -}}
+
+{{/*
+Resolve the first configured imagePullSecret name.
+*/}}
+{{- define "countly.imagePullSecretName" -}}
+{{- $pullSecrets := .Values.global.imagePullSecrets | default list -}}
+{{- if gt (len $pullSecrets) 0 -}}
+{{- (index $pullSecrets 0).name -}}
+{{- end -}}
 {{- end -}}

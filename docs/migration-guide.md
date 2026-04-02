@@ -134,7 +134,7 @@ Create environment files for repeatable deploys:
 {}
 ```
 
-**`environments/my-env/secrets-migration.yaml`:**
+**`environments/my-env/credentials-migration.yaml`:**
 ```yaml
 backingServices:
   mongodb:
@@ -150,7 +150,7 @@ helm install countly-migration ./charts/countly-migration \
   --wait --timeout 5m \
   -f environments/my-env/global.yaml \
   -f environments/my-env/migration.yaml \
-  -f environments/my-env/secrets-migration.yaml
+  -f environments/my-env/credentials-migration.yaml
 ```
 
 ### External MongoDB/ClickHouse

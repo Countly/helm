@@ -2,7 +2,18 @@
 global:
   # -- Override container image registry for all images
   imageRegistry: ""
-  # -- Global image pull secrets
+  imageSource:
+    mode: direct
+    gcpArtifactRegistry:
+      repositoryPrefix: ""
+  imagePullSecretExternalSecret:
+    enabled: false
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: ""
+      kind: ClusterSecretStore
+    remoteRef:
+      key: ""
   imagePullSecrets: []
   # -- Default StorageClass for PVCs (empty = cluster default)
   storageClass: ""
@@ -38,6 +49,7 @@ serviceAccount:
 image:
   # -- Image repository
   repository: gcr.io/countly-dev-313620/countly-unified
+  artifactRepository: countly-unified
   # -- Image digest (takes precedence over tag when set)
   digest: "sha256:f81b39d4488c596f76a5c385d088a8998b7c1b20933366ad994f5315597ec48b"
   # -- Image tag (used when digest is empty; defaults to appVersion)
@@ -521,6 +533,7 @@ secrets:
         saslPassword: ""
       mongodb:
         connectionString: ""
+        password: ""
 
 # --- Network Policy ---
 
@@ -586,9 +599,18 @@ ingress:
     mode: http
     # -- cert-manager ClusterIssuer name (for letsencrypt mode)
     clusterIssuer: letsencrypt-prod
-    # -- TLS Secret name (auto-derived if empty: <fullname>-tls)
-    secretName: ""
-    # -- Self-signed CA configuration (for selfSigned mode)
+    secretName: ""                 # Auto-derived if empty: <fullname>-tls
+    externalSecret:
+      enabled: false
+      refreshInterval: "1h"
+      secretStoreRef:
+        name: ""
+        kind: ClusterSecretStore
+      remoteRefs:
+        # Shared TLS certificate defaults for all customers.
+        # Override per customer only when a customer needs its own certificate.
+        tlsCrt: "countly-prod-tls-crt"
+        tlsKey: "countly-prod-tls-key"
     selfSigned:
       # -- Issuer name (auto-derived if empty: <fullname>-ca-issuer)
       issuerName: ""

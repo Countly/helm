@@ -18,7 +18,7 @@ Deploy the Countly analytics platform using ArgoCD's GitOps model. The `countly-
    cp -r environments/reference environments/my-env
    ```
    Edit `environments/my-env/global.yaml` — set `ingress.hostname`, sizing, TLS, security profiles.
-   Fill in secrets files (`secrets-mongodb.yaml`, `secrets-clickhouse.yaml`, etc.).
+   Fill in credential files (`credentials-mongodb.yaml`, `credentials-clickhouse.yaml`, etc.).
 
 2. **Install the ArgoCD chart:**
    ```bash

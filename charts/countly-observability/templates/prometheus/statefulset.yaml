@@ -26,7 +26,7 @@ spec:
       serviceAccountName: {{ include "obs.fullname" . }}-prometheus
       initContainers:
       - name: init-data-dir
-        image: busybox:1.35
+        image: busybox:1.37.0
         command: ['sh', '-c', 'mkdir -p /prometheus && chown -R 65534:65534 /prometheus && chmod -R 755 /prometheus']
         volumeMounts:
         - name: data

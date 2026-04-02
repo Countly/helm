@@ -66,7 +66,20 @@ mongodb:
 
 # -- MongoDB users created by the operator
 users:
-  # -- Application user (used by Countly services)
+  admin:
+    enabled: true
+    name: admin
+    database: admin
+    roles:
+      - name: root
+        db: admin
+      - name: userAdminAnyDatabase
+        db: admin
+      - name: dbAdminAnyDatabase
+        db: admin
+    passwordSecretName: admin-user-password
+    passwordSecretKey: password
+    password: ""
   app:
     # -- Username
     name: app
@@ -105,8 +118,7 @@ users:
 exporter:
   # -- Deploy the exporter sidecar
   enabled: true
-  # -- Exporter container image
-  image: percona/mongodb_exporter:0.40.0
+  image: percona/mongodb_exporter:0.47.2
   # -- Metrics port exposed by the exporter
   port: 9216
   # -- Exporter resource requests and limits
@@ -154,3 +166,16 @@ networkPolicy:
 secrets:
   # -- Preserve secrets on helm uninstall/upgrade
   keep: true
+  mode: values           # values | existingSecret | externalSecret
+  externalSecret:
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: ""
+      kind: ClusterSecretStore
+    remoteRefs:
+      admin:
+        password: ""
+      app:
+        password: ""
+      metrics:
+        password: ""

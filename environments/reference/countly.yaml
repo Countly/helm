@@ -29,7 +29,8 @@ serviceAccount:
 # --- Image ---
 image:
   repository: gcr.io/countly-dev-313620/countly-unified
-  digest: "sha256:f81b39d4488c596f76a5c385d088a8998b7c1b20933366ad994f5315597ec48b"
+  artifactRepository: countly-unified
+  digest: "sha256:b42efb9713ee11d173fe409924fb9e2a208b5c0beafed9e42f349b996b6650a4"
   tag: "26.01"                                # Fallback when digest is empty
   pullPolicy: IfNotPresent
 
@@ -555,16 +556,27 @@ ingress:
       proxy_next_upstream_tries 3;
       proxy_temp_file_write_size 1m;
       client_body_timeout 120s;
-  hostname: countly.example.com
+  hostname: ""                         # Set via argocd/customers/<customer>.yaml
   tls:
     # TLS mode: letsencrypt | existingSecret | selfSigned | http
     #   http:            No TLS
     #   letsencrypt:     cert-manager + Let's Encrypt (recommended for production)
     #   existingSecret:  Bring your own TLS secret
     #   selfSigned:      cert-manager self-signed CA (for development)
-    mode: http
+    mode: ""                           # Set via argocd/customers/<customer>.yaml
     clusterIssuer: letsencrypt-prod       # Used with mode=letsencrypt
     secretName: ""                        # Auto-derived if empty: <fullname>-tls
+    externalSecret:
+      enabled: false                      # Create the TLS Secret from External Secrets when mode=existingSecret
+      refreshInterval: "1h"
+      secretStoreRef:
+        name: ""                          # e.g. gcp-secrets
+        kind: ClusterSecretStore
+      remoteRefs:
+        # Shared TLS certificate defaults for all customers.
+        # Override only if a specific customer needs its own certificate.
+        tlsCrt: "countly-prod-tls-crt"
+        tlsKey: "countly-prod-tls-key"
     selfSigned:
       issuerName: ""                      # Auto-derived if empty: <fullname>-ca-issuer
       caSecretName: ""                    # Auto-derived if empty: <fullname>-ca-keypair

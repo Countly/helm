@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: customer-clickhouse-operator
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/Countly/helm.git
+        revision: main
+        files:
+          - path: argocd/customers/*.yaml
+  template:
+    metadata:
+      name: "{{ .customer }}-clickhouse-operator"
+      annotations:
+        argocd.argoproj.io/sync-wave: "-27"
+    spec:
+      project: default
+      source:
+        repoURL: ghcr.io/clickhouse
+        chart: clickhouse-operator-helm
+        targetRevision: 0.0.2
+        helm:
+          releaseName: clickhouse-operator
+          valuesObject:
+            certManager:
+              install: false
+      destination:
+        server: "{{ .server }}"
+        namespace: clickhouse-operator-system
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

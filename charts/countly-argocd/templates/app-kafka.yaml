@@ -25,7 +25,7 @@ spec:
         - ../../profiles/observability/{{ .Values.global.observability }}/kafka.yaml
         - ../../profiles/security/{{ .Values.global.security }}/kafka.yaml
         - ../../environments/{{ .Values.environment }}/kafka.yaml
-        - ../../environments/{{ .Values.environment }}/secrets-kafka.yaml
+        - ../../environments/{{ .Values.environment }}/credentials-kafka.yaml
       parameters:
         - name: argocd.enabled
           value: "true"

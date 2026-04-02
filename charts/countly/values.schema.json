@@ -11,6 +11,56 @@
         "imageRegistry": {
           "type": "string"
         },
+        "imageSource": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "direct",
+                "gcpArtifactRegistry"
+              ]
+            },
+            "gcpArtifactRegistry": {
+              "type": "object",
+              "properties": {
+                "repositoryPrefix": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "imagePullSecretExternalSecret": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "refreshInterval": {
+              "type": "string"
+            },
+            "secretStoreRef": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string"
+                }
+              }
+            },
+            "remoteRef": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
         "imagePullSecrets": {
           "type": "array"
         },
@@ -40,6 +90,11 @@
         "repository": {
           "type": "string",
           "minLength": 1
+        },
+        "artifactRepository": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repository path appended to global.imageSource.gcpArtifactRegistry.repositoryPrefix when using GCP Artifact Registry"
         },
         "digest": {
           "type": [
@@ -314,6 +369,39 @@
             },
             "secretName": {
               "type": "string"
+            },
+            "externalSecret": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "refreshInterval": {
+                  "type": "string"
+                },
+                "secretStoreRef": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "remoteRefs": {
+                  "type": "object",
+                  "properties": {
+                    "tlsCrt": {
+                      "type": "string"
+                    },
+                    "tlsKey": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
             },
             "selfSigned": {
               "type": "object",

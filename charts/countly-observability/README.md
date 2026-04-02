@@ -278,13 +278,13 @@ grafana:
 
 | Component | Image | Version |
 |---|---|---|
-| Prometheus | `prom/prometheus` | v3.10.0 |
-| Grafana | `grafana/grafana` | 12.4.0 |
-| Loki | `grafana/loki` | 3.6.7 |
-| Tempo | `grafana/tempo` | 2.10.1 |
-| Pyroscope | `grafana/pyroscope` | 1.18.1 |
-| Alloy | `grafana/alloy` | v1.13.2 |
-| kube-state-metrics | `registry.k8s.io/kube-state-metrics/kube-state-metrics` | v2.18.0 |
+| Prometheus | `prom/prometheus` | v3.8.1 |
+| Grafana | `grafana/grafana` | 12.3.5 |
+| Loki | `grafana/loki` | 3.6.3 |
+| Tempo | `grafana/tempo` | 2.8.1 |
+| Pyroscope | `grafana/pyroscope` | 1.16.0 |
+| Alloy | `grafana/alloy` | v1.14.0 |
+| kube-state-metrics | `registry.k8s.io/kube-state-metrics/kube-state-metrics` | v2.17.0 |
 | node-exporter | `prom/node-exporter` | v1.10.2 |
 
 ---

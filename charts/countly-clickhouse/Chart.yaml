@@ -3,7 +3,7 @@ name: countly-clickhouse
 description: ClickHouse for Countly analytics via ClickHouse Operator
 type: application
 version: 0.1.0
-appVersion: "26.2"
+appVersion: "26.3"
 home: https://countly.com
 icon: https://count.ly/images/logos/countly-logo.svg
 sources:

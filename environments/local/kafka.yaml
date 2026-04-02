@@ -1,10 +1,10 @@
 # Local environment — Kafka chart overrides (non-sizing)
 # Profile defaults come from profiles/sizing/local/kafka.yaml
-# Secrets come from secrets-kafka.yaml
+# Credentials come from credentials-kafka.yaml
 
 # Use OTel-enabled image (includes /opt/otel/opentelemetry-javaagent.jar)
 kafkaConnect:
-  image: "gcr.io/countly-dev-313620/strimzi/kafka-connect-clickhouse:4.2.0-1.3.5-otel-strimzi-amd64"
+  image: "countly/strimzi-kafka-connect-clickhouse:kafka4.2.0-ch1.3.5-strimzi0.51-otel2.12.0"
   otel:
     enabled: true
     resourceAttributes: "service.namespace=countly,deployment.environment=local"

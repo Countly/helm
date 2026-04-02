@@ -1,0 +1,81 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: countly-app
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/Countly/helm.git
+        revision: main
+        files:
+          - path: argocd/customers/*.yaml
+  template:
+    metadata:
+      name: "{{ .customer }}-countly"
+      annotations:
+        argocd.argoproj.io/sync-wave: "10"
+    spec:
+      project: "{{ .project }}"
+      source:
+        repoURL: https://github.com/Countly/helm.git
+        targetRevision: main
+        path: charts/countly
+        helm:
+          releaseName: countly
+          valueFiles:
+            - "../../environments/{{ .environment }}/global.yaml"
+            - "../../profiles/sizing/{{ .sizing }}/countly.yaml"
+            - "../../profiles/tls/{{ .tls }}/countly.yaml"
+            - "../../profiles/observability/{{ .observability }}/countly.yaml"
+            - "../../profiles/security/{{ .security }}/countly.yaml"
+            - "../../environments/{{ .environment }}/countly.yaml"
+            - "../../environments/{{ .environment }}/credentials-countly.yaml"
+          parameters:
+            - name: argocd.enabled
+              value: "true"
+            - name: ingress.hostname
+              value: "{{ .hostname }}"
+            - name: ingress.tls.mode
+              value: '{{ if eq .tls "none" }}http{{ else if eq .tls "provided" }}existingSecret{{ else }}{{ .tls }}{{ end }}'
+            - name: global.sizing
+              value: "{{ .sizing }}"
+            - name: global.security
+              value: "{{ .security }}"
+            - name: global.observability
+              value: "{{ .observability }}"
+            - name: global.tls
+              value: "{{ .tls }}"
+            - name: global.kafkaConnect
+              value: "{{ .kafkaConnect }}"
+      destination:
+        server: "{{ .server }}"
+        namespace: countly
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+      ignoreDifferences:
+        - group: networking.k8s.io
+          kind: Ingress
+          jsonPointers:
+            - /status
+        - group: external-secrets.io
+          kind: ExternalSecret
+          jqPathExpressions:
+            - .spec.data[]?.remoteRef.conversionStrategy
+            - .spec.data[]?.remoteRef.decodingStrategy
+            - .spec.data[]?.remoteRef.metadataPolicy

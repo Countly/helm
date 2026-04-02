@@ -157,8 +157,11 @@ Install required operators before deploying Countly. See [docs/PREREQUISITES.md]
    - Choose `global.observability`: `disabled`, `full`, `external-grafana`, or `external`
    - Choose `global.kafkaConnect`: `throughput`, `balanced`, or `low-latency`
    - Choose `global.security`: `open` or `hardened`
+   - Keep `global.imageSource.mode: direct` for the current direct-pull flow, or switch to `gcpArtifactRegistry` and set `global.imageSource.gcpArtifactRegistry.repositoryPrefix`
+   - Set `global.imagePullSecrets` when pulling from a private registry such as GAR
 
-3. **Fill in required secrets** in the chart-specific files. See `environments/reference/secrets.example.yaml` for a complete reference.
+3. **Fill in required credentials** in the chart-specific files. See `environments/reference/secrets.example.yaml` for a complete reference.
+   Keep `secrets.mode: values` for direct YAML values, switch to `secrets.mode: externalSecret` to have the charts create `ExternalSecret` resources backed by your Secret Manager store.
 
 4. **Register your environment** in `helmfile.yaml.gotmpl`:
    ```yaml
@@ -172,6 +175,81 @@ Install required operators before deploying Countly. See [docs/PREREQUISITES.md]
    ```bash
    helmfile -e my-deployment apply
    ```
+
+For a GAR-backed production example, see [environments/example-production/global.yaml](/Users/admin/cly/helm/environments/example-production/global.yaml) and replace `countly-gar` with your Kubernetes docker-registry secret name.
+For GitOps-managed pull secrets, start from [environments/reference/image-pull-secrets.example.yaml](/Users/admin/cly/helm/environments/reference/image-pull-secrets.example.yaml) and encrypt or template it before committing.
+For Secret Manager + External Secrets Operator, set `global.imagePullSecretExternalSecret` in your environment `global.yaml` so Countly can create its namespaced `dockerconfigjson` pull secret.
+Application secrets can use the same pattern in `credentials-countly.yaml`, `credentials-kafka.yaml`, `credentials-clickhouse.yaml`, and `credentials-mongodb.yaml` by switching `secrets.mode` to `externalSecret` and filling `secrets.externalSecret.remoteRefs`.
+Countly ingress TLS can also use the same pattern: set customer `tls: provided`, then enable `ingress.tls.externalSecret` in `countly.yaml` to materialize a `kubernetes.io/tls` secret from Secret Manager. The default scaffold already points all customers at the shared keys `countly-prod-tls-crt` and `countly-prod-tls-key`; override them only when a customer needs a dedicated certificate.
+
+Recommended Secret Manager naming convention:
+- `<customer>-gar-dockerconfig`
+- `<customer>-countly-encryption-reports-key`
+- `<customer>-countly-web-session-secret`
+- `<customer>-countly-password-secret`
+- `<customer>-countly-clickhouse-password`
+- `<customer>-kafka-connect-clickhouse-password`
+- `<customer>-clickhouse-default-user-password`
+- `<customer>-mongodb-admin-password`
+- `<customer>-mongodb-app-password`
+- `<customer>-mongodb-metrics-password`
+
+### GitOps Customer Onboarding
+
+For Argo CD managed deployments, scaffold a new customer/cluster with:
+
+```bash
+./scripts/new-argocd-customer.sh [--secret-mode values|gcp-secrets] <customer> <server> <hostname>
+```
+
+This creates:
+- `environments/<customer>/`
+- `argocd/customers/<customer>.yaml`
+
+For Secret Manager from day one, prefer:
+
+```bash
+./scripts/new-argocd-customer.sh --secret-mode gcp-secrets <customer> <server> <hostname>
+```
+
+Then:
+1. fill in `environments/<customer>/credentials-*.yaml`
+2. commit
+3. sync `countly-bootstrap`
+
+## Image Sources
+
+This table shows which images are used by the platform, where they are pulled from, and whether they are Countly-provided or official upstream/vendor images.
+
+| Component | Image / Pattern | Source Registry | Ownership | Private/GAR Ready |
+|-------|-------|-------|-------|-------|
+| Countly app pods (`api`, `frontend`, `ingestor`, `aggregator`, `jobserver`) | `gcr.io/countly-dev-313620/countly-unified:26.01` or `<repositoryPrefix>/countly-unified` | `gcr.io` or `us-docker.pkg.dev` | Countly-provided | Yes |
+| Kafka Connect ClickHouse | `countly/strimzi-kafka-connect-clickhouse:kafka4.2.0-ch1.3.5-strimzi0.51-otel2.12.0` | Docker Hub | Countly-provided custom image | Public by default |
+| ClickHouse server | `clickhouse/clickhouse-server:26.3` | Docker Hub style namespace | Official provider image | No, not via current GAR toggle |
+| ClickHouse keeper | `clickhouse/clickhouse-keeper:26.3` | Docker Hub style namespace | Official provider image | No, not via current GAR toggle |
+| MongoDB database | chosen by MongoDB Kubernetes Operator from `version: 8.2.5` | operator-resolved upstream image | Official provider image | No, not via current chart values |
+| MongoDB exporter | `percona/mongodb_exporter:0.47.2` | Docker Hub style namespace | Official provider/vendor image | No |
+| Migration service | `countly/migration:<appVersion or override>` | configurable, default public-style repo | Countly-provided | Not wired to GAR automatically |
+| Prometheus | `prom/prometheus:v3.8.1` | Docker Hub style namespace | Official provider image | Only via `global.imageRegistry` mirror |
+| Loki | `grafana/loki:3.6.3` | Docker Hub style namespace | Official provider image | Only via `global.imageRegistry` mirror |
+| Tempo | `grafana/tempo:2.8.1` | Docker Hub style namespace | Official provider image | Only via `global.imageRegistry` mirror |
+| Pyroscope | `grafana/pyroscope:1.16.0` | Docker Hub style namespace | Official provider image | Only via `global.imageRegistry` mirror |
+| Grafana | `grafana/grafana:12.3.5` | Docker Hub style namespace | Official provider image | Only via `global.imageRegistry` mirror |
+| Alloy / Alloy OTLP / Alloy Metrics | `grafana/alloy:v1.14.0` | Docker Hub style namespace | Official provider image | Only via `global.imageRegistry` mirror |
+| kube-state-metrics | `registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.17.0` | `registry.k8s.io` | Official provider image | Only via `global.imageRegistry` mirror |
+| node-exporter | `prom/node-exporter:v1.10.2` | Docker Hub style namespace | Official provider image | Only via `global.imageRegistry` mirror |
+| busybox init/test containers | `busybox:1.37.0` | Docker Hub | Official provider image | No explicit mirror logic |
+
+Operator and platform apps are pinned by Helm chart version in `argocd/operators/`, so this repo controls the chart source and version, but not every underlying container image directly:
+
+| Operator/App | Source | Version | Ownership |
+|-------|-------|-------|-------|
+| cert-manager | Jetstack chart | `v1.17.2` | Official provider |
+| External Secrets Operator | external-secrets chart | `1.3.1` | Official provider |
+| Strimzi Kafka Operator | Strimzi chart | `0.51.0` | Official provider |
+| ClickHouse Operator | GHCR OCI chart | `0.0.2` | Official provider |
+| MongoDB Kubernetes Operator | MongoDB chart | `1.7.0` | Official provider |
+| F5 NGINX Ingress | NGINX chart | `2.1.0` | Official provider |
 
 ### Manual Installation (without Helmfile)
 
@@ -193,7 +271,7 @@ helm install countly-mongodb ./charts/countly-mongodb -n mongodb --create-namesp
   -f profiles/sizing/$SIZING/mongodb.yaml \
   -f profiles/security/$SECURITY/mongodb.yaml \
   -f environments/$ENV/mongodb.yaml \
-  -f environments/$ENV/secrets-mongodb.yaml
+  -f environments/$ENV/credentials-mongodb.yaml
 
 helm install countly-clickhouse ./charts/countly-clickhouse -n clickhouse --create-namespace \
   --wait --timeout 10m \
@@ -201,7 +279,7 @@ helm install countly-clickhouse ./charts/countly-clickhouse -n clickhouse --crea
   -f profiles/sizing/$SIZING/clickhouse.yaml \
   -f profiles/security/$SECURITY/clickhouse.yaml \
   -f environments/$ENV/clickhouse.yaml \
-  -f environments/$ENV/secrets-clickhouse.yaml
+  -f environments/$ENV/credentials-clickhouse.yaml
 
 helm install countly-kafka ./charts/countly-kafka -n kafka --create-namespace \
   --wait --timeout 10m \
@@ -211,7 +289,7 @@ helm install countly-kafka ./charts/countly-kafka -n kafka --create-namespace \
   -f profiles/observability/$OBS/kafka.yaml \
   -f profiles/security/$SECURITY/kafka.yaml \
   -f environments/$ENV/kafka.yaml \
-  -f environments/$ENV/secrets-kafka.yaml
+  -f environments/$ENV/credentials-kafka.yaml
 
 helm install countly ./charts/countly -n countly --create-namespace \
   --wait --timeout 10m \
@@ -221,7 +299,7 @@ helm install countly ./charts/countly -n countly --create-namespace \
   -f profiles/observability/$OBS/countly.yaml \
   -f profiles/security/$SECURITY/countly.yaml \
   -f environments/$ENV/countly.yaml \
-  -f environments/$ENV/secrets-countly.yaml
+  -f environments/$ENV/credentials-countly.yaml
 
 helm install countly-observability ./charts/countly-observability -n observability --create-namespace \
   --wait --timeout 10m \
@@ -233,11 +311,12 @@ helm install countly-observability ./charts/countly-observability -n observabili
   -f environments/$ENV/secrets-observability.yaml
 
 # Optional: MongoDB to ClickHouse batch migration (includes bundled Redis)
+helm dependency build ./charts/countly-migration
 helm install countly-migration ./charts/countly-migration -n countly-migration --create-namespace \
   --wait --timeout 5m \
   -f environments/$ENV/global.yaml \
   -f environments/$ENV/migration.yaml \
-  -f environments/$ENV/secrets-migration.yaml
+  -f environments/$ENV/credentials-migration.yaml
 ```
 
 ## Configuration Model
@@ -263,7 +342,7 @@ Composable profile dimensions — select one value per dimension in `global.yaml
 Environments contain deployment-specific choices:
 - `global.yaml` — Profile selectors, hostname, backing service modes
 - `<chart>.yaml` — Per-chart overrides (tuning, network policy, OTEL)
-- `secrets-<chart>.yaml` — Per-chart secrets (gitignored)
+- `credentials-<chart>.yaml` — Per-chart credentials overrides
 
 ### Deployment Modes
 

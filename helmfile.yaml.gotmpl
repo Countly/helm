@@ -36,7 +36,7 @@ releases:
       - profiles/sizing/{{ .Values | get "global.sizing" "small" }}/mongodb.yaml
       - profiles/security/{{ .Values | get "global.security" "open" }}/mongodb.yaml
       - environments/{{ .Environment.Name }}/mongodb.yaml
-      - environments/{{ .Environment.Name }}/secrets-mongodb.yaml
+      - environments/{{ .Environment.Name }}/credentials-mongodb.yaml
 
   - name: countly-clickhouse
     installed: {{ ne (.Values | get "backingServices.clickhouse.mode" "bundled") "external" }}
@@ -47,7 +47,7 @@ releases:
       - profiles/sizing/{{ .Values | get "global.sizing" "small" }}/clickhouse.yaml
       - profiles/security/{{ .Values | get "global.security" "open" }}/clickhouse.yaml
       - environments/{{ .Environment.Name }}/clickhouse.yaml
-      - environments/{{ .Environment.Name }}/secrets-clickhouse.yaml
+      - environments/{{ .Environment.Name }}/credentials-clickhouse.yaml
 
   - name: countly-kafka
     installed: {{ ne (.Values | get "backingServices.kafka.mode" "bundled") "external" }}
@@ -60,7 +60,7 @@ releases:
       - profiles/observability/{{ .Values | get "global.observability" "full" }}/kafka.yaml
       - profiles/security/{{ .Values | get "global.security" "open" }}/kafka.yaml
       - environments/{{ .Environment.Name }}/kafka.yaml
-      - environments/{{ .Environment.Name }}/secrets-kafka.yaml
+      - environments/{{ .Environment.Name }}/credentials-kafka.yaml
     needs:
       - mongodb/countly-mongodb
       - clickhouse/countly-clickhouse
@@ -75,7 +75,7 @@ releases:
       - profiles/observability/{{ .Values | get "global.observability" "full" }}/countly.yaml
       - profiles/security/{{ .Values | get "global.security" "open" }}/countly.yaml
       - environments/{{ .Environment.Name }}/countly.yaml
-      - environments/{{ .Environment.Name }}/secrets-countly.yaml
+      - environments/{{ .Environment.Name }}/credentials-countly.yaml
     needs:
       - mongodb/countly-mongodb
       - clickhouse/countly-clickhouse
@@ -92,7 +92,7 @@ releases:
       - profiles/observability/{{ .Values | get "global.observability" "full" }}/observability.yaml
       - profiles/security/{{ .Values | get "global.security" "open" }}/observability.yaml
       - environments/{{ .Environment.Name }}/observability.yaml
-      - environments/{{ .Environment.Name }}/secrets-observability.yaml
+      - environments/{{ .Environment.Name }}/credentials-observability.yaml
     needs:
       - countly/countly
 
@@ -105,7 +105,7 @@ releases:
     values:
       - environments/{{ .Environment.Name }}/global.yaml
       - environments/{{ .Environment.Name }}/migration.yaml
-      - environments/{{ .Environment.Name }}/secrets-migration.yaml
+      - environments/{{ .Environment.Name }}/credentials-migration.yaml
     needs:
       - mongodb/countly-mongodb
       - clickhouse/countly-clickhouse
