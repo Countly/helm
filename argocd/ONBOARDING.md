@@ -356,6 +356,8 @@ If you want to use your own certificate instead of Let's Encrypt:
    - `countly-prod-tls-crt`
    - `countly-prod-tls-key`
 
+This is the default path now. New customers generated in `gcp-secrets` mode already point at these shared TLS keys, so you do not need to rename them per customer unless a customer needs its own certificate.
+
 Example:
 
 ```yaml

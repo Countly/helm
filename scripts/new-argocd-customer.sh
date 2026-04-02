@@ -177,6 +177,10 @@ if [[ "${secret_mode}" == "gcp-secrets" ]]; then
 # TLS Secret Manager support is prewired below and becomes active only when:
 #   - argocd/customers/<customer>.yaml sets tls: provided
 #   - the shared Secret Manager keys exist
+# By default this reuses one shared certificate for every customer:
+#   - countly-prod-tls-crt
+#   - countly-prod-tls-key
+# Override these remoteRefs only if a specific customer needs its own cert.
 ingress:
   tls:
     externalSecret:

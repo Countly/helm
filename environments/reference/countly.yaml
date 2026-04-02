@@ -573,6 +573,8 @@ ingress:
         name: ""                          # e.g. gcp-secrets
         kind: ClusterSecretStore
       remoteRefs:
+        # Shared TLS certificate defaults for all customers.
+        # Override only if a specific customer needs its own certificate.
         tlsCrt: "countly-prod-tls-crt"
         tlsKey: "countly-prod-tls-key"
     selfSigned:

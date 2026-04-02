@@ -521,6 +521,8 @@ ingress:
         name: ""
         kind: ClusterSecretStore
       remoteRefs:
+        # Shared TLS certificate defaults for all customers.
+        # Override per customer only when a customer needs its own certificate.
         tlsCrt: "countly-prod-tls-crt"
         tlsKey: "countly-prod-tls-key"
     selfSigned:

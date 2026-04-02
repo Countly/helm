@@ -42,6 +42,8 @@ ingress:
         name: gcp-secrets
         kind: ClusterSecretStore
       remoteRefs:
+        # Shared TLS keys for all customers by default.
+        # Override only for customer-specific certificates.
         tlsCrt: countly-prod-tls-crt
         tlsKey: countly-prod-tls-key
 ```
