@@ -5,18 +5,21 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  scripts/new-argocd-customer.sh <customer> <server> <hostname> [project]
+  scripts/new-argocd-customer.sh [--secret-mode values|gcp-secrets] <customer> <server> <hostname> [project]
 
 Example:
   scripts/new-argocd-customer.sh acme https://1.2.3.4 acme.count.ly
+  scripts/new-argocd-customer.sh --secret-mode gcp-secrets acme https://1.2.3.4 acme.count.ly
 
 This command:
   1. copies environments/reference to environments/<customer>
   2. updates environments/<customer>/global.yaml with the hostname and default profiles
-  3. creates argocd/customers/<customer>.yaml for the ApplicationSets
+  3. writes credentials files for either direct values or GCP Secret Manager
+  4. creates argocd/customers/<customer>.yaml for the ApplicationSets
 
 Defaults:
   project       countly-customers
+  secretMode    values
   sizing        production
   security      open
   tls           letsencrypt
@@ -27,15 +30,64 @@ Defaults:
 EOF
 }
 
-if [[ $# -lt 3 || $# -gt 4 ]]; then
+secret_mode="values"
+positionals=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --secret-mode)
+      if [[ $# -lt 2 ]]; then
+        echo "Missing value for --secret-mode" >&2
+        exit 1
+      fi
+      secret_mode="$2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      while [[ $# -gt 0 ]]; do
+        positionals+=("$1")
+        shift
+      done
+      ;;
+    -*)
+      echo "Unknown option: $1" >&2
+      usage
+      exit 1
+      ;;
+    *)
+      positionals+=("$1")
+      shift
+      ;;
+  esac
+done
+
+case "${secret_mode}" in
+  values|direct)
+    secret_mode="values"
+    ;;
+  gcp-secrets)
+    ;;
+  *)
+    echo "Unsupported --secret-mode: ${secret_mode}" >&2
+    echo "Supported values: values, gcp-secrets" >&2
+    exit 1
+    ;;
+esac
+
+if [[ ${#positionals[@]} -lt 3 || ${#positionals[@]} -gt 4 ]]; then
   usage
   exit 1
 fi
 
-customer="$1"
-server="$2"
-hostname="$3"
-project="${4:-countly-customers}"
+customer="${positionals[0]}"
+server="${positionals[1]}"
+hostname="${positionals[2]}"
+project="${positionals[3]:-countly-customers}"
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 env_dir="${repo_root}/environments/${customer}"
@@ -124,6 +176,158 @@ cat > "${env_dir}/migration.yaml" <<'EOF'
 # Customer-specific migration overrides only.
 EOF
 
+if [[ "${secret_mode}" == "gcp-secrets" ]]; then
+  cat > "${env_dir}/credentials-countly.yaml" <<EOF
+# Countly secrets sourced from Google Secret Manager through External Secrets.
+secrets:
+  mode: externalSecret
+  common:
+    encryptionReportsKey: ""
+    webSessionSecret: ""
+    passwordSecret: ""
+  clickhouse:
+    username: "default"
+    password: ""
+    database: "countly_drill"
+  kafka:
+    securityProtocol: "PLAINTEXT"
+  mongodb:
+    password: ""
+  externalSecret:
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: gcp-secrets
+      kind: ClusterSecretStore
+    remoteRefs:
+      common:
+        encryptionReportsKey: "${customer}-countly-encryption-reports-key"
+        webSessionSecret: "${customer}-countly-web-session-secret"
+        passwordSecret: "${customer}-countly-password-secret"
+      clickhouse:
+        password: "${customer}-countly-clickhouse-password"
+      mongodb:
+        password: "${customer}-mongodb-app-password"
+EOF
+
+  cat > "${env_dir}/credentials-kafka.yaml" <<EOF
+# Kafka secrets sourced from Google Secret Manager through External Secrets.
+secrets:
+  mode: externalSecret
+  externalSecret:
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: gcp-secrets
+      kind: ClusterSecretStore
+    remoteRefs:
+      clickhouse:
+        password: "${customer}-kafka-connect-clickhouse-password"
+
+kafkaConnect:
+  clickhouse:
+    password: ""
+EOF
+
+  cat > "${env_dir}/credentials-clickhouse.yaml" <<EOF
+# ClickHouse secrets sourced from Google Secret Manager through External Secrets.
+secrets:
+  mode: externalSecret
+  externalSecret:
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: gcp-secrets
+      kind: ClusterSecretStore
+    remoteRefs:
+      defaultUserPassword: "${customer}-clickhouse-default-user-password"
+
+auth:
+  defaultUserPassword:
+    password: ""
+EOF
+
+  cat > "${env_dir}/credentials-mongodb.yaml" <<EOF
+# MongoDB secrets sourced from Google Secret Manager through External Secrets.
+secrets:
+  mode: externalSecret
+  externalSecret:
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: gcp-secrets
+      kind: ClusterSecretStore
+    remoteRefs:
+      admin:
+        password: "${customer}-mongodb-admin-password"
+      app:
+        password: "${customer}-mongodb-app-password"
+      metrics:
+        password: "${customer}-mongodb-metrics-password"
+
+users:
+  admin:
+    enabled: true
+    password: ""
+  app:
+    password: ""
+  metrics:
+    enabled: true
+    password: ""
+EOF
+else
+  cat > "${env_dir}/credentials-countly.yaml" <<'EOF'
+# Countly secrets — FILL IN before first deploy
+# Passwords must match across charts (see secrets.example.yaml)
+secrets:
+  mode: values
+  common:
+    encryptionReportsKey: ""     # REQUIRED: min 8 chars
+    webSessionSecret: ""         # REQUIRED: min 8 chars
+    passwordSecret: ""           # REQUIRED: min 8 chars
+  clickhouse:
+    username: "default"
+    password: ""                 # REQUIRED: must match credentials-clickhouse.yaml
+    database: "countly_drill"
+  kafka:
+    securityProtocol: "PLAINTEXT"
+  mongodb:
+    password: ""                 # REQUIRED: must match credentials-mongodb.yaml users.app.password
+EOF
+
+  cat > "${env_dir}/credentials-kafka.yaml" <<'EOF'
+# Kafka secrets — FILL IN before first deploy
+secrets:
+  mode: values
+
+kafkaConnect:
+  clickhouse:
+    password: ""                 # REQUIRED: must match ClickHouse default user password
+EOF
+
+  cat > "${env_dir}/credentials-clickhouse.yaml" <<'EOF'
+# ClickHouse secrets — FILL IN before first deploy
+secrets:
+  mode: values
+
+auth:
+  defaultUserPassword:
+    password: ""                 # REQUIRED: must match credentials-countly.yaml secrets.clickhouse.password
+EOF
+
+  cat > "${env_dir}/credentials-mongodb.yaml" <<'EOF'
+# MongoDB secrets — FILL IN before first deploy
+secrets:
+  mode: values
+
+users:
+  admin:
+    enabled: true
+    password: ""                 # REQUIRED: MongoDB super admin/root-style user
+  app:
+    password: ""                 # REQUIRED: must match credentials-countly.yaml secrets.mongodb.password
+  metrics:
+    enabled: true
+    password: ""                 # REQUIRED: metrics exporter password
+EOF
+fi
+
 cat > "${customer_file}" <<EOF
 customer: ${customer}
 environment: ${customer}
@@ -155,11 +359,12 @@ Important:
     * environments/${customer}/global.yaml
     * environments/${customer}/credentials-*.yaml
   - Set server to the actual cluster endpoint Argo knows, not an arbitrary IP.
+  - The generated credentials files are already shaped for secret mode: ${secret_mode}
 
 Next:
-  1. Fill in environments/${customer}/credentials-*.yaml
-  2. Set argocd/customers/${customer}.yaml GCP and cluster metadata for External Secrets
+  1. Fill in or confirm environments/${customer}/credentials-*.yaml
+  2. Set argocd/customers/${customer}.yaml cluster metadata
   3. Review environments/${customer}/*.yaml for customer-specific overrides
-  4. Create Secret Manager secrets using the ${customer}-<component>-<secret> convention
+  4. If using GCP Secret Manager, create secrets using the ${customer}-<component>-<secret> convention
   5. Commit and sync countly-bootstrap
 EOF

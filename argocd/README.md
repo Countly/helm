@@ -73,13 +73,19 @@ argocd cluster list
 Run:
 
 ```bash
-./scripts/new-argocd-customer.sh <customer> <server> <hostname>
+./scripts/new-argocd-customer.sh [--secret-mode values|gcp-secrets] <customer> <server> <hostname>
 ```
 
 Example:
 
 ```bash
 ./scripts/new-argocd-customer.sh acme https://1.2.3.4 acme.count.ly
+```
+
+If you know the customer will use Google Secret Manager, start with:
+
+```bash
+./scripts/new-argocd-customer.sh --secret-mode gcp-secrets acme https://1.2.3.4 acme.count.ly
 ```
 
 This creates:

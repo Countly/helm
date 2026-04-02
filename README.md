@@ -198,12 +198,18 @@ Recommended Secret Manager naming convention:
 For Argo CD managed deployments, scaffold a new customer/cluster with:
 
 ```bash
-./scripts/new-argocd-customer.sh <customer> <server> <hostname>
+./scripts/new-argocd-customer.sh [--secret-mode values|gcp-secrets] <customer> <server> <hostname>
 ```
 
 This creates:
 - `environments/<customer>/`
 - `argocd/customers/<customer>.yaml`
+
+For Secret Manager from day one, prefer:
+
+```bash
+./scripts/new-argocd-customer.sh --secret-mode gcp-secrets <customer> <server> <hostname>
+```
 
 Then:
 1. fill in `environments/<customer>/credentials-*.yaml`

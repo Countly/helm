@@ -103,7 +103,7 @@ kubectl config current-context
 Run:
 
 ```bash
-./scripts/new-argocd-customer.sh <customer> <server> <hostname>
+./scripts/new-argocd-customer.sh [--secret-mode values|gcp-secrets] <customer> <server> <hostname>
 ```
 
 Example:
@@ -112,9 +112,19 @@ Example:
 ./scripts/new-argocd-customer.sh northstar https://1.2.3.4 analytics.northstar.example.com
 ```
 
+If you plan to use Google Secret Manager from the start, use:
+
+```bash
+./scripts/new-argocd-customer.sh --secret-mode gcp-secrets northstar https://1.2.3.4 analytics.northstar.example.com
+```
+
 This creates:
 - `argocd/customers/northstar.yaml`
 - `environments/northstar/`
+
+The difference is:
+- `values` writes the credential files in direct-password mode
+- `gcp-secrets` writes the credential files already wired for External Secrets and the standard Google Secret Manager key names
 
 ## How To Read Argo CD For One Customer
 
