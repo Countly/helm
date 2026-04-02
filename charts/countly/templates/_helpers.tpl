@@ -120,6 +120,16 @@ Effective TLS secret name.
 {{- end -}}
 
 {{/*
+Escape MongoDB URI user-info values safely.
+urlquery handles reserved characters but encodes spaces as "+", which is
+query-style encoding. Replace "+" with "%20" so the result is safe in URI
+user-info segments too.
+*/}}
+{{- define "countly.mongodb.escapeUserInfo" -}}
+{{- . | urlquery | replace "+" "%20" -}}
+{{- end -}}
+
+{{/*
 MongoDB connection string computation.
 Reads from backingServices.mongodb; constructs from service DNS if not provided.
 */}}
@@ -138,7 +148,7 @@ Reads from backingServices.mongodb; constructs from service DNS if not provided.
 {{- $user := $bs.username | default "app" -}}
 {{- $db := $bs.database | default "admin" -}}
 {{- $rs := $bs.replicaSet | default (printf "%s-mongodb" .Release.Name) -}}
-mongodb://{{ $user }}:{{ $pass }}@{{ $host }}:{{ $port }}/{{ $db }}?replicaSet={{ $rs }}&ssl=false
+mongodb://{{ include "countly.mongodb.escapeUserInfo" $user }}:{{ include "countly.mongodb.escapeUserInfo" $pass }}@{{ $host }}:{{ $port }}/{{ $db }}?replicaSet={{ $rs }}&ssl=false
 {{- end -}}
 {{- end -}}
 
@@ -162,7 +172,7 @@ Used by ExternalSecret templates where the password may come from the secret bac
 {{- $user := $bs.username | default "app" -}}
 {{- $db := $bs.database | default "admin" -}}
 {{- $rs := $bs.replicaSet | default (printf "%s-mongodb" $root.Release.Name) -}}
-mongodb://{{ $user }}:{{ $pass }}@{{ $host }}:{{ $port }}/{{ $db }}?replicaSet={{ $rs }}&ssl=false
+mongodb://{{ include "countly.mongodb.escapeUserInfo" $user }}:{{ $pass }}@{{ $host }}:{{ $port }}/{{ $db }}?replicaSet={{ $rs }}&ssl=false
 {{- end -}}
 {{- end -}}
 
