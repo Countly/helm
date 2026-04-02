@@ -1,2 +1,0 @@
-# Customer-specific Kafka overrides only.
-# Leave this file minimal so sizing / kafka-connect / observability / security profiles apply cleanly.
