@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: customer-cert-manager
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/Countly/countly-deployment.git
+        revision: main
+        files:
+          - path: customers/*.yaml
+  template:
+    metadata:
+      name: "{{ .customer }}-cert-manager"
+      annotations:
+        argocd.argoproj.io/sync-wave: "-30"
+    spec:
+      project: default
+      source:
+        repoURL: https://charts.jetstack.io
+        chart: cert-manager
+        targetRevision: v1.17.2
+        helm:
+          releaseName: cert-manager
+          parameters:
+            - name: installCRDs
+              value: "true"
+      destination:
+        server: "{{ .server }}"
+        namespace: cert-manager
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

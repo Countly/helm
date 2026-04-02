@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: customer-mongodb-crds
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/Countly/countly-deployment.git
+        revision: main
+        files:
+          - path: customers/*.yaml
+  template:
+    metadata:
+      name: "{{ .customer }}-mongodb-crds"
+      annotations:
+        argocd.argoproj.io/sync-wave: "-29"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/mongodb/mongodb-kubernetes.git
+        targetRevision: "1.7.0"
+        path: public
+        directory:
+          include: crds.yaml
+      destination:
+        server: "{{ .server }}"
+        namespace: mongodb
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

@@ -1,0 +1,90 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: countly-kafka
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/Countly/countly-deployment.git
+        revision: main
+        files:
+          - path: customers/*.yaml
+  template:
+    metadata:
+      name: "{{ .customer }}-kafka"
+      annotations:
+        argocd.argoproj.io/sync-wave: "5"
+    spec:
+      project: "{{ .project }}"
+      sources:
+        - repoURL: https://github.com/Countly/helm.git
+          targetRevision: main
+          path: charts/countly-kafka
+          helm:
+            releaseName: countly-kafka
+            valueFiles:
+              - "../../profiles/sizing/{{ .sizing }}/kafka.yaml"
+              - "../../profiles/kafka-connect/{{ .kafkaConnect }}/kafka.yaml"
+              - "../../profiles/observability/{{ .observability }}/kafka.yaml"
+              - "../../profiles/security/{{ .security }}/kafka.yaml"
+              - "$values/environments/{{ .environment }}/global.yaml"
+              - "$values/environments/{{ .environment }}/kafka.yaml"
+              - "$values/environments/{{ .environment }}/credentials-kafka.yaml"
+            parameters:
+              - name: argocd.enabled
+                value: "true"
+              - name: global.sizing
+                value: "{{ .sizing }}"
+              - name: global.security
+                value: "{{ .security }}"
+              - name: global.observability
+                value: "{{ .observability }}"
+              - name: global.kafkaConnect
+                value: "{{ .kafkaConnect }}"
+        - repoURL: https://github.com/Countly/countly-deployment.git
+          targetRevision: main
+          ref: values
+      destination:
+        server: "{{ .server }}"
+        namespace: kafka
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+      ignoreDifferences:
+        - group: kafka.strimzi.io
+          kind: Kafka
+          jsonPointers:
+            - /status
+        - group: kafka.strimzi.io
+          kind: KafkaConnect
+          jsonPointers:
+            - /status
+        - group: kafka.strimzi.io
+          kind: KafkaConnector
+          jsonPointers:
+            - /status
+        - group: kafka.strimzi.io
+          kind: KafkaNodePool
+          jsonPointers:
+            - /status
+        - group: external-secrets.io
+          kind: ExternalSecret
+          jqPathExpressions:
+            - .spec.data[]?.remoteRef.conversionStrategy
+            - .spec.data[]?.remoteRef.decodingStrategy
+            - .spec.data[]?.remoteRef.metadataPolicy
