@@ -1,0 +1,16 @@
+# Customer-specific Countly overrides only.
+# TLS Secret Manager support is prewired below and becomes active only when:
+#   - argocd/customers/<customer>.yaml sets tls: provided
+#   - the shared Secret Manager keys exist
+ingress:
+  tls:
+    secretName: countly-tls
+    externalSecret:
+      enabled: true
+      refreshInterval: "1h"
+      secretStoreRef:
+        name: gcp-secrets
+        kind: ClusterSecretStore
+      remoteRefs:
+        tlsCrt: tls-argo-tls-crt
+        tlsKey: tls-argo-tls-key

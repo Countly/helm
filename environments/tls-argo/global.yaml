@@ -1,0 +1,39 @@
+# =============================================================================
+# Countly Deployment — Global Configuration
+# =============================================================================
+
+global:
+  sizing: tier1
+  observability: disabled
+  kafkaConnect: balanced
+  tls: provided
+  security: open
+
+  imageRegistry: ""
+  imageSource:
+    mode: gcpArtifactRegistry
+    gcpArtifactRegistry:
+      repositoryPrefix: "us-docker.pkg.dev/countly-01/countly-unified"
+  imagePullSecretExternalSecret:
+    enabled: true
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: "gcp-secrets"
+      kind: ClusterSecretStore
+    remoteRef:
+      key: "customers-gcr-argo-gar-dockerconfig"
+  storageClass: ""
+  imagePullSecrets:
+    - name: countly-registry
+
+ingress:
+  hostname: tls-argo.count.ly
+  className: nginx
+
+backingServices:
+  mongodb:
+    mode: bundled
+  clickhouse:
+    mode: bundled
+  kafka:
+    mode: bundled
