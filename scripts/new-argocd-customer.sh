@@ -348,6 +348,9 @@ tls: letsencrypt
 observability: full
 kafkaConnect: balanced
 migration: disabled
+nginxIngress:
+  service:
+    loadBalancerIP: ""              # Optional: reserve a static GCP IP and set it here for the nginx LoadBalancer
 EOF
 
 cat <<EOF

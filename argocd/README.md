@@ -134,6 +134,9 @@ tls: letsencrypt
 observability: disabled
 kafkaConnect: balanced
 migration: disabled
+nginxIngress:
+  service:
+    loadBalancerIP: ""   # Optional: static public IP for the nginx LoadBalancer service
 ```
 
 ### 3. Fill in the customer secrets

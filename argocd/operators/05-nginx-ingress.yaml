@@ -28,6 +28,13 @@ spec:
             releaseName: nginx-ingress
             valueFiles:
               - $values/nginx-ingress-values.yaml
+            values: |
+              {{- $lbIP := dig "nginxIngress" "service" "loadBalancerIP" "" . -}}
+              {{- if $lbIP }}
+              controller:
+                service:
+                  loadBalancerIP: {{ $lbIP | quote }}
+              {{- end }}
         - repoURL: https://github.com/Countly/helm.git
           targetRevision: main
           ref: values
