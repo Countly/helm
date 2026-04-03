@@ -46,10 +46,8 @@ spec:
               value: "{{ .observability }}"
             - name: global.kafkaConnect
               value: "{{ .kafkaConnect }}"
-            {{- if .kafkaConnectSizing }}
             - name: global.kafkaConnectSizing
-              value: "{{ .kafkaConnectSizing }}"
-            {{- end }}
+              value: '{{ .kafkaConnectSizing | default "auto" }}'
       destination:
         server: "{{ .server }}"
         namespace: kafka
