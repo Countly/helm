@@ -27,6 +27,8 @@ serviceAccount:
   annotations: {}
 
 # --- Image ---
+# Preferred place to pin or change the Countly app image for a deployment.
+# Use digest for normal production changes; leave tag only as fallback.
 image:
   repository: gcr.io/countly-dev-313620/countly-unified
   artifactRepository: countly-unified
