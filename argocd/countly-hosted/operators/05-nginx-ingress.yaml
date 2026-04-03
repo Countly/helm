@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: customer-nginx-ingress
+  name: countly-nginx-ingress
   namespace: argocd
 spec:
   goTemplate: true

@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: customer-mongodb-crds
+  name: countly-mongodb-crds
   namespace: argocd
 spec:
   goTemplate: true
