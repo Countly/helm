@@ -27,10 +27,10 @@ spec:
           helm:
             releaseName: countly-mongodb
             valueFiles:
-              - "../../profiles/sizing/{{ .sizing }}/mongodb.yaml"
               - "../../profiles/security/{{ .security }}/mongodb.yaml"
               - "$values/environments/{{ .environment }}/global.yaml"
               - "$values/environments/{{ .environment }}/mongodb.yaml"
+              - "../../profiles/sizing/{{ .sizing }}/mongodb.yaml"
               - "$values/environments/{{ .environment }}/credentials-mongodb.yaml"
             parameters:
               - name: argocd.enabled

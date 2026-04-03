@@ -27,10 +27,10 @@ spec:
           helm:
             releaseName: countly-clickhouse
             valueFiles:
-              - "../../profiles/sizing/{{ .sizing }}/clickhouse.yaml"
               - "../../profiles/security/{{ .security }}/clickhouse.yaml"
               - "$values/environments/{{ .environment }}/global.yaml"
               - "$values/environments/{{ .environment }}/clickhouse.yaml"
+              - "../../profiles/sizing/{{ .sizing }}/clickhouse.yaml"
               - "$values/environments/{{ .environment }}/credentials-clickhouse.yaml"
             parameters:
               - name: argocd.enabled

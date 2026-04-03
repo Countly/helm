@@ -20,9 +20,9 @@ spec:
       releaseName: countly-clickhouse
       valueFiles:
         - ../../environments/{{ .Values.environment }}/global.yaml
-        - ../../profiles/sizing/{{ .Values.global.sizing }}/clickhouse.yaml
         - ../../profiles/security/{{ .Values.global.security }}/clickhouse.yaml
         - ../../environments/{{ .Values.environment }}/clickhouse.yaml
+        - ../../profiles/sizing/{{ .Values.global.sizing }}/clickhouse.yaml
         - ../../environments/{{ .Values.environment }}/credentials-clickhouse.yaml
       parameters:
         - name: argocd.enabled

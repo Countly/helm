@@ -28,14 +28,18 @@ spec:
             releaseName: countly-kafka
             valueFiles:
               - "../../profiles/kafka-connect/{{ .kafkaConnect }}/kafka.yaml"
-              {{- if .kafkaConnectSizing }}
-              - "../../profiles/kafka-connect-sizing/{{ .kafkaConnectSizing }}/kafka.yaml"
-              {{- end }}
-              - "../../profiles/sizing/{{ .sizing }}/kafka.yaml"
               - "../../profiles/observability/{{ .observability }}/kafka.yaml"
               - "../../profiles/security/{{ .security }}/kafka.yaml"
               - "$values/environments/{{ .environment }}/global.yaml"
               - "$values/environments/{{ .environment }}/kafka.yaml"
+              {{- $kcSizing := .kafkaConnectSizing | default "auto" }}
+              {{- if eq $kcSizing "auto" }}
+              {{- $kcSizing = .sizing }}
+              {{- end }}
+              {{- if $kcSizing }}
+              - "../../profiles/kafka-connect-sizing/{{ $kcSizing }}/kafka.yaml"
+              {{- end }}
+              - "../../profiles/sizing/{{ .sizing }}/kafka.yaml"
               - "$values/environments/{{ .environment }}/credentials-kafka.yaml"
             parameters:
               - name: argocd.enabled

@@ -20,10 +20,10 @@ spec:
       releaseName: countly-observability
       valueFiles:
         - ../../environments/{{ .Values.environment }}/global.yaml
-        - ../../profiles/sizing/{{ .Values.global.sizing }}/observability.yaml
         - ../../profiles/observability/{{ .Values.global.observability }}/observability.yaml
         - ../../profiles/security/{{ .Values.global.security }}/observability.yaml
         - ../../environments/{{ .Values.environment }}/observability.yaml
+        - ../../profiles/sizing/{{ .Values.global.sizing }}/observability.yaml
         - ../../environments/{{ .Values.environment }}/credentials-observability.yaml
       parameters:
         - name: argocd.enabled

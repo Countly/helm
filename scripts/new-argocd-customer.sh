@@ -25,6 +25,7 @@ Defaults:
   tls           letsencrypt
   observability full
   kafkaConnect  balanced
+  kafkaConnectSizing auto
   migration     disabled
   gcpSA         set after scaffold for External Secrets Workload Identity
 EOF
@@ -116,6 +117,7 @@ global:
   sizing: production
   observability: full
   kafkaConnect: balanced
+  kafkaConnectSizing: auto
   tls: letsencrypt
   security: open
 
@@ -347,6 +349,7 @@ security: open
 tls: letsencrypt
 observability: full
 kafkaConnect: balanced
+kafkaConnectSizing: auto
 migration: disabled
 nginxIngress:
   service:

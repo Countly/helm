@@ -28,11 +28,11 @@ spec:
           releaseName: countly
           valueFiles:
             - "../../environments/{{ .environment }}/global.yaml"
-            - "../../profiles/sizing/{{ .sizing }}/countly.yaml"
             - "../../profiles/tls/{{ .tls }}/countly.yaml"
             - "../../profiles/observability/{{ .observability }}/countly.yaml"
             - "../../profiles/security/{{ .security }}/countly.yaml"
             - "../../environments/{{ .environment }}/countly.yaml"
+            - "../../profiles/sizing/{{ .sizing }}/countly.yaml"
             - "../../environments/{{ .environment }}/credentials-countly.yaml"
           parameters:
             - name: argocd.enabled

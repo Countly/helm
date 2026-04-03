@@ -28,9 +28,9 @@ spec:
           releaseName: countly-mongodb
           valueFiles:
             - "../../environments/{{ .environment }}/global.yaml"
-            - "../../profiles/sizing/{{ .sizing }}/mongodb.yaml"
             - "../../profiles/security/{{ .security }}/mongodb.yaml"
             - "../../environments/{{ .environment }}/mongodb.yaml"
+            - "../../profiles/sizing/{{ .sizing }}/mongodb.yaml"
             - "../../environments/{{ .environment }}/credentials-mongodb.yaml"
           parameters:
             - name: argocd.enabled

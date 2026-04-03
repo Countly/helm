@@ -133,6 +133,7 @@ security: open
 tls: letsencrypt
 observability: disabled
 kafkaConnect: balanced
+kafkaConnectSizing: auto
 migration: disabled
 nginxIngress:
   service:

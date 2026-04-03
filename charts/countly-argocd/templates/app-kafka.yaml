@@ -1,4 +1,8 @@
 {{- if .Values.kafka.enabled }}
+{{- $kcSizing := default "auto" .Values.global.kafkaConnectSizing }}
+{{- if eq $kcSizing "auto" }}
+{{- $kcSizing = .Values.global.sizing }}
+{{- end }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -21,13 +25,13 @@ spec:
       valueFiles:
         - ../../environments/{{ .Values.environment }}/global.yaml
         - ../../profiles/kafka-connect/{{ .Values.global.kafkaConnect }}/kafka.yaml
-        {{- if .Values.global.kafkaConnectSizing }}
-        - ../../profiles/kafka-connect-sizing/{{ .Values.global.kafkaConnectSizing }}/kafka.yaml
-        {{- end }}
-        - ../../profiles/sizing/{{ .Values.global.sizing }}/kafka.yaml
         - ../../profiles/observability/{{ .Values.global.observability }}/kafka.yaml
         - ../../profiles/security/{{ .Values.global.security }}/kafka.yaml
         - ../../environments/{{ .Values.environment }}/kafka.yaml
+        {{- if $kcSizing }}
+        - ../../profiles/kafka-connect-sizing/{{ $kcSizing }}/kafka.yaml
+        {{- end }}
+        - ../../profiles/sizing/{{ .Values.global.sizing }}/kafka.yaml
         - ../../environments/{{ .Values.environment }}/credentials-kafka.yaml
       parameters:
         - name: argocd.enabled

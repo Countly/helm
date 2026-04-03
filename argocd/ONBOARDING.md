@@ -274,6 +274,7 @@ security: hardened
 tls: letsencrypt
 observability: disabled
 kafkaConnect: balanced
+kafkaConnectSizing: auto
 migration: disabled
 ```
 
@@ -618,6 +619,294 @@ Healthy looks like:
 - `READY=True`
 
 If you see `InvalidProviderConfig`, first check Workload Identity.
+
+## Production Identity Model
+
+This is the recommended production setup when you manage many customer clusters.
+
+Use two identities:
+
+1. One shared Argo deploy identity
+   - used only to deploy Kubernetes resources into customer clusters
+   - shared across customers is fine
+   - this is your platform control-plane identity
+
+2. One separate runtime Google service account per customer cluster
+   - used by workloads inside that customer cluster
+   - used for:
+     - pulling images from Artifact Registry
+     - reading secrets from Secret Manager
+   - this should not have cluster-admin rights
+
+### Sharing Guide
+
+| Case | Recommendation |
+|------|----------------|
+| One shared Argo deploy identity for all customers | Shared allowed |
+| One shared runtime identity for all customers for image pulls only | Shared acceptable with caution |
+| One shared runtime identity for all customers for Secret Manager access | Should be separate |
+| One shared identity for deploy + runtime + secrets | Should be separate |
+
+### Permissions Matrix
+
+| Identity | Scope | Recommended access |
+|----------|-------|--------------------|
+| Argo deploy identity | Shared/platform | Kubernetes deploy access to target clusters only |
+| Runtime customer identity | Per customer/cluster | `roles/artifactregistry.reader`, `roles/secretmanager.secretAccessor` |
+| Optional image-pull-only identity | Per customer or shared | `roles/artifactregistry.reader` only |
+
+### Step-By-Step Production Setup
+
+#### 1. Create The Customer Cluster
+
+Who runs this:
+- platform or infrastructure engineer
+
+Example:
+
+```bash
+gcloud container clusters create CUSTOMER_CLUSTER \
+  --project=PROJECT_ID \
+  --zone=ZONE \
+  --workload-pool=PROJECT_ID.svc.id.goog
+```
+
+If the cluster already exists, verify Workload Identity:
+
+```bash
+gcloud container clusters describe CUSTOMER_CLUSTER \
+  --project=PROJECT_ID \
+  --zone=ZONE \
+  --format="value(workloadIdentityConfig.workloadPool)"
+```
+
+Healthy output:
+
+```text
+PROJECT_ID.svc.id.goog
+```
+
+#### 2. Ensure The Node Pool Uses GKE Metadata
+
+Who runs this:
+- platform or infrastructure engineer
+
+Check:
+
+```bash
+gcloud container node-pools describe default-pool \
+  --cluster=CUSTOMER_CLUSTER \
+  --project=PROJECT_ID \
+  --zone=ZONE \
+  --format="value(config.workloadMetadataConfig.mode)"
+```
+
+If needed:
+
+```bash
+gcloud container node-pools update default-pool \
+  --cluster=CUSTOMER_CLUSTER \
+  --project=PROJECT_ID \
+  --zone=ZONE \
+  --workload-metadata=GKE_METADATA
+```
+
+Why this matters:
+- GKE Standard needs this for Workload Identity to function correctly
+
+#### 3. Create The Per-Customer Runtime Google Service Account
+
+Who runs this:
+- platform or infrastructure engineer
+
+Example:
+
+```bash
+gcloud iam service-accounts create CUSTOMER-runtime \
+  --project=PROJECT_ID \
+  --display-name="CUSTOMER runtime identity"
+```
+
+This creates:
+
+```text
+CUSTOMER-runtime@PROJECT_ID.iam.gserviceaccount.com
+```
+
+#### 4. Grant Runtime Cloud Permissions
+
+Who runs this:
+- platform or infrastructure engineer
+
+Artifact Registry read:
+
+```bash
+gcloud projects add-iam-policy-binding PROJECT_ID \
+  --member="serviceAccount:CUSTOMER-runtime@PROJECT_ID.iam.gserviceaccount.com" \
+  --role="roles/artifactregistry.reader"
+```
+
+Secret Manager read, simple project-wide version:
+
+```bash
+gcloud projects add-iam-policy-binding PROJECT_ID \
+  --member="serviceAccount:CUSTOMER-runtime@PROJECT_ID.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+Better least-privilege version, grant only on specific secrets:
+
+```bash
+gcloud secrets add-iam-policy-binding SECRET_NAME \
+  --project=PROJECT_ID \
+  --member="serviceAccount:CUSTOMER-runtime@PROJECT_ID.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+#### 5. Bind The Kubernetes Service Account To The Google Service Account
+
+Who runs this:
+- platform engineer or GitOps owner
+
+This is the Workload Identity link.
+
+Grant impersonation:
+
+```bash
+gcloud iam service-accounts add-iam-policy-binding \
+  CUSTOMER-runtime@PROJECT_ID.iam.gserviceaccount.com \
+  --project=PROJECT_ID \
+  --role="roles/iam.workloadIdentityUser" \
+  --member="serviceAccount:PROJECT_ID.svc.id.goog[NAMESPACE/KSA_NAME]"
+```
+
+Typical examples:
+- `external-secrets/external-secrets`
+- `countly/countly`
+
+Annotate the Kubernetes service account:
+
+```bash
+kubectl annotate serviceaccount KSA_NAME \
+  -n NAMESPACE \
+  iam.gke.io/gcp-service-account=CUSTOMER-runtime@PROJECT_ID.iam.gserviceaccount.com \
+  --overwrite
+```
+
+#### 6. Create Customer Secrets In Secret Manager
+
+Who runs this:
+- platform engineer or secrets owner
+
+Example:
+
+```bash
+gcloud secrets create CUSTOMER-mongodb-app-password \
+  --project=PROJECT_ID \
+  --replication-policy=user-managed \
+  --locations=us-central1
+
+printf '%s' 'StrongPasswordHere' | \
+gcloud secrets versions add CUSTOMER-mongodb-app-password \
+  --project=PROJECT_ID \
+  --data-file=-
+```
+
+Repeat for your customer-specific application secrets.
+
+If you use shared TLS for many customers, create these once:
+
+```text
+countly-prod-tls-crt
+countly-prod-tls-key
+```
+
+#### 7. Add The Cluster To Argo CD
+
+Who runs this:
+- GitOps or platform engineer
+
+Get kube credentials:
+
+```bash
+gcloud container clusters get-credentials CUSTOMER_CLUSTER \
+  --project=PROJECT_ID \
+  --zone=ZONE
+```
+
+Add cluster to Argo:
+
+```bash
+argocd cluster add CURRENT_KUBE_CONTEXT
+```
+
+Check:
+
+```bash
+argocd cluster list
+```
+
+Important:
+- this gives Argo Kubernetes access to deploy resources
+- this is separate from the runtime Google service account
+
+#### 8. Create The Customer Overlay In Git
+
+Who runs this:
+- GitOps or platform engineer
+
+For Secret Manager mode:
+
+```bash
+./scripts/new-argocd-customer.sh --secret-mode gcp-secrets CUSTOMER https://CLUSTER_ENDPOINT CUSTOMER.example.com
+```
+
+Then fill:
+- `argocd/customers/CUSTOMER.yaml`
+- `environments/CUSTOMER/global.yaml`
+
+Typical values:
+- `gcpServiceAccountEmail: CUSTOMER-runtime@PROJECT_ID.iam.gserviceaccount.com`
+- `secretManagerProjectID: PROJECT_ID`
+- `clusterProjectID: PROJECT_ID`
+- `clusterName: CUSTOMER_CLUSTER`
+- `clusterLocation: ZONE`
+
+#### 9. Commit And Sync
+
+Who runs this:
+- GitOps or platform engineer
+
+```bash
+git add argocd/customers/CUSTOMER.yaml environments/CUSTOMER
+git commit -m "Add CUSTOMER customer"
+git push origin BRANCH
+```
+
+Then:
+
+```bash
+argocd app get countly-bootstrap --hard-refresh
+argocd app sync countly-bootstrap
+```
+
+#### 10. Verify
+
+Who runs this:
+- GitOps or platform engineer
+
+```bash
+kubectl get applications -n argocd
+kubectl get externalsecrets.external-secrets.io -A
+kubectl get pods -A
+kubectl get ingress -n countly
+```
+
+### What Not To Do
+
+- do not use service account keys for workloads if Workload Identity is available
+- do not give the runtime service account cluster-admin
+- do not use one broad Secret Manager runtime identity for every customer if you can avoid it
 
 ## Step 6: Create Secrets In Google Secret Manager
 

@@ -20,7 +20,7 @@ global:
   tls: letsencrypt
   observability: full
   kafkaConnect: balanced
-  kafkaConnectSizing: production
+  kafkaConnectSizing: auto
 
 # -- Component toggles
 mongodb:
