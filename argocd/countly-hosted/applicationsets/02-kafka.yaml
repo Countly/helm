@@ -32,13 +32,7 @@ spec:
               - "../../profiles/security/{{ .security }}/kafka.yaml"
               - "$values/environments/{{ .environment }}/global.yaml"
               - "$values/environments/{{ .environment }}/kafka.yaml"
-              {{- $kcSizing := .kafkaConnectSizing | default "auto" }}
-              {{- if eq $kcSizing "auto" }}
-              {{- $kcSizing = .sizing }}
-              {{- end }}
-              {{- if $kcSizing }}
-              - "../../profiles/kafka-connect-sizing/{{ $kcSizing }}/kafka.yaml"
-              {{- end }}
+              - "../../profiles/kafka-connect-sizing/{{ if or (eq (.kafkaConnectSizing | default \"auto\") \"\") (eq (.kafkaConnectSizing | default \"auto\") \"auto\") }}{{ .sizing }}{{ else }}{{ .kafkaConnectSizing }}{{ end }}/kafka.yaml"
               - "../../profiles/sizing/{{ .sizing }}/kafka.yaml"
               - "$values/environments/{{ .environment }}/credentials-kafka.yaml"
             parameters:
