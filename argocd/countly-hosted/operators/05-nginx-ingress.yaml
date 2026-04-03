@@ -10,7 +10,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/Countly/countly-deployment.git
-        revision: countly-hosted-argo-layout
+        revision: main
         files:
           - path: customers/*.yaml
   template:
@@ -36,7 +36,7 @@ spec:
                   loadBalancerIP: {{ $lbIP | quote }}
               {{- end }}
         - repoURL: https://github.com/Countly/helm.git
-          targetRevision: mutli-source-values-split
+          targetRevision: main
           ref: values
       destination:
         server: "{{ .server }}"

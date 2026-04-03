@@ -10,7 +10,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/Countly/countly-deployment.git
-        revision: countly-hosted-argo-layout
+        revision: main
         files:
           - path: customers/*.yaml
   template:
@@ -22,7 +22,7 @@ spec:
       project: "{{ .project }}"
       sources:
         - repoURL: https://github.com/Countly/helm.git
-          targetRevision: mutli-source-values-split
+          targetRevision: main
           path: charts/countly-kafka
           helm:
             releaseName: countly-kafka
@@ -49,7 +49,7 @@ spec:
               - name: global.kafkaConnectSizing
                 value: '{{ dig "kafkaConnectSizing" "auto" . }}'
         - repoURL: https://github.com/Countly/countly-deployment.git
-          targetRevision: countly-hosted-argo-layout
+          targetRevision: main
           ref: values
       destination:
         server: "{{ .server }}"

@@ -10,7 +10,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/Countly/countly-deployment.git
-        revision: countly-hosted-argo-layout
+        revision: main
         files:
           - path: customers/*.yaml
   template:
