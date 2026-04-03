@@ -1,5 +1,6 @@
 # Local environment — Kafka chart overrides (non-sizing)
-# Profile defaults come from profiles/sizing/local/kafka.yaml
+# Profile defaults come from profiles/sizing/local/kafka.yaml and
+# profiles/kafka-connect-sizing/local/kafka.yaml
 # Credentials come from credentials-kafka.yaml
 
 # Use OTel-enabled image (includes /opt/otel/opentelemetry-javaagent.jar)

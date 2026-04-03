@@ -20,8 +20,11 @@ spec:
       releaseName: countly-kafka
       valueFiles:
         - ../../environments/{{ .Values.environment }}/global.yaml
-        - ../../profiles/sizing/{{ .Values.global.sizing }}/kafka.yaml
         - ../../profiles/kafka-connect/{{ .Values.global.kafkaConnect }}/kafka.yaml
+        {{- if .Values.global.kafkaConnectSizing }}
+        - ../../profiles/kafka-connect-sizing/{{ .Values.global.kafkaConnectSizing }}/kafka.yaml
+        {{- end }}
+        - ../../profiles/sizing/{{ .Values.global.sizing }}/kafka.yaml
         - ../../profiles/observability/{{ .Values.global.observability }}/kafka.yaml
         - ../../profiles/security/{{ .Values.global.security }}/kafka.yaml
         - ../../environments/{{ .Values.environment }}/kafka.yaml

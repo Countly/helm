@@ -40,7 +40,8 @@
         "security": { "type": "string" },
         "tls": { "type": "string" },
         "observability": { "type": "string" },
-        "kafkaConnect": { "type": "string" }
+        "kafkaConnect": { "type": "string" },
+        "kafkaConnectSizing": { "type": "string" }
       }
     },
     "mongodb": {

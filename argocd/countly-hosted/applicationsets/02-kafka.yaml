@@ -27,8 +27,11 @@ spec:
           helm:
             releaseName: countly-kafka
             valueFiles:
-              - "../../profiles/sizing/{{ .sizing }}/kafka.yaml"
               - "../../profiles/kafka-connect/{{ .kafkaConnect }}/kafka.yaml"
+              {{- if .kafkaConnectSizing }}
+              - "../../profiles/kafka-connect-sizing/{{ .kafkaConnectSizing }}/kafka.yaml"
+              {{- end }}
+              - "../../profiles/sizing/{{ .sizing }}/kafka.yaml"
               - "../../profiles/observability/{{ .observability }}/kafka.yaml"
               - "../../profiles/security/{{ .security }}/kafka.yaml"
               - "$values/environments/{{ .environment }}/global.yaml"
@@ -45,6 +48,10 @@ spec:
                 value: "{{ .observability }}"
               - name: global.kafkaConnect
                 value: "{{ .kafkaConnect }}"
+              {{- if .kafkaConnectSizing }}
+              - name: global.kafkaConnectSizing
+                value: "{{ .kafkaConnectSizing }}"
+              {{- end }}
         - repoURL: https://github.com/Countly/countly-deployment.git
           targetRevision: countly-hosted-argo-layout
           ref: values

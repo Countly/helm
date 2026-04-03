@@ -28,8 +28,11 @@ spec:
           releaseName: countly-kafka
           valueFiles:
             - "../../environments/{{ .environment }}/global.yaml"
-            - "../../profiles/sizing/{{ .sizing }}/kafka.yaml"
             - "../../profiles/kafka-connect/{{ .kafkaConnect }}/kafka.yaml"
+            {{- if .kafkaConnectSizing }}
+            - "../../profiles/kafka-connect-sizing/{{ .kafkaConnectSizing }}/kafka.yaml"
+            {{- end }}
+            - "../../profiles/sizing/{{ .sizing }}/kafka.yaml"
             - "../../profiles/observability/{{ .observability }}/kafka.yaml"
             - "../../profiles/security/{{ .security }}/kafka.yaml"
             - "../../environments/{{ .environment }}/kafka.yaml"
@@ -45,6 +48,10 @@ spec:
               value: "{{ .observability }}"
             - name: global.kafkaConnect
               value: "{{ .kafkaConnect }}"
+            {{- if .kafkaConnectSizing }}
+            - name: global.kafkaConnectSizing
+              value: "{{ .kafkaConnectSizing }}"
+            {{- end }}
       destination:
         server: "{{ .server }}"
         namespace: kafka

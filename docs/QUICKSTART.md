@@ -113,8 +113,9 @@ helm install countly-kafka ./charts/countly-kafka \
   -n kafka --create-namespace \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
-  -f profiles/sizing/local/kafka.yaml \
   -f profiles/kafka-connect/balanced/kafka.yaml \
+  -f profiles/kafka-connect-sizing/local/kafka.yaml \
+  -f profiles/sizing/local/kafka.yaml \
   -f profiles/observability/full/kafka.yaml \
   -f profiles/security/open/kafka.yaml \
   -f environments/local/kafka.yaml \

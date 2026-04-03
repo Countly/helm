@@ -55,8 +55,12 @@ releases:
     namespace: kafka
     values:
       - environments/{{ .Environment.Name }}/global.yaml
-      - profiles/sizing/{{ .Values | get "global.sizing" "small" }}/kafka.yaml
       - profiles/kafka-connect/{{ .Values | get "global.kafkaConnect" "balanced" }}/kafka.yaml
+      {{- $kcSizing := .Values | get "global.kafkaConnectSizing" "" }}
+      {{- if ne $kcSizing "" }}
+      - profiles/kafka-connect-sizing/{{ $kcSizing }}/kafka.yaml
+      {{- end }}
+      - profiles/sizing/{{ .Values | get "global.sizing" "small" }}/kafka.yaml
       - profiles/observability/{{ .Values | get "global.observability" "full" }}/kafka.yaml
       - profiles/security/{{ .Values | get "global.security" "open" }}/kafka.yaml
       - environments/{{ .Environment.Name }}/kafka.yaml

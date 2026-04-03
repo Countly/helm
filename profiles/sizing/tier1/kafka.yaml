@@ -4,11 +4,6 @@
 # 2 brokers + 1 controller. Replication factor 2, min.insync.replicas 1
 # (allows writes when one broker is unavailable on a 2-broker cluster).
 #
-# NOTE: kafkaConnect resources here will be overridden by the kafka-connect
-# dimension profile (throughput/balanced/low-latency). The values below
-# reflect the tier1-validated connect worker sizing; pair with a matching
-# kafka-connect profile if you need to honour them exactly.
-
 brokers:
   replicas: 2
   resources:
@@ -38,16 +33,3 @@ controllers:
 
 cruiseControl:
   enabled: false
-
-kafkaConnect:
-  replicas: 1
-  resources:
-    requests: { cpu: "1", memory: "2Gi" }
-    limits: { cpu: "1", memory: "2Gi" }
-  jvmOptions:
-    xms: "1g"
-    xmx: "1g"
-  workerConfig:
-    config.storage.replication.factor: 2
-    offset.storage.replication.factor: 2
-    status.storage.replication.factor: 2

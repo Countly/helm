@@ -23,9 +23,10 @@ Edit `environments/my-deployment/global.yaml`:
 
 ```yaml
 global:
-  sizing: production                # Sizing: local | small | production
+  sizing: production                # Sizing: local | small | tier1 | production
   observability: full               # Observability: disabled | full | external-grafana | external
   kafkaConnect: balanced            # Kafka Connect: throughput | balanced | low-latency
+  kafkaConnectSizing: ""            # Optional Kafka Connect tier override: local | small | tier1 | production
   tls: letsencrypt                  # TLS: none | letsencrypt | provided | selfSigned
   security: hardened                # Security: open | hardened
   storageClass: gp3                 # Your cluster's storage class

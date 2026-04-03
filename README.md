@@ -254,16 +254,17 @@ Operator and platform apps are pinned by Helm chart version in `argocd/operators
 ### Manual Installation (without Helmfile)
 
 Substitute your profile choices from `global.yaml` into the commands below.
-The value file order must match the layering: global → sizing → dimension profiles → security → environment → secrets.
+The value file order must match the layering: global -> Kafka Connect mode -> optional Kafka Connect sizing override -> sizing -> dimension profiles -> security -> environment -> secrets.
 
 ```bash
 # Shorthand — substitute these from your environments/<env>/global.yaml
 ENV=my-deployment
-SIZING=local          # local | small | production
+SIZING=local          # local | small | tier1 | production
 SECURITY=open         # open | hardened
 TLS=selfSigned        # none | selfSigned | letsencrypt | provided
 OBS=full              # disabled | full | external-grafana | external
 KC=balanced           # throughput | balanced | low-latency
+KC_SIZING=""          # optional: local | small | tier1 | production
 
 helm install countly-mongodb ./charts/countly-mongodb -n mongodb --create-namespace \
   --wait --timeout 10m \
@@ -284,8 +285,9 @@ helm install countly-clickhouse ./charts/countly-clickhouse -n clickhouse --crea
 helm install countly-kafka ./charts/countly-kafka -n kafka --create-namespace \
   --wait --timeout 10m \
   -f environments/$ENV/global.yaml \
-  -f profiles/sizing/$SIZING/kafka.yaml \
   -f profiles/kafka-connect/$KC/kafka.yaml \
+  ${KC_SIZING:+-f profiles/kafka-connect-sizing/$KC_SIZING/kafka.yaml} \
+  -f profiles/sizing/$SIZING/kafka.yaml \
   -f profiles/observability/$OBS/kafka.yaml \
   -f profiles/security/$SECURITY/kafka.yaml \
   -f environments/$ENV/kafka.yaml \
@@ -378,9 +380,10 @@ helm/
     countly-migration/
     countly-argocd/
   profiles/                         # Composable profile dimensions
-    sizing/                         # local | small | production
+    sizing/                         # local | small | tier1 | production
     observability/                  # disabled | full | external-grafana | external
     kafka-connect/                  # throughput | balanced | low-latency
+    kafka-connect-sizing/           # optional validated per-tier Kafka Connect overrides
     tls/                            # none | letsencrypt | provided | selfSigned
     security/                       # open | hardened
   environments/                     # Deployment environments

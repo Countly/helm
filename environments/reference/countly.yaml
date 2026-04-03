@@ -10,7 +10,7 @@ global:
   imageRegistry: ""
   imagePullSecrets: []
   storageClass: ""
-  sizing: small                           # local | small | production
+  sizing: small                           # local | small | tier1 | production
   scheduling:
     nodeSelector: {}
     tolerations: []

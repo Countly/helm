@@ -4,3 +4,4 @@ global:
   tls: selfSigned
   observability: full
   kafkaConnect: balanced
+  kafkaConnectSizing: local

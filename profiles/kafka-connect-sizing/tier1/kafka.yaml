@@ -1,0 +1,12 @@
+kafkaConnect:
+  replicas: 1
+  resources:
+    requests: { cpu: "1", memory: "2Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+  jvmOptions:
+    xms: "1g"
+    xmx: "1g"
+  workerConfig:
+    config.storage.replication.factor: 2
+    offset.storage.replication.factor: 2
+    status.storage.replication.factor: 2

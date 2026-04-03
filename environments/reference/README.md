@@ -11,10 +11,11 @@ This directory is a complete starting point for a new Countly deployment.
 
 2. Edit `global.yaml`:
   - Set `ingress.hostname` to your domain
-  - Choose `global.sizing`: `local`, `small`, or `production`
+  - Choose `global.sizing`: `local`, `small`, `tier1`, or `production`
   - Choose `global.tls`: `none`, `letsencrypt`, `provided`, or `selfSigned`
   - Choose `global.observability`: `disabled`, `full`, `external-grafana`, or `external`
   - Choose `global.kafkaConnect`: `throughput`, `balanced`, or `low-latency`
+  - Optionally set `global.kafkaConnectSizing` to `local`, `small`, `tier1`, or `production` when you need a validated Kafka Connect override for that hardware tier
   - Choose `global.security`: `open` or `hardened`
   - Choose backing service modes (bundled or external)
   - For GAR, set `global.imageSource`, `global.imagePullSecrets`, and optionally `global.imagePullSecretExternalSecret`
