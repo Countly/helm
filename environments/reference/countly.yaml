@@ -30,8 +30,8 @@ serviceAccount:
 # Preferred place to pin or change the Countly app image for a deployment.
 # Use digest for normal production changes; leave tag only as fallback.
 image:
-  repository: gcr.io/countly-dev-313620/countly-unified
-  artifactRepository: countly-unified
+  repository: gcr.io/countly-dev-313620/countly-unified   # Used when global.imageSource.mode=direct
+  artifactRepository: countly-unified                     # Used when global.imageSource.mode=gcpArtifactRegistry
   digest: "sha256:b42efb9713ee11d173fe409924fb9e2a208b5c0beafed9e42f349b996b6650a4"
   tag: "26.01"                                # Fallback when digest is empty
   pullPolicy: IfNotPresent
