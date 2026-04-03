@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Countly/helm.git
-    targetRevision: main
+    targetRevision: mutli-source-values-split
     path: argocd/countly-hosted
     directory:
       recurse: true

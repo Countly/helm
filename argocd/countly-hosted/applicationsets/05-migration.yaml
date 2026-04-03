@@ -10,7 +10,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/Countly/countly-deployment.git
-        revision: main
+        revision: countly-hosted-argo-layout
         files:
           - path: customers/*.yaml
   template:
@@ -22,7 +22,7 @@ spec:
       project: "{{ .project }}"
       sources:
         - repoURL: https://github.com/Countly/helm.git
-          targetRevision: main
+          targetRevision: mutli-source-values-split
           path: '{{ if eq .migration "enabled" }}charts/countly-migration{{ else }}charts/noop{{ end }}'
           helm:
             releaseName: countly-migration
@@ -34,7 +34,7 @@ spec:
               - name: argocd.enabled
                 value: "true"
         - repoURL: https://github.com/Countly/countly-deployment.git
-          targetRevision: main
+          targetRevision: countly-hosted-argo-layout
           ref: values
       destination:
         server: "{{ .server }}"

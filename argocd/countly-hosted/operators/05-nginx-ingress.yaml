@@ -10,7 +10,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/Countly/countly-deployment.git
-        revision: main
+        revision: countly-hosted-argo-layout
         files:
           - path: customers/*.yaml
   template:
@@ -29,7 +29,7 @@ spec:
             valueFiles:
               - $values/nginx-ingress-values.yaml
         - repoURL: https://github.com/Countly/helm.git
-          targetRevision: main
+          targetRevision: mutli-source-values-split
           ref: values
       destination:
         server: "{{ .server }}"

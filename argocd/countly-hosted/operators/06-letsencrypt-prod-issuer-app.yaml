@@ -10,7 +10,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/Countly/countly-deployment.git
-        revision: main
+        revision: countly-hosted-argo-layout
         files:
           - path: customers/*.yaml
   template:
@@ -22,7 +22,7 @@ spec:
       project: default
       source:
         repoURL: https://github.com/Countly/helm.git
-        targetRevision: main
+        targetRevision: mutli-source-values-split
         path: '{{ if eq .tls "letsencrypt" }}argocd/operator-manifests/letsencrypt-prod-issuer{{ else }}charts/noop{{ end }}'
         directory:
           recurse: true
