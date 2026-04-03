@@ -32,7 +32,7 @@ spec:
               - "../../profiles/security/{{ .security }}/kafka.yaml"
               - "$values/environments/{{ .environment }}/global.yaml"
               - "$values/environments/{{ .environment }}/kafka.yaml"
-              - "../../profiles/kafka-connect-sizing/{{ if or (eq (.kafkaConnectSizing | default \"auto\") \"\") (eq (.kafkaConnectSizing | default \"auto\") \"auto\") }}{{ .sizing }}{{ else }}{{ .kafkaConnectSizing }}{{ end }}/kafka.yaml"
+              - "../../profiles/kafka-connect-sizing/{{ $kcSizing := dig \"kafkaConnectSizing\" \"auto\" . }}{{ if or (eq $kcSizing \"\") (eq $kcSizing \"auto\") }}{{ .sizing }}{{ else }}{{ $kcSizing }}{{ end }}/kafka.yaml"
               - "../../profiles/sizing/{{ .sizing }}/kafka.yaml"
               - "$values/environments/{{ .environment }}/credentials-kafka.yaml"
             parameters:
@@ -47,7 +47,7 @@ spec:
               - name: global.kafkaConnect
                 value: "{{ .kafkaConnect }}"
               - name: global.kafkaConnectSizing
-                value: '{{ .kafkaConnectSizing | default "auto" }}'
+                value: '{{ dig "kafkaConnectSizing" "auto" . }}'
         - repoURL: https://github.com/Countly/countly-deployment.git
           targetRevision: countly-hosted-argo-layout
           ref: values
