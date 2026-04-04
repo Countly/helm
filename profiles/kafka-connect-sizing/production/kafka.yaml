@@ -1,0 +1,8 @@
+kafkaConnect:
+  replicas: 2
+  resources:
+    requests: { cpu: "2", memory: "8Gi" }
+    limits: { cpu: "2", memory: "8Gi" }
+  jvmOptions:
+    xms: "5g"
+    xmx: "5g"

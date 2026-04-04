@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: customer-letsencrypt-prod-issuer
+  name: letsencrypt-prod-issuer
   namespace: argocd
 spec:
   goTemplate: true

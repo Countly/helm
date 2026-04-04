@@ -6,6 +6,7 @@ global:
   tls: letsencrypt
   observability: full
   kafkaConnect: balanced
+  kafkaConnectSizing: production
   imageSource:
     mode: gcpArtifactRegistry
     gcpArtifactRegistry:

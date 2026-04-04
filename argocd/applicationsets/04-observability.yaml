@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: countly-observability
+  name: observability
   namespace: argocd
 spec:
   goTemplate: true
@@ -28,10 +28,10 @@ spec:
           releaseName: countly-observability
           valueFiles:
             - "../../environments/{{ .environment }}/global.yaml"
-            - "../../profiles/sizing/{{ .sizing }}/observability.yaml"
             - "../../profiles/observability/{{ .observability }}/observability.yaml"
             - "../../profiles/security/{{ .security }}/observability.yaml"
             - "../../environments/{{ .environment }}/observability.yaml"
+            - "../../profiles/sizing/{{ .sizing }}/observability.yaml"
             - "../../environments/{{ .environment }}/credentials-observability.yaml"
           parameters:
             - name: argocd.enabled

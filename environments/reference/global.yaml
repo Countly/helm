@@ -10,9 +10,10 @@
 
 global:
   # --- Profile Selectors ---
-  sizing: production              # local | small | production
+  sizing: production              # local | small | tier1 | production
   observability: full             # disabled | full | external-grafana | external
   kafkaConnect: balanced          # throughput | balanced | low-latency
+  kafkaConnectSizing: auto        # auto uses global.sizing; set "" to disable, or choose local | small | tier1 | production
   tls: letsencrypt                # none | letsencrypt | provided | selfSigned
   security: open                  # open | hardened
 

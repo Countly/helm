@@ -498,11 +498,12 @@ project: ""
 
 # Profile selections (passed to child charts via valueFiles)
 global:
-  sizing: production        # local | small | production
+  sizing: production        # local | small | tier1 | production
   security: hardened        # open | hardened
   tls: letsencrypt          # none | letsencrypt | provided | selfSigned
   observability: full       # disabled | full | external-grafana | external
   kafkaConnect: balanced    # throughput | balanced | low-latency
+  kafkaConnectSizing: ""    # optional Kafka Connect tier override
 
 # Component toggles
 mongodb:

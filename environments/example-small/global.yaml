@@ -6,6 +6,7 @@ global:
   tls: none
   observability: full
   kafkaConnect: balanced
+  kafkaConnectSizing: small
 
 ingress:
   hostname: analytics-dev.example.com

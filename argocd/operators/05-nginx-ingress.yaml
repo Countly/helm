@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: customer-nginx-ingress
+  name: nginx-ingress
   namespace: argocd
 spec:
   goTemplate: true
@@ -28,6 +28,13 @@ spec:
             releaseName: nginx-ingress
             valueFiles:
               - $values/nginx-ingress-values.yaml
+            values: |
+              {{- $lbIP := dig "nginxIngress" "service" "loadBalancerIP" "" . -}}
+              {{- if $lbIP }}
+              controller:
+                service:
+                  loadBalancerIP: {{ $lbIP | quote }}
+              {{- end }}
         - repoURL: https://github.com/Countly/helm.git
           targetRevision: main
           ref: values

@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: countly-kafka
+  name: kafka
   namespace: argocd
 spec:
   goTemplate: true
@@ -28,11 +28,12 @@ spec:
           releaseName: countly-kafka
           valueFiles:
             - "../../environments/{{ .environment }}/global.yaml"
-            - "../../profiles/sizing/{{ .sizing }}/kafka.yaml"
             - "../../profiles/kafka-connect/{{ .kafkaConnect }}/kafka.yaml"
             - "../../profiles/observability/{{ .observability }}/kafka.yaml"
             - "../../profiles/security/{{ .security }}/kafka.yaml"
             - "../../environments/{{ .environment }}/kafka.yaml"
+            - "../../profiles/kafka-connect-sizing/{{ $kcSizing := dig \"kafkaConnectSizing\" \"auto\" . }}{{ if or (eq $kcSizing \"\") (eq $kcSizing \"auto\") }}{{ .sizing }}{{ else }}{{ $kcSizing }}{{ end }}/kafka.yaml"
+            - "../../profiles/sizing/{{ .sizing }}/kafka.yaml"
             - "../../environments/{{ .environment }}/credentials-kafka.yaml"
           parameters:
             - name: argocd.enabled
@@ -45,6 +46,8 @@ spec:
               value: "{{ .observability }}"
             - name: global.kafkaConnect
               value: "{{ .kafkaConnect }}"
+            - name: global.kafkaConnectSizing
+              value: '{{ dig "kafkaConnectSizing" "auto" . }}'
       destination:
         server: "{{ .server }}"
         namespace: kafka

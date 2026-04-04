@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: countly-clickhouse
+  name: clickhouse
   namespace: argocd
 spec:
   goTemplate: true
@@ -28,9 +28,9 @@ spec:
           releaseName: countly-clickhouse
           valueFiles:
             - "../../environments/{{ .environment }}/global.yaml"
-            - "../../profiles/sizing/{{ .sizing }}/clickhouse.yaml"
             - "../../profiles/security/{{ .security }}/clickhouse.yaml"
             - "../../environments/{{ .environment }}/clickhouse.yaml"
+            - "../../profiles/sizing/{{ .sizing }}/clickhouse.yaml"
             - "../../environments/{{ .environment }}/credentials-clickhouse.yaml"
           parameters:
             - name: argocd.enabled
