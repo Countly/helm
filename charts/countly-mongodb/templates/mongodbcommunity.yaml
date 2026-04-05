@@ -107,3 +107,7 @@ spec:
             resources:
               requests:
                 storage: {{ .Values.mongodb.persistence.size }}
+  {{- if .Values.mongodb.additionalMongodConfig }}
+  additionalMongodConfig:
+    {{- toYaml .Values.mongodb.additionalMongodConfig | nindent 4 }}
+  {{- end }}
