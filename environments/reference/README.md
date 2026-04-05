@@ -24,6 +24,11 @@ This directory is a complete starting point for a new Countly deployment.
    - `clickhouse.yaml` → `auth.defaultUserPassword.password`
    - `kafka.yaml` → `kafkaConnect.clickhouse.password`
 
+   Use one shared ClickHouse password value for:
+   - Countly
+   - ClickHouse default user
+   - Kafka Connect
+
    Or use `secrets.example.yaml` as a complete reference.
 
 4. Register your environment in `helmfile.yaml.gotmpl`:

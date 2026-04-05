@@ -102,6 +102,9 @@ The ClickHouse password must be identical across three charts:
 - `clickhouse.yaml` -> `auth.defaultUserPassword.password`
 - `kafka.yaml` -> `kafkaConnect.clickhouse.password`
 
+For External Secrets / Secret Manager, use one shared secret name for all three
+references by default, for example `acme-clickhouse-password`.
+
 The MongoDB password must match across two charts:
 - `countly.yaml` -> `secrets.mongodb.password`
 - `mongodb.yaml` -> `users.app.password`
