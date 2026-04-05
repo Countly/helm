@@ -28,6 +28,11 @@ This directory is a complete starting point for a new Countly deployment.
   - `credentials-kafka.yaml` → `kafkaConnect.clickhouse.password`
   - `image-pull-secrets.example.yaml` → private registry pull secret manifests for `countly` and `kafka`
 
+   Use one shared ClickHouse password value for:
+   - Countly
+   - ClickHouse default user
+   - Kafka Connect
+
    Or use `secrets.example.yaml` as a complete reference.
 
 4. Register your environment in `helmfile.yaml.gotmpl`:
