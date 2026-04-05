@@ -78,6 +78,16 @@ countly-clickhouse-clickhouse-headless.{{ .Values.clickhouseNamespace | default 
 {{- end -}}
 
 {{/*
+ArgoCD sync-wave annotation (only when argocd.enabled).
+Usage: {{- include "countly-kafka.syncWave" (dict "wave" "5" "root" .) | nindent 4 }}
+*/}}
+{{- define "countly-kafka.syncWave" -}}
+{{- if ((.root.Values.argocd).enabled) }}
+argocd.argoproj.io/sync-wave: {{ .wave | quote }}
+{{- end }}
+{{- end -}}
+
+{{/*
 ClickHouse Connect secret name
 */}}
 {{- define "countly-kafka.clickhouseSecretName" -}}
@@ -86,4 +96,15 @@ ClickHouse Connect secret name
 {{- else -}}
 {{ .Values.kafkaConnect.clickhouse.secretName }}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Resolve the Kafka Connect image.
+
+Kafka Connect now uses the public Countly image by default. We intentionally
+do not rewrite it through global.imageSource.mode because Countly app images
+and Kafka Connect images can follow different distribution paths.
+*/}}
+{{- define "countly-kafka.connectImage" -}}
+{{- .Values.kafkaConnect.image -}}
 {{- end -}}

@@ -5,6 +5,10 @@ metadata:
   name: {{ include "countly-kafka.fullname" . }}-connect-env
   labels:
     {{- include "countly-kafka.labels" . | nindent 4 }}
+  {{- if ((.Values.argocd).enabled) }}
+  annotations:
+    {{- include "countly-kafka.syncWave" (dict "wave" "0" "root" .) | nindent 4 }}
+  {{- end }}
 data:
   CLICKHOUSE_HOST: {{ include "countly-kafka.clickhouseHost" . | quote }}
   CLICKHOUSE_PORT: {{ .Values.kafkaConnect.clickhouse.port | quote }}

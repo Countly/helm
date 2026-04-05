@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mongodb-debug
+  namespace: mongodb
+spec:
+  restartPolicy: Never
+  containers:
+  - name: shell
+    image: ubuntu:22.04
+    command: ["/bin/bash", "-c", "sleep 1d"]
+    volumeMounts:
+    - mountPath: /data
+      name: data
+  volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: data-volume-countly-mongodb-0

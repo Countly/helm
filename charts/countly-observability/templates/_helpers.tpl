@@ -258,3 +258,12 @@ Args: dict "component" <name> "storage" <storage-values> "default" <default> "al
 {{- fail (printf "%s.storage.forcePathStyle requires storage.endpoint (used for S3-compatible endpoints like MinIO)" .component) -}}
 {{- end -}}
 {{- end }}
+
+{{/*
+ArgoCD sync-wave annotation (only when argocd.enabled).
+*/}}
+{{- define "obs.syncWave" -}}
+{{- if ((.root.Values.argocd).enabled) }}
+argocd.argoproj.io/sync-wave: {{ .wave | quote }}
+{{- end }}
+{{- end -}}

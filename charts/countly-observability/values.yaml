@@ -1,3 +1,7 @@
+# -- ArgoCD integration (optional)
+argocd:
+  enabled: false
+
 # -- Deployment mode: "full" (all in-cluster), "hybrid" (no Grafana), "external" (no backends)
 mode: full
 
@@ -79,7 +83,7 @@ profiling:
 prometheus:
   image:
     repository: prom/prometheus
-    tag: "v3.10.0"
+    tag: "v3.8.1"
   retention:
     time: "30d"
     size: "50GB"
@@ -108,7 +112,7 @@ prometheus:
 loki:
   image:
     repository: grafana/loki
-    tag: "3.6.7"
+    tag: "3.6.3"
   retention: "30d"
   storage:
     backend: "filesystem"   # filesystem | s3 | gcs | azure
@@ -154,7 +158,7 @@ loki:
 tempo:
   image:
     repository: grafana/tempo
-    tag: "2.10.1"
+    tag: "2.8.1"
   retention: "12h"
   storage:
     backend: "local"            # local | s3 | gcs | azure
@@ -199,7 +203,7 @@ tempo:
 pyroscope:
   image:
     repository: grafana/pyroscope
-    tag: "1.18.1"
+    tag: "1.16.0"
   retention: "72h"
   storage:
     backend: "filesystem"       # filesystem | s3 | gcs | azure | swift
@@ -238,7 +242,7 @@ grafana:
   enabled: true
   image:
     repository: grafana/grafana
-    tag: "12.4.0"
+    tag: "12.3.5"
   admin:
     # -- Use an existing Secret for admin credentials
     existingSecret: ""
@@ -283,7 +287,7 @@ grafana:
 alloy:
   image:
     repository: grafana/alloy
-    tag: "v1.13.2"
+    tag: "v1.14.0"
   resources:
     requests:
       cpu: "500m"
@@ -302,7 +306,7 @@ alloy:
 alloyOtlp:
   image:
     repository: grafana/alloy
-    tag: "v1.13.2"
+    tag: "v1.14.0"
   replicas: 1
   resources:
     requests:
@@ -325,7 +329,7 @@ alloyOtlp:
 alloyMetrics:
   image:
     repository: grafana/alloy
-    tag: "v1.13.2"
+    tag: "v1.14.0"
   replicas: 1
   resources:
     requests:
@@ -348,7 +352,7 @@ kubeStateMetrics:
   enabled: true
   image:
     repository: registry.k8s.io/kube-state-metrics/kube-state-metrics
-    tag: "v2.18.0"
+    tag: "v2.17.0"
   resources:
     requests:
       cpu: "10m"

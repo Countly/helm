@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: customers
+  namespace: argocd
+spec:
+  description: "Shared AppProject for GitOps-managed Countly customer environments"
+  sourceRepos:
+    - '*'
+  destinations:
+    - server: '*'
+      namespace: mongodb
+    - server: '*'
+      namespace: clickhouse
+    - server: '*'
+      namespace: kafka
+    - server: '*'
+      namespace: countly
+    - server: '*'
+      namespace: observability
+    - server: '*'
+      namespace: countly-migration
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+    - group: storage.k8s.io
+      kind: StorageClass
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: cert-manager.io
+      kind: ClusterIssuer
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'

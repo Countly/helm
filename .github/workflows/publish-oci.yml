@@ -30,6 +30,15 @@ jobs:
         with:
           version: v3.17.0
 
+      - name: Build chart dependencies
+        run: |
+          for chart in charts/*/; do
+            if grep -q '^dependencies:' "${chart}Chart.yaml" 2>/dev/null; then
+              echo "Building dependencies for $(basename "${chart}")..."
+              helm dependency build "${chart}"
+            fi
+          done
+
       - name: Lint all charts
         run: |
           for chart in charts/*/; do
@@ -67,6 +76,15 @@ jobs:
         run: |
           echo "${GITHUB_TOKEN}" | helm registry login ${REGISTRY} -u "${GH_ACTOR}" --password-stdin
           echo "${GITHUB_TOKEN}" | cosign login ${REGISTRY} -u "${GH_ACTOR}" --password-stdin
+
+      - name: Build chart dependencies
+        run: |
+          for chart in charts/*/; do
+            if grep -q '^dependencies:' "${chart}Chart.yaml" 2>/dev/null; then
+              echo "Building dependencies for $(basename "${chart}")..."
+              helm dependency build "${chart}"
+            fi
+          done
 
       - name: Package, push, sign, and attach SBOM
         env:

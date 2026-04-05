@@ -1,0 +1,69 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: mongodb
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/Countly/helm.git
+        revision: main
+        files:
+          - path: argocd/customers/*.yaml
+  template:
+    metadata:
+      name: "{{ .customer }}-mongodb"
+      annotations:
+        argocd.argoproj.io/sync-wave: "0"
+    spec:
+      project: "{{ .project }}"
+      source:
+        repoURL: https://github.com/Countly/helm.git
+        targetRevision: main
+        path: charts/countly-mongodb
+        helm:
+          releaseName: countly-mongodb
+          valueFiles:
+            - "../../environments/{{ .environment }}/global.yaml"
+            - "../../profiles/security/{{ .security }}/mongodb.yaml"
+            - "../../environments/{{ .environment }}/mongodb.yaml"
+            - "../../profiles/sizing/{{ .sizing }}/mongodb.yaml"
+            - "../../environments/{{ .environment }}/credentials-mongodb.yaml"
+          parameters:
+            - name: argocd.enabled
+              value: "true"
+            - name: global.sizing
+              value: "{{ .sizing }}"
+            - name: global.security
+              value: "{{ .security }}"
+      destination:
+        server: "{{ .server }}"
+        namespace: mongodb
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+      ignoreDifferences:
+        - group: mongodbcommunity.mongodb.com
+          kind: MongoDBCommunity
+          jsonPointers:
+            - /status
+        - group: external-secrets.io
+          kind: ExternalSecret
+          jqPathExpressions:
+            - .spec.data[]?.remoteRef.conversionStrategy
+            - .spec.data[]?.remoteRef.decodingStrategy
+            - .spec.data[]?.remoteRef.metadataPolicy

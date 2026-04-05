@@ -1,0 +1,57 @@
+# Profile: tier1 — Observability chart sizing
+# Sized conservatively: tier1 is an all-in-one node with most CPU/RAM committed
+# to core services. Observability is expected to run on the same node.
+
+prometheus:
+  storage:
+    size: 30Gi
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+
+loki:
+  retention: "30d"
+  storage:
+    size: 30Gi
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+
+tempo:
+  retention: "168h"
+  storage:
+    size: 30Gi
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits: { cpu: "1", memory: "2Gi" }
+
+pyroscope:
+  retention: "168h"
+  storage:
+    size: 5Gi
+  resources:
+    requests: { cpu: "250m", memory: "256Mi" }
+    limits: { cpu: "500m", memory: "512Mi" }
+
+grafana:
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+
+alloy:
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+
+alloyOtlp:
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits: { cpu: "500m", memory: "1Gi" }
+  memoryLimiter:
+    limit: "800MiB"
+    spikeLimit: "200MiB"
+
+alloyMetrics:
+  resources:
+    requests: { cpu: "250m", memory: "256Mi" }
+    limits: { cpu: "250m", memory: "256Mi" }

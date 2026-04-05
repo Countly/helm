@@ -10,14 +10,27 @@
 
 global:
   # --- Profile Selectors ---
-  sizing: production              # local | small | production
+  sizing: production              # local | small | tier1 | production
   observability: full             # disabled | full | external-grafana | external
   kafkaConnect: balanced          # throughput | balanced | low-latency
+  kafkaConnectSizing: auto        # auto uses global.sizing; set "" to disable, or choose local | small | tier1 | production
   tls: letsencrypt                # none | letsencrypt | provided | selfSigned
   security: open                  # open | hardened
 
   # --- Registry & Storage ---
   imageRegistry: ""               # Private registry prefix (leave empty for public images)
+  imageSource:
+    mode: direct                  # direct | gcpArtifactRegistry
+    gcpArtifactRegistry:
+      repositoryPrefix: ""        # e.g. us-central1-docker.pkg.dev/my-project/my-repo
+  imagePullSecretExternalSecret:
+    enabled: false
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: ""                    # e.g. gcp-secrets
+      kind: ClusterSecretStore
+    remoteRef:
+      key: ""                     # Secret Manager key containing the Docker config JSON
   storageClass: ""                # Default storage class for all PVCs (leave empty for cluster default)
   imagePullSecrets: []            # Docker config secrets for private registries
 

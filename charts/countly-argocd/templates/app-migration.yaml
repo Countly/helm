@@ -1,0 +1,32 @@
+{{- if .Values.migration.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ include "countly-argocd.fullname" . }}-migration
+  namespace: argocd
+  labels:
+    {{- include "countly-argocd.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ include "countly-argocd.projectName" . }}
+  source:
+    repoURL: {{ .Values.repoURL }}
+    targetRevision: {{ .Values.targetRevision }}
+    path: charts/countly-migration
+    helm:
+      releaseName: countly-migration
+      valueFiles:
+        - ../../environments/{{ .Values.environment }}/global.yaml
+        - ../../environments/{{ .Values.environment }}/migration.yaml
+        - ../../environments/{{ .Values.environment }}/credentials-migration.yaml
+      parameters:
+        - name: argocd.enabled
+          value: "true"
+  destination:
+    server: {{ .Values.destination.server }}
+    namespace: {{ .Values.migration.namespace }}
+  {{- include "countly-argocd.syncPolicy" . | nindent 2 }}
+{{- end }}

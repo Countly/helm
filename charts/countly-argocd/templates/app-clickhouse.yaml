@@ -1,0 +1,43 @@
+{{- if .Values.clickhouse.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ include "countly-argocd.fullname" . }}-clickhouse
+  namespace: argocd
+  labels:
+    {{- include "countly-argocd.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ include "countly-argocd.projectName" . }}
+  source:
+    repoURL: {{ .Values.repoURL }}
+    targetRevision: {{ .Values.targetRevision }}
+    path: charts/countly-clickhouse
+    helm:
+      releaseName: countly-clickhouse
+      valueFiles:
+        - ../../environments/{{ .Values.environment }}/global.yaml
+        - ../../profiles/security/{{ .Values.global.security }}/clickhouse.yaml
+        - ../../environments/{{ .Values.environment }}/clickhouse.yaml
+        - ../../profiles/sizing/{{ .Values.global.sizing }}/clickhouse.yaml
+        - ../../environments/{{ .Values.environment }}/credentials-clickhouse.yaml
+      parameters:
+        - name: argocd.enabled
+          value: "true"
+  destination:
+    server: {{ .Values.destination.server }}
+    namespace: {{ .Values.clickhouse.namespace }}
+  {{- include "countly-argocd.syncPolicy" . | nindent 2 }}
+  ignoreDifferences:
+    - group: clickhouse.com
+      kind: ClickHouseCluster
+      jsonPointers:
+        - /status
+    - group: clickhouse.com
+      kind: KeeperCluster
+      jsonPointers:
+        - /status
+{{- end }}

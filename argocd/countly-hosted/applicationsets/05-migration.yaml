@@ -1,0 +1,55 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: countly-migration
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/Countly/countly-deployment.git
+        revision: main
+        files:
+          - path: customers/*.yaml
+  template:
+    metadata:
+      name: "{{ .customer }}-migration"
+      annotations:
+        argocd.argoproj.io/sync-wave: "10"
+    spec:
+      project: "{{ .project }}"
+      sources:
+        - repoURL: https://github.com/Countly/helm.git
+          targetRevision: main
+          path: '{{ if eq .migration "enabled" }}charts/countly-migration{{ else }}charts/noop{{ end }}'
+          helm:
+            releaseName: countly-migration
+            valueFiles:
+              - "$values/environments/{{ .environment }}/global.yaml"
+              - "$values/environments/{{ .environment }}/migration.yaml"
+              - "$values/environments/{{ .environment }}/credentials-migration.yaml"
+            parameters:
+              - name: argocd.enabled
+                value: "true"
+        - repoURL: https://github.com/Countly/countly-deployment.git
+          targetRevision: main
+          ref: values
+      destination:
+        server: "{{ .server }}"
+        namespace: countly-migration
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m

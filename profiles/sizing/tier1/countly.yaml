@@ -1,0 +1,51 @@
+# Profile: tier1 — Countly chart sizing
+# Machine: e2-standard-16 (16 CPU / 64 GB RAM)
+# Validated: yes — Perf Test #2 (2026-Jan)
+# Capacity: ~90 DP/s / 233M DP/month
+
+nodeOptions:
+  aggregator: "--max-old-space-size=2048 --max-semi-space-size=256"
+  api: "--max-old-space-size=2048 --max-semi-space-size=256"
+  frontend: "--max-old-space-size=1024"
+
+aggregator:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "1", memory: "4Gi" }
+    limits: { cpu: "1500m", memory: "4.5Gi" }
+  hpa:
+    minReplicas: 1
+    maxReplicas: 1
+  pdb:
+    enabled: false
+  scheduling:
+    antiAffinity:
+      enabled: false
+
+api:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "2.5Gi" }
+    limits: { cpu: "1", memory: "2.5Gi" }
+  hpa:
+    maxReplicas: 1
+
+frontend:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "1.5Gi" }
+    limits: { cpu: "1", memory: "1.5Gi" }
+
+ingestor:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "750m", memory: "3.5Gi" }
+    limits: { cpu: "1", memory: "4Gi" }
+  hpa:
+    maxReplicas: 1
+
+jobserver:
+  replicaCount: 1
+  resources:
+    requests: { cpu: "500m", memory: "2.5Gi" }
+    limits: { cpu: "1", memory: "2.5Gi" }

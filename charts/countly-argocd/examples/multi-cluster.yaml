@@ -1,0 +1,49 @@
+# Example: Deploy Countly to two clusters from a single ArgoCD instance.
+#
+# Prerequisites:
+# 1. ArgoCD installed on a management cluster
+# 2. Target clusters registered with ArgoCD:
+#      argocd cluster add cluster-a-context
+#      argocd cluster add cluster-b-context
+# 3. Environment directories exist:
+#      environments/customer-a/  (global.yaml, mongodb.yaml, etc.)
+#      environments/customer-b/  (global.yaml, mongodb.yaml, etc.)
+# 4. Custom health checks configured in argocd-cm (see NOTES.txt)
+#
+# Deploy:
+#   helm install customer-a charts/countly-argocd -f examples/multi-cluster.yaml -n argocd
+#   helm install customer-b charts/countly-argocd -f examples/multi-cluster.yaml --set environment=customer-b -n argocd
+
+# --- Customer A: Production, large, with migrations ---
+repoURL: "https://github.com/Countly/helm.git"
+targetRevision: main
+environment: customer-a
+project: countly-customer-a
+
+destination:
+  server: "https://cluster-a.example.com"
+
+global:
+  sizing: production
+  security: hardened
+  tls: letsencrypt
+  observability: full
+  kafkaConnect: throughput
+
+mongodb:
+  enabled: true
+clickhouse:
+  enabled: true
+kafka:
+  enabled: true
+countly:
+  enabled: true
+observability:
+  enabled: true
+migration:
+  enabled: true        # This customer needs data migration
+
+syncPolicy:
+  automated: true
+  selfHeal: true
+  prune: true

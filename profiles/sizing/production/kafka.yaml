@@ -6,10 +6,6 @@
 #   brokers.config.offsets.topic.replication.factor (default 3)
 #   brokers.config.transaction.state.log.replication.factor (default 3)
 #   brokers.config.transaction.state.log.min.isr (default 2)
-#   kafkaConnect.workerConfig.config.storage.replication.factor (default 2)
-#   kafkaConnect.workerConfig.offset.storage.replication.factor (default 2)
-#   kafkaConnect.workerConfig.status.storage.replication.factor (default 2)
-
 brokers:
   replicas: 3
   resources:
@@ -51,12 +47,3 @@ cruiseControl:
   resources:
     requests: { cpu: "1", memory: "2Gi" }
     limits: { cpu: "1", memory: "2Gi" }
-
-kafkaConnect:
-  replicas: 2
-  resources:
-    requests: { cpu: "2", memory: "8Gi" }
-    limits: { cpu: "2", memory: "8Gi" }
-  jvmOptions:
-    xms: "5g"
-    xmx: "5g"

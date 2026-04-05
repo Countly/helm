@@ -1,0 +1,9 @@
+secretStore:
+  name: gcp-secrets
+  secretManagerProjectID: ""
+  clusterProjectID: ""
+  clusterName: ""
+  clusterLocation: ""
+  serviceAccountRef:
+    name: external-secrets
+    namespace: external-secrets

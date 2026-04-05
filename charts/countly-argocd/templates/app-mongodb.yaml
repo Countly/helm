@@ -1,0 +1,39 @@
+{{- if .Values.mongodb.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ include "countly-argocd.fullname" . }}-mongodb
+  namespace: argocd
+  labels:
+    {{- include "countly-argocd.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ include "countly-argocd.projectName" . }}
+  source:
+    repoURL: {{ .Values.repoURL }}
+    targetRevision: {{ .Values.targetRevision }}
+    path: charts/countly-mongodb
+    helm:
+      releaseName: countly-mongodb
+      valueFiles:
+        - ../../environments/{{ .Values.environment }}/global.yaml
+        - ../../profiles/security/{{ .Values.global.security }}/mongodb.yaml
+        - ../../environments/{{ .Values.environment }}/mongodb.yaml
+        - ../../profiles/sizing/{{ .Values.global.sizing }}/mongodb.yaml
+        - ../../environments/{{ .Values.environment }}/credentials-mongodb.yaml
+      parameters:
+        - name: argocd.enabled
+          value: "true"
+  destination:
+    server: {{ .Values.destination.server }}
+    namespace: {{ .Values.mongodb.namespace }}
+  {{- include "countly-argocd.syncPolicy" . | nindent 2 }}
+  ignoreDifferences:
+    - group: mongodbcommunity.mongodb.com
+      kind: MongoDBCommunity
+      jsonPointers:
+        - /status
+{{- end }}

@@ -8,11 +8,14 @@ metadata:
   labels:
     {{- include "countly.labels" . | nindent 4 }}
   annotations:
+    {{- include "countly.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
     {{- if eq $tlsMode "letsencrypt" }}
     cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | default "letsencrypt-prod" | quote }}
+    acme.cert-manager.io/http01-edit-in-place: "true"
+    cert-manager.io/issue-temporary-certificate: "true"
     {{- end }}
     {{- if eq $tlsMode "selfSigned" }}
     cert-manager.io/cluster-issuer: {{ (.Values.ingress.tls.selfSigned).issuerName | default (printf "%s-ca-issuer" (include "countly.fullname" .)) | quote }}

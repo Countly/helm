@@ -4,6 +4,7 @@ metadata:
   name: {{ include "countly-clickhouse.fullname" . }}
   annotations:
     "helm.sh/resource-policy": keep
+    {{- include "countly-clickhouse.syncWave" (dict "wave" "5" "root" .) | nindent 4 }}
   labels:
     {{- include "countly-clickhouse.labels" . | nindent 4 }}
 spec:
