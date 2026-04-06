@@ -31,8 +31,8 @@ spec:
               - "../../profiles/observability/{{ .observability }}/countly.yaml"
               - "../../profiles/security/{{ .security }}/countly.yaml"
               - "$values/environments/{{ .environment }}/global.yaml"
-              - "$values/environments/{{ .environment }}/countly.yaml"
               - "../../profiles/sizing/{{ .sizing }}/countly.yaml"
+              - "$values/environments/{{ .environment }}/countly.yaml"
               - "$values/environments/{{ .environment }}/credentials-countly.yaml"
             parameters:
               - name: argocd.enabled

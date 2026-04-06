@@ -29,8 +29,8 @@ spec:
             valueFiles:
               - "../../profiles/security/{{ .security }}/mongodb.yaml"
               - "$values/environments/{{ .environment }}/global.yaml"
-              - "$values/environments/{{ .environment }}/mongodb.yaml"
               - "../../profiles/sizing/{{ .sizing }}/mongodb.yaml"
+              - "$values/environments/{{ .environment }}/mongodb.yaml"
               - "$values/environments/{{ .environment }}/credentials-mongodb.yaml"
             parameters:
               - name: argocd.enabled

@@ -102,6 +102,12 @@ server:
     storageClass: ""
     # -- Data volume size per server replica
     size: 50Gi
+    # -- Reclaim policy for the data PV (Delete or Retain)
+    reclaimPolicy: "Retain"
+    # -- Create a dedicated StorageClass with reclaimPolicy Retain
+    createStorageClass: false
+    # -- Name of the StorageClass to create (used when createStorageClass is true)
+    storageClassName: "standard-rwo-retain"
   # -- ClickHouse server settings
   settings:
     # -- Maximum concurrent connections

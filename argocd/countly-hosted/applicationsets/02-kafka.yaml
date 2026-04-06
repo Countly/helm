@@ -31,9 +31,9 @@ spec:
               - "../../profiles/observability/{{ .observability }}/kafka.yaml"
               - "../../profiles/security/{{ .security }}/kafka.yaml"
               - "$values/environments/{{ .environment }}/global.yaml"
-              - "$values/environments/{{ .environment }}/kafka.yaml"
               - "../../profiles/kafka-connect-sizing/{{ $kcSizing := dig \"kafkaConnectSizing\" \"auto\" . }}{{ if or (eq $kcSizing \"\") (eq $kcSizing \"auto\") }}{{ .sizing }}{{ else }}{{ $kcSizing }}{{ end }}/kafka.yaml"
               - "../../profiles/sizing/{{ .sizing }}/kafka.yaml"
+              - "$values/environments/{{ .environment }}/kafka.yaml"
               - "$values/environments/{{ .environment }}/credentials-kafka.yaml"
             parameters:
               - name: argocd.enabled

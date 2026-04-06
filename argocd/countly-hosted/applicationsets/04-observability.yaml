@@ -30,8 +30,8 @@ spec:
               - "../../profiles/observability/{{ .observability }}/observability.yaml"
               - "../../profiles/security/{{ .security }}/observability.yaml"
               - "$values/environments/{{ .environment }}/global.yaml"
-              - "$values/environments/{{ .environment }}/observability.yaml"
               - "../../profiles/sizing/{{ .sizing }}/observability.yaml"
+              - "$values/environments/{{ .environment }}/observability.yaml"
               - "$values/environments/{{ .environment }}/credentials-observability.yaml"
             parameters:
               - name: argocd.enabled
