@@ -1,0 +1,438 @@
+# =============================================================================
+# Observability Chart — Comprehensive Reference Configuration
+# =============================================================================
+# Every configurable key from charts/countly-observability/values.yaml is listed here.
+# Override only what differs from the profile defaults in your environment.
+# =============================================================================
+
+# --- Deployment Mode ---
+# full     — All backends + Grafana in-cluster
+# hybrid   — All backends in-cluster, no Grafana (use external Grafana)
+# external — Collectors only, forward to external endpoints
+# disabled — Set in global.yaml observability.mode to skip this chart entirely
+mode: full
+
+# --- Cluster Name (injected into Prometheus external_labels) ---
+clusterName: countly-local
+
+# --- Cross-Namespace References ---
+countlyNamespace: countly
+clickhouseNamespace: clickhouse
+mongodbNamespace: mongodb
+kafkaNamespace: kafka
+gatewayNamespace: envoy-gateway-system
+certManagerNamespace: cert-manager
+clickhouseOperatorNamespace: clickhouse-operator-system
+
+# --- Envoy Gateway Scrape Configuration ---
+envoyGateway:
+  metricsPort: "19000"
+
+# --- Global Settings (inherited from helmfile globals) ---
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+# =============================================================================
+# Per-Signal Configuration
+# =============================================================================
+
+# --- Metrics ---
+metrics:
+  enabled: true
+  sampling:
+    interval: "15s"                       # Global Prometheus scrape_interval
+
+# --- Traces ---
+traces:
+  enabled: true
+  sampling:
+    strategy: "AlwaysOn"                  # AlwaysOn | TraceIdRatio | ParentBased | TailBased
+    ratio: 1.0                            # 0.0-1.0, used with TraceIdRatio or ParentBased
+    tailSampling:                          # Only used when strategy == TailBased
+      waitDuration: "10s"
+      numTraces: 50000
+      policies:
+        keepErrors: true
+        latencyThresholdMs: 2000
+        baselineRatio: 0.1
+
+# --- Logs ---
+logs:
+  enabled: true
+  sampling:
+    enabled: false
+    dropRate: 0                           # 0.0-1.0, fraction of logs to drop
+
+# --- Profiling ---
+profiling:
+  enabled: true
+  sampling:
+    rate: "100"                           # Advisory — used in NOTES.txt for SDK config
+
+# =============================================================================
+# Prometheus
+# =============================================================================
+prometheus:
+  image:
+    repository: prom/prometheus
+    tag: "v3.8.1"
+  retention:
+    time: "30d"
+    size: "50GB"
+  storage:
+    size: 100Gi
+    storageClass: ""
+  resources:
+    requests:
+      cpu: "2"
+      memory: "3Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  extraArgs: []
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    remoteWriteUrl: ""                    # Full Prometheus remote write URL (e.g. https://prom.corp.com/api/v1/write)
+
+# =============================================================================
+# Loki
+# =============================================================================
+loki:
+  image:
+    repository: grafana/loki
+    tag: "3.6.3"
+  retention: "30d"
+  storage:
+    backend: "filesystem"                 # filesystem | s3 | gcs | azure
+    size: 100Gi
+    storageClass: ""
+    # Object storage settings (only used when backend != filesystem)
+    bucket: ""                            # Bucket/container name (REQUIRED for object backends)
+    endpoint: ""                          # Custom endpoint (e.g. MinIO: http://minio:9000)
+    region: ""                            # Cloud region (S3)
+    insecure: false                       # Use HTTP instead of HTTPS
+    forcePathStyle: false                 # S3 path-style access (required for MinIO)
+    # Credential file secret (for GCS JSON key files)
+    existingSecret: ""                    # K8s Secret name to mount
+    secretKey: "key.json"                 # Key within the Secret
+    secretMountPath: "/var/secrets/storage"
+    # Env-based credentials (for AWS access keys, Azure account keys)
+    envFromSecret: ""                     # K8s Secret name to inject as env vars
+    # Provider-specific passthrough (rendered directly into provider block)
+    config: {}
+    #
+    # --- Object storage examples (apply to loki, tempo, and pyroscope) ---
+    #
+    # --- AWS S3 example ---
+    # backend: s3
+    # s3:
+    #   bucket: my-loki-data
+    #   region: us-east-1
+    #   endpoint: ""
+    #   insecure: false
+    #   forcePathStyle: false
+    # credentials:
+    #   source: envFromSecret
+    #   envFromSecret: loki-s3-credentials  # Must contain AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+    #
+    # --- GCS example ---
+    # backend: gcs
+    # gcs:
+    #   bucket: my-loki-data
+    # credentials:
+    #   source: existingSecret
+    #   existingSecret: loki-gcs-key
+    #   secretKey: "key.json"
+    #
+    # --- MinIO example ---
+    # backend: s3
+    # s3:
+    #   bucket: loki
+    #   endpoint: minio.storage.svc.cluster.local:9000
+    #   insecure: true
+    #   forcePathStyle: true
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  config:
+    maxStreamsPerUser: 30000
+    maxLineSize: 256000
+    ingestionRateMb: 64
+    ingestionBurstSizeMb: 128
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    pushUrl: ""                           # Full Loki push URL (e.g. https://loki.corp.com/loki/api/v1/push)
+
+# =============================================================================
+# Tempo
+# =============================================================================
+tempo:
+  image:
+    repository: grafana/tempo
+    tag: "2.8.1"
+  retention: "12h"
+  storage:
+    backend: "local"                      # local | s3 | gcs | azure
+    size: 150Gi
+    storageClass: ""
+    bucket: ""
+    endpoint: ""
+    region: ""
+    insecure: false
+    forcePathStyle: false
+    existingSecret: ""
+    secretKey: "key.json"
+    secretMountPath: "/var/secrets/storage"
+    envFromSecret: ""
+    config: {}
+  resources:
+    requests:
+      cpu: "3"
+      memory: "6Gi"
+    limits:
+      cpu: "4"
+      memory: "10Gi"
+  config:
+    ingestionRateLimitBytes: 100000000
+    ingestionBurstSizeBytes: 150000000
+    maxTracesPerUser: 50000
+    maxBytesPerTrace: 5000000
+    maxRecvMsgSizeMiB: 16
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    otlpGrpcEndpoint: ""                  # Tempo OTLP gRPC host:port (e.g. tempo.corp.com:4317)
+    otlpHttpEndpoint: ""                  # Tempo OTLP HTTP URL (optional fallback)
+
+# =============================================================================
+# Pyroscope
+# =============================================================================
+pyroscope:
+  image:
+    repository: grafana/pyroscope
+    tag: "1.16.0"
+  retention: "72h"
+  storage:
+    backend: "filesystem"                 # filesystem | s3 | gcs | azure | swift
+    size: 20Gi
+    storageClass: ""
+    bucket: ""
+    endpoint: ""
+    region: ""
+    insecure: false
+    forcePathStyle: false
+    existingSecret: ""
+    secretKey: "key.json"
+    secretMountPath: "/var/secrets/storage"
+    envFromSecret: ""
+    config: {}
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    ingestUrl: ""                         # Pyroscope ingest URL (e.g. https://pyroscope.corp.com)
+
+# =============================================================================
+# Grafana
+# =============================================================================
+grafana:
+  enabled: true                           # Only deployed when mode == "full"
+  image:
+    repository: grafana/grafana
+    tag: "12.3.5"
+  admin:
+    existingSecret: ""                    # Use an existing Secret for admin credentials
+    userKey: "admin-user"
+    passwordKey: "admin-password"
+  persistence:
+    enabled: false                        # Ephemeral by default (declarative config, no state to lose)
+    size: 10Gi
+    storageClass: ""
+  resources:
+    requests:
+      cpu: "1"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+  plugins:
+    install: "grafana-pyroscope-datasource"
+  featureToggles: "tempoSearch,tempoBackendSearch,traceqlEditor,exploreTraces"
+  dashboards:
+    enabled: true
+    overview: true
+    platform: true
+    countly: true
+    data: true
+    edge: true
+  pdb:
+    enabled: false
+    minAvailable: 1
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    url: ""                               # External Grafana URL (for NOTES.txt only)
+
+# =============================================================================
+# Alloy (DaemonSet — log collection)
+# =============================================================================
+alloy:
+  image:
+    repository: grafana/alloy
+    tag: "v1.14.0"
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+  scheduling:
+    nodeSelector:
+      kubernetes.io/os: linux
+    tolerations: []
+
+# =============================================================================
+# Alloy-OTLP (Deployment — OTLP traces + profiling receive)
+# =============================================================================
+alloyOtlp:
+  image:
+    repository: grafana/alloy
+    tag: "v1.14.0"
+  replicas: 1
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+  memoryLimiter:
+    limit: "1600MiB"                      # Must be < resources.limits.memory
+    spikeLimit: "400MiB"
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+# =============================================================================
+# Alloy-Metrics (Deployment — ALL Prometheus scraping)
+# =============================================================================
+alloyMetrics:
+  image:
+    repository: grafana/alloy
+    tag: "v1.14.0"
+  replicas: 1
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  pdb:
+    enabled: false
+    minAvailable: 1
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+# =============================================================================
+# kube-state-metrics
+# =============================================================================
+kubeStateMetrics:
+  enabled: true
+  image:
+    repository: registry.k8s.io/kube-state-metrics/kube-state-metrics
+    tag: "v2.17.0"
+  resources:
+    requests:
+      cpu: "10m"
+      memory: "32Mi"
+    limits:
+      cpu: "100m"
+      memory: "256Mi"
+  namespaces:
+    - countly
+    - observability
+    - envoy-gateway-system
+    - kube-system
+    - clickhouse
+    - mongodb
+    - kafka
+  scheduling:
+    nodeSelector: {}
+    tolerations: []
+
+# =============================================================================
+# node-exporter
+# =============================================================================
+nodeExporter:
+  enabled: true
+  image:
+    repository: prom/node-exporter
+    tag: "v1.10.2"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "180Mi"
+    limits:
+      cpu: "250m"
+      memory: "300Mi"
+
+# =============================================================================
+# Gateway API (for Grafana)
+# =============================================================================
+gateway:
+  enabled: false
+  create: true
+  className: eg
+  annotations: {}
+  hostname: obs.example.com
+  existingGateway:
+    name: ""
+    namespace: ""
+
+# =============================================================================
+# Network Policy
+# =============================================================================
+networkPolicy:
+  enabled: false
+  additionalIngress: []
+  # additionalIngress:
+  #   - from:
+  #       - namespaceSelector:
+  #           matchLabels:
+  #             kubernetes.io/metadata.name: my-app-namespace
+  #     ports:
+  #       - port: 4318
+  #         protocol: TCP

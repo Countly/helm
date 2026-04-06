@@ -92,8 +92,6 @@ spec:
   retry:
     # Replaces: proxy_next_upstream_tries
     numRetries: {{ .numRetries }}
-    # Replaces: proxy_next_upstream_timeout
-    perRetryTimeout: {{ .perRetryTimeout | quote }}
     retryOn:
       # Replaces: proxy_next_upstream error timeout
       triggers:

@@ -1,0 +1,53 @@
+# =============================================================================
+# Countly Deployment — Global Configuration
+# =============================================================================
+# Copy this directory to create your deployment environment:
+#   cp -r environments/reference environments/my-deployment
+#
+# Then deploy with:
+#   helmfile -e my-deployment apply
+# =============================================================================
+
+global:
+  # --- Profile Selectors ---
+  sizing: small              # local | small | tier1 | production
+  observability: disabled         # disabled | full | external-grafana | external
+  kafkaConnect: balanced          # throughput | balanced | low-latency
+  kafkaConnectSizing: auto        # auto uses global.sizing; set "" to disable, or choose local | small | tier1 | production
+  tls: letsencrypt                # none | letsencrypt | provided | selfSigned
+  security: open                  # open | hardened
+
+  # --- Registry & Storage ---
+  imageRegistry: ""               # Private registry prefix (leave empty for public images)
+  imageSource:
+    mode: direct                  # direct | gcpArtifactRegistry
+    gcpArtifactRegistry:
+      repositoryPrefix: ""        # e.g. us-central1-docker.pkg.dev/my-project/my-repo
+  imagePullSecretExternalSecret:
+    enabled: false
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: ""                    # e.g. gcp-secrets
+      kind: ClusterSecretStore
+    remoteRef:
+      key: ""                     # Secret Manager key containing the Docker config JSON
+  storageClass: ""                # Default storage class for all PVCs (leave empty for cluster default)
+  imagePullSecrets: []            # Docker config secrets for private registries
+
+# --- Gateway API ---
+gateway:
+  hostname: gateway-api.count.ly
+  className: eg
+
+# --- Backing Service Modes ---
+backingServices:
+  mongodb:
+    mode: bundled                 # bundled | external
+  clickhouse:
+    mode: bundled                 # bundled | external
+  kafka:
+    mode: bundled                 # bundled | external
+
+# --- Observability ---
+# The chart mode is derived from global.observability above.
+# Set global.observability to: disabled | full | external-grafana | external

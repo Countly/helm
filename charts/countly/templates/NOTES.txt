@@ -2,7 +2,7 @@
 Countly has been deployed!
 
 Get the application URL:
-{{- if .Values.ingress.enabled }}
+{{- if .Values.gateway.enabled }}
   https://{{ include "countly.hostname" . }}
 {{- else }}
   kubectl port-forward svc/{{ include "countly.fullname" . }}-frontend {{ .Values.frontend.port }}:{{ .Values.frontend.port }} -n {{ .Release.Namespace }}

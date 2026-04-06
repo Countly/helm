@@ -1,73 +1,49 @@
-# -- Global settings shared across all Countly charts
+# =============================================================================
+# Countly Chart — Comprehensive Reference Configuration
+# =============================================================================
+# Every configurable key from charts/countly/values.yaml is listed here.
+# Override only what differs from the profile defaults in your environment.
+# =============================================================================
+
+# --- Global Settings (inherited from helmfile globals) ---
 global:
-  # -- Override container image registry for all images
   imageRegistry: ""
-  imageSource:
-    mode: direct
-    gcpArtifactRegistry:
-      repositoryPrefix: ""
-  imagePullSecretExternalSecret:
-    enabled: false
-    refreshInterval: "1h"
-    secretStoreRef:
-      name: ""
-      kind: ClusterSecretStore
-    remoteRef:
-      key: ""
   imagePullSecrets: []
-  # -- Default StorageClass for PVCs (empty = cluster default)
   storageClass: ""
-  # -- Sizing profile name (informational, used by environment overlays)
-  sizing: small
-  # -- Global scheduling defaults (merged with per-component settings)
+  sizing: small                           # local | small | tier1 | production
   scheduling:
     nodeSelector: {}
     tolerations: []
 
-# -- Override the chart name used in resource names
 nameOverride: ""
-# -- Override the full resource name
 fullnameOverride: ""
 
-# -- Create the target namespace (disable when ArgoCD manages namespace creation)
 createNamespace: false
 
-# -- ArgoCD integration (adds sync-wave annotations when enabled)
-argocd:
-  enabled: false
-
-# -- Kubernetes service account for all Countly pods
+# --- Service Account ---
 serviceAccount:
-  # -- Create the ServiceAccount
   create: true
-  # -- Override service account name (defaults to release fullname)
-  name: ""
-  # -- Additional annotations (e.g. for IAM role binding)
+  name: ""                                # Auto-derived from release name if empty
   annotations: {}
 
-# -- Container image for all Countly components (shared unified image)
+# --- Image ---
+# Preferred place to pin or change the Countly app image for a deployment.
+# Use digest for normal production changes; leave tag only as fallback.
 image:
-  # -- Image repository
-  repository: gcr.io/countly-dev-313620/countly-unified
-  artifactRepository: countly-unified
-  # -- Image digest (takes precedence over tag when set)
+  repository: gcr.io/countly-dev-313620/countly-unified   # Used when global.imageSource.mode=direct
+  artifactRepository: countly-unified                     # Used when global.imageSource.mode=gcpArtifactRegistry
   digest: "sha256:b42efb9713ee11d173fe409924fb9e2a208b5c0beafed9e42f349b996b6650a4"
-  # -- Image tag (used when digest is empty; defaults to appVersion)
-  tag: "26.01"
-  # -- Image pull policy
+  tag: "26.01"                                # Fallback when digest is empty
   pullPolicy: IfNotPresent
 
-# -- Cross-namespace references for backing service DNS resolution
+# --- Cross-Namespace References ---
 clickhouseNamespace: clickhouse
 kafkaNamespace: kafka
 mongodbNamespace: mongodb
 
-# --- Component Definitions ---
-# Each component shares the same image but runs a different startup command.
-# All components support: enabled, replicaCount, command, port, healthCheck,
-# resources, hpa, pdb, scheduling, extraEnv, and extraEnvFrom.
-
-# -- REST API for data retrieval and management
+# =============================================================================
+# Component: API
+# =============================================================================
 api:
   enabled: true
   replicaCount: 1
@@ -86,7 +62,6 @@ api:
     limits:
       cpu: "1"
       memory: "4Gi"
-  # -- Horizontal Pod Autoscaler
   hpa:
     enabled: true
     minReplicas: 1
@@ -97,10 +72,8 @@ api:
       memory:
         averageUtilization: 80
     behavior: {}
-  # -- Pod Disruption Budget
   pdb:
     enabled: false
-  # -- Scheduling constraints (nodeSelector, tolerations, affinity, anti-affinity)
   scheduling:
     nodeSelector: {}
     tolerations: []
@@ -108,15 +81,15 @@ api:
     topologySpreadConstraints: []
     antiAffinity:
       enabled: true
-      type: preferred
+      type: preferred                     # preferred | required
       topologyKey: kubernetes.io/hostname
-      weight: 100
-  # -- Additional environment variables
+      weight: 100                         # 1-100, only used with type=preferred
   extraEnv: []
-  # -- Additional envFrom references (ConfigMapRef, SecretRef)
   extraEnvFrom: []
 
-# -- Dashboard UI and web server
+# =============================================================================
+# Component: Frontend
+# =============================================================================
 frontend:
   enabled: true
   replicaCount: 1
@@ -159,7 +132,9 @@ frontend:
   extraEnv: []
   extraEnvFrom: []
 
-# -- High-throughput event ingestion endpoint
+# =============================================================================
+# Component: Ingestor
+# =============================================================================
 ingestor:
   enabled: true
   replicaCount: 1
@@ -203,13 +178,15 @@ ingestor:
   extraEnv: []
   extraEnvFrom: []
 
-# -- Background data aggregation (no HTTP port; consumes from Kafka/ClickHouse)
+# =============================================================================
+# Component: Aggregator
+# =============================================================================
 aggregator:
   enabled: true
   replicaCount: 4
   command: ["npm", "run", "start:aggregator"]
-  port: 0  # No HTTP port exposed
-  healthCheck: {}
+  port: 0                                 # No HTTP port exposed
+  healthCheck: {}                         # No HTTP health check (no port)
   terminationGracePeriodSeconds: 60
   resources:
     requests:
@@ -256,7 +233,9 @@ aggregator:
   extraEnv: []
   extraEnvFrom: []
 
-# -- Scheduled jobs, reports, and push notifications
+# =============================================================================
+# Component: Job Server
+# =============================================================================
 jobserver:
   enabled: true
   replicaCount: 1
@@ -297,16 +276,13 @@ jobserver:
   extraEnv: []
   extraEnvFrom: []
 
-# --- Configuration ---
-# Environment variables injected into component pods via ConfigMaps.
-# Organized by scope: common (all components), per-component, and per-integration.
-
-# -- Application configuration (injected as ConfigMap environment variables)
+# =============================================================================
+# Configuration (ConfigMaps)
+# =============================================================================
 config:
-  # -- Shared config injected into all components
+  # --- Common (shared by all components) ---
   common:
     NODE_ENV: production
-    # -- Comma-separated list of enabled Countly plugins
     COUNTLY_PLUGINS: "mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crash-analytics,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides,heatmaps,retention_segments,formulas,funnels,cohorts,ab-testing,performance-monitoring,config-transfer,data-migration,two-factor-auth,blocking,concurrent_users,revenue,activity-map,flows,surveys,event-timeline,drill,multi,active_users,ip-blocker,kafka,clickhouse"
     COUNTLY_CONFIG__FILESTORAGE: gridfs
     COUNTLY_CONFIG__DRILL_EVENTS_DRIVER: clickhouse
@@ -317,39 +293,45 @@ config:
     COUNTLY_CONFIG__DATABASE_FAILONCONNECTIONERROR: "true"
     COUNTLY_CONFIG__EVENTSINK_SINKS: '["kafka"]'
     COUNTLY_CONFIG__RELOADCONFIGAFTER: "10000"
-  # -- API-specific config
+
+  # --- API ---
   api:
     COUNTLY_CONTAINER: api
     COUNTLY_CONFIG__API_PORT: "3001"
     COUNTLY_CONFIG__API_HOST: "0.0.0.0"
     COUNTLY_CONFIG__API_MAX_SOCKETS: "1024"
-    COUNTLY_CONFIG__API_MAX_UPLOAD_FILE_SIZE: "209715200"
-    COUNTLY_CONFIG__API_TIMEOUT: "120000"
-  # -- Frontend-specific config
+    COUNTLY_CONFIG__API_MAX_UPLOAD_FILE_SIZE: "209715200"     # 200 MiB
+    COUNTLY_CONFIG__API_TIMEOUT: "120000"                     # ms
+
+  # --- Frontend ---
   frontend:
     COUNTLY_CONTAINER: frontend
     COUNTLY_CONFIG__WEB_PORT: "6001"
     COUNTLY_CONFIG__WEB_HOST: "0.0.0.0"
     COUNTLY_CONFIG__WEB_SECURE_COOKIES: "false"
-    COUNTLY_CONFIG__COOKIE_MAXAGE: "86400000"
-  # -- Ingestor-specific config
+    COUNTLY_CONFIG__COOKIE_MAXAGE: "86400000"                 # 24 hours in ms
+
+  # --- Ingestor ---
   ingestor:
     COUNTLY_CONTAINER: ingestor
     COUNTLY_CONFIG__INGESTOR_PORT: "3010"
     COUNTLY_CONFIG__INGESTOR_HOST: "0.0.0.0"
-  # -- Aggregator-specific config
+
+  # --- Aggregator ---
   aggregator:
     COUNTLY_CONTAINER: aggregator
     UV_THREADPOOL_SIZE: "6"
-  # -- Job server-specific config
+
+  # --- Job Server ---
   jobserver:
     COUNTLY_CONTAINER: jobserver
     COUNTLY_CONFIG__JOBSERVER_PORT: "3020"
     COUNTLY_CONFIG__JOBSERVER_HOST: "0.0.0.0"
-  # -- ClickHouse client configuration (shared across all components)
+
+  # --- ClickHouse Connection ---
   clickhouse:
     COUNTLY_CONFIG__CLICKHOUSE_QUERYOPTIONS_MAX_EXECUTION_TIME: "600"
-    COUNTLY_CONFIG__CLICKHOUSE_REQUEST_TIMEOUT: "1200000"
+    COUNTLY_CONFIG__CLICKHOUSE_REQUEST_TIMEOUT: "1200000"     # ms
     COUNTLY_CONFIG__CLICKHOUSE_MAX_OPEN_CONNECTIONS: "10"
     COUNTLY_CONFIG__CLICKHOUSE_APPLICATION: countly_drill
     COUNTLY_CONFIG__CLICKHOUSE_COMPRESSION_REQUEST: "false"
@@ -372,14 +354,15 @@ config:
     COUNTLY_CONFIG__CLICKHOUSE_IDENTITY_DAYSOLD: "30"
     COUNTLY_CONFIG__CLICKHOUSE_IDENTITY_LIFETIME_MIN: "60"
     COUNTLY_CONFIG__CLICKHOUSE_IDENTITY_LIFETIME_MAX: "120"
-  # -- Kafka producer/consumer configuration (shared across all components)
+
+  # --- Kafka Connection ---
   kafka:
     COUNTLY_CONFIG__KAFKA_ENABLED: "true"
     COUNTLY_CONFIG__KAFKA_DRILLEVENTSTOPIC: drill-events
     COUNTLY_CONFIG__KAFKA_CLUSTER_NAME: cly-kafka
     COUNTLY_CONFIG__KAFKA_PARTITIONS: "100"
     COUNTLY_CONFIG__KAFKA_REPLICATIONFACTOR: "2"
-    COUNTLY_CONFIG__KAFKA_RETENTIONMS: "604800000"
+    COUNTLY_CONFIG__KAFKA_RETENTIONMS: "604800000"            # 7 days in ms
     COUNTLY_CONFIG__KAFKA_ENABLETRANSACTIONS: "false"
     COUNTLY_CONFIG__KAFKA_TRANSACTIONTIMEOUT: "60000"
     COUNTLY_CONFIG__KAFKA_RDKAFKA_CLIENTID: countly-app
@@ -387,7 +370,7 @@ config:
     COUNTLY_CONFIG__KAFKA_RDKAFKA_CONNECTIONTIMEOUTMS: "8000"
     COUNTLY_CONFIG__KAFKA_RDKAFKA_LINGERMS: "10"
     COUNTLY_CONFIG__KAFKA_RDKAFKA_RETRIES: "5"
-    COUNTLY_CONFIG__KAFKA_RDKAFKA_ACKS: "-1"
+    COUNTLY_CONFIG__KAFKA_RDKAFKA_ACKS: "-1"                  # -1 = all ISR replicas must acknowledge
     COUNTLY_CONFIG__KAFKA_CONSUMER_FETCHMINBYTES: "1024000"
     COUNTLY_CONFIG__KAFKA_CONSUMER_FETCHMAXWAITMS: "1200"
     COUNTLY_CONFIG__KAFKA_CONSUMER_SESSIONTIMEOUTMS: "120000"
@@ -396,16 +379,17 @@ config:
     COUNTLY_CONFIG__KAFKA_CONSUMER_ENABLEAUTOCOMMIT: "false"
     COUNTLY_CONFIG__KAFKA_CONSUMER_MAXPOLLINTERVALMS: "600000"
     COUNTLY_CONFIG__KAFKA_CONNECTCONSUMERGROUPID: "connect-ch"
-  # -- OpenTelemetry and Pyroscope configuration
+
+  # --- OpenTelemetry ---
   otel:
     OTEL_ENABLED: "false"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://countly-observability-alloy-otlp.observability.svc.cluster.local:4318"
     OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
     OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
-    OTEL_TRACES_SAMPLER_ARG: "1.0"
+    OTEL_TRACES_SAMPLER_ARG: "1.0"                            # 0.0-1.0, fraction of traces to sample
     PYROSCOPE_ENABLED: "false"
 
-# -- Node.js --max-old-space-size and GC options per component (injected via NODE_OPTIONS)
+# --- Node.js Options (injected into configmap per component) ---
 nodeOptions:
   api: "--max-old-space-size=3072 --max-semi-space-size=256"
   frontend: "--max-old-space-size=2048"
@@ -413,32 +397,29 @@ nodeOptions:
   aggregator: "--max-old-space-size=3072 --max-semi-space-size=128"
   jobserver: "--max-old-space-size=2048 --max-semi-space-size=256"
 
-# --- Backing Service Modes ---
-# Control whether each backing service is deployed in-cluster (bundled) or provided externally.
-# When mode=external, the corresponding chart is not deployed and connection details must be provided.
+# =============================================================================
+# Backing Service Modes
+# =============================================================================
+# When mode=external, the corresponding chart is not deployed and connection
+# details below are used instead.
 
-# -- Backing service connection configuration
 backingServices:
-  # -- MongoDB connection (bundled: auto-resolve from countly-mongodb chart; external: provide details)
   mongodb:
-    # -- bundled | external
-    mode: bundled
-    # External-mode connection (used only when mode=external):
+    mode: bundled                         # bundled | external
     host: ""
     port: "27017"
-    # -- Full connection string (if set, bypasses host/port/user/pass construction)
-    connectionString: ""
+    connectionString: ""                  # If set, used as-is (bypasses host/port/user/pass)
     username: "app"
-    # -- MongoDB password (REQUIRED on first install for bundled mode)
     password: ""
     database: "admin"
     replicaSet: ""
-    # -- Use a pre-created Secret for the connection string
     existingSecret: ""
-  # -- ClickHouse connection (bundled: auto-resolve from countly-clickhouse chart; external: provide details)
+    # --- External MongoDB Atlas example ---
+    # mode: external
+    # connectionString: "mongodb+srv://user:pass@cluster0.example.mongodb.net/admin?retryWrites=true&w=majority"
+
   clickhouse:
-    # -- bundled | external
-    mode: bundled
+    mode: bundled                         # bundled | external
     host: ""
     port: "8123"
     tls: "false"
@@ -446,51 +427,46 @@ backingServices:
     password: ""
     database: "countly_drill"
     existingSecret: ""
-  # -- Kafka connection (bundled: auto-resolve from countly-kafka chart; external: provide details)
+    # --- External ClickHouse Cloud example ---
+    # mode: external
+    # host: "abc123.us-east-1.aws.clickhouse.cloud"
+    # port: "8443"
+    # tls: "true"
+
   kafka:
-    # -- bundled | external
-    mode: bundled
-    # -- Kafka broker list (JSON array or comma-separated)
-    brokers: ""
-    securityProtocol: "PLAINTEXT"
+    mode: bundled                         # bundled | external
+    brokers: ""                           # Comma-separated broker list
+    securityProtocol: "PLAINTEXT"         # PLAINTEXT | SSL | SASL_PLAINTEXT | SASL_SSL
     saslMechanism: ""
     saslUsername: ""
     saslPassword: ""
     existingSecret: ""
+    # --- External Confluent Cloud example ---
+    # mode: external
+    # brokers: "pkc-12345.us-east-1.aws.confluent.cloud:9092"
+    # securityProtocol: "SASL_SSL"
+    # saslMechanism: "PLAIN"
 
-# --- Secrets ---
-# Credentials injected into component pods. Three management modes:
-# - values: create Secrets from Helm values (development)
-# - existingSecret: reference pre-created Kubernetes Secrets (manual production)
-# - externalSecret: use External Secrets Operator for vault integration (automated production)
-
-# -- Secrets management configuration
+# =============================================================================
+# Secrets
+# =============================================================================
 secrets:
-  # -- Secret management mode: values | existingSecret | externalSecret
-  mode: values
-  # -- Preserve secrets on helm uninstall/upgrade
-  keep: true
-  # -- Rotation ID annotation (change to trigger pod restart on secret rotation)
-  rotationId: ""
+  mode: values                            # values | existingSecret | externalSecret
+  keep: true                              # Retain secrets on helm uninstall
+  rotationId: ""                          # Change to force secret re-creation
 
-  # -- Countly application secrets
   common:
     existingSecret: ""
-    # -- Encryption key for exported reports
-    encryptionReportsKey: ""
-    # -- Session cookie signing secret
-    webSessionSecret: ""
-    # -- Internal password hashing secret
-    passwordSecret: ""
+    encryptionReportsKey: ""              # REQUIRED: min 8 chars
+    webSessionSecret: ""                  # REQUIRED: min 8 chars
+    passwordSecret: ""                    # REQUIRED: min 8 chars
 
-  # -- ClickHouse credential secrets
   clickhouse:
     existingSecret: ""
     username: ""
     password: ""
     database: ""
 
-  # -- Kafka credential secrets
   kafka:
     existingSecret: ""
     securityProtocol: ""
@@ -498,23 +474,17 @@ secrets:
     saslUsername: ""
     saslPassword: ""
 
-  # -- MongoDB credential secrets
   mongodb:
     existingSecret: ""
-    # -- Key in the operator-generated Secret to read the connection string from
-    key: "connectionString.standard"
-    # -- MongoDB password (REQUIRED on first install; must match users.app.password in countly-mongodb chart)
-    password: ""
+    key: "connectionString.standard"      # Key within the secret to read
+    password: ""                          # REQUIRED on first install (must match users.app.password in countly-mongodb)
 
   # --- ExternalSecret configuration (used only when mode=externalSecret) ---
   externalSecret:
-    # -- How often ESO syncs the secret
     refreshInterval: "1h"
-    # -- Reference to the SecretStore or ClusterSecretStore
     secretStoreRef:
       name: ""
       kind: ClusterSecretStore
-    # -- Remote key references in the external secret store
     remoteRefs:
       common:
         encryptionReportsKey: ""
@@ -533,106 +503,57 @@ secrets:
         saslPassword: ""
       mongodb:
         connectionString: ""
-        password: ""
 
-# --- Network Policy ---
-
-# -- Network policy restricting ingress to Countly pods
+# =============================================================================
+# Network Policy
+# =============================================================================
 networkPolicy:
-  # -- Enable the NetworkPolicy
   enabled: false
-  # -- Namespace label selector for Envoy Gateway proxy pods
   gatewayNamespaceSelector:
     kubernetes.io/metadata.name: envoy-gateway-system
-  # -- Additional custom ingress rules
   additionalIngress: []
+  # additionalIngress:
+  #   - from:
+  #       - namespaceSelector:
+  #           matchLabels:
+  #             kubernetes.io/metadata.name: my-custom-namespace
+  #     ports:
+  #       - port: 3001
+  #         protocol: TCP
 
-# --- Gateway API ---
-
-# -- Gateway API configuration for external access to Countly (Envoy Gateway)
+# =============================================================================
+# Gateway API
+# =============================================================================
 gateway:
-  # -- Deploy Gateway and HTTPRoute resources
   enabled: true
-  # -- Create a Gateway resource; set false to attach HTTPRoutes to an existing Gateway
   create: true
-  # -- GatewayClass name (Envoy Gateway default install uses "eg")
   className: eg
-  # -- Additional annotations on the Gateway resource
   annotations: {}
-  # -- Hostname for routing and TLS
-  hostname: countly.example.com
-  # -- Reference an existing Gateway when create: false
+  hostname: gateway-api.count.ly
   existingGateway:
     name: ""
     namespace: ""
-  # -- TLS configuration
   tls:
-    # TLS mode: http | letsencrypt | selfSigned | existingSecret
-    # - http:            No TLS (default)
-    # - letsencrypt:     cert-manager + Let's Encrypt (recommended for production)
-    # - existingSecret:  Bring your own TLS secret
-    # - selfSigned:      cert-manager self-signed CA (for development)
-    mode: http
-    # -- cert-manager ClusterIssuer name (for letsencrypt mode)
-    clusterIssuer: letsencrypt-prod
-    # -- Email address for Let's Encrypt ACME account notifications (required for letsencrypt mode)
-    acmeEmail: ""
-    secretName: ""                 # Auto-derived if empty: <fullname>-tls
+    # TLS mode: http | letsencrypt | existingSecret | selfSigned
+    #   http:            No TLS
+    #   letsencrypt:     cert-manager + Let's Encrypt (recommended for production)
+    #   existingSecret:  Bring your own TLS secret
+    #   selfSigned:      cert-manager self-signed CA (for development)
+    mode: letsencrypt
+    clusterIssuer: letsencrypt-prod       # Used with mode=letsencrypt
+    acmeEmail: devops@count.ly            # Required for mode=letsencrypt
+    secretName: ""                        # Auto-derived if empty: <fullname>-tls
     externalSecret:
-      enabled: false
+      enabled: false                      # Create the TLS Secret from External Secrets when mode=existingSecret
       refreshInterval: "1h"
       secretStoreRef:
-        name: ""
+        name: ""                          # e.g. gcp-secrets
         kind: ClusterSecretStore
       remoteRefs:
         # Shared TLS certificate defaults for all customers.
-        # Override per customer only when a customer needs its own certificate.
+        # Override only if a specific customer needs its own certificate.
         tlsCrt: "countly-prod-tls-crt"
         tlsKey: "countly-prod-tls-key"
     selfSigned:
-      # -- Issuer name (auto-derived if empty: <fullname>-ca-issuer)
-      issuerName: ""
-      # -- CA keypair Secret name (auto-derived if empty: <fullname>-ca-keypair)
-      caSecretName: ""
-
-  # -- ClientTrafficPolicy (Envoy Gateway CRD): downstream client connection settings.
-  # Only created when gateway.create is true (we own the Gateway).
-  # Replaces: nginx.org/client-max-body-size, nginx.org/client-body-buffer-size,
-  #           client_header_timeout, client_body_timeout
-  clientTrafficPolicy:
-    enabled: true
-    # -- Per-connection read buffer for incoming requests (headers + body)
-    connectionBufferLimit: "50Mi"
-    # -- Max time to receive the complete request (headers + body) from the client
-    requestReceivedTimeout: "120s"
-
-  # -- BackendTrafficPolicy (Envoy Gateway CRD): upstream backend connection settings.
-  # Targets our HTTPRoute so it is safe to use with a shared Gateway.
-  # Replaces: nginx.org/proxy-connect-timeout, nginx.org/proxy-read-timeout,
-  #           nginx.org/proxy-send-timeout, nginx.org/keepalive,
-  #           proxy_next_upstream, proxy_next_upstream_timeout, proxy_next_upstream_tries
-  backendTrafficPolicy:
-    enabled: true
-    # -- TCP connect timeout to backend (replaces proxy_connect_timeout)
-    connectTimeout: "60s"
-    # -- Max time for the backend to send the complete response (replaces proxy_read_timeout)
-    requestTimeout: "120s"
-    # -- Idle connection lifetime to each backend endpoint
-    connectionIdleTimeout: "120s"
-    # -- Max concurrent connections per backend endpoint (replaces nginx keepalive 256)
-    maxConnections: 256
-    # -- Max pending requests queued when all connections are in use
-    maxPendingRequests: 1024
-    # -- Retry policy (replaces proxy_next_upstream error timeout http_502 http_503 http_504)
-    retry:
-      numRetries: 3
-      retryOn:
-        # -- Connect-Failure: retry on upstream connection errors (proxy_next_upstream error)
-        # -- Retriable-Status-Codes: retry on specific HTTP status codes (proxy_next_upstream http_5xx)
-        triggers:
-          - connect-failure
-          - retriable-status-codes
-        httpStatusCodes:
-          - 502
-          - 503
-          - 504
+      issuerName: ""                      # Auto-derived if empty: <fullname>-ca-issuer
+      caSecretName: ""                    # Auto-derived if empty: <fullname>-ca-keypair

@@ -7,6 +7,9 @@ charts/*/charts/
 overlay-secrets.yaml
 *-secrets.yaml
 secrets-*.yaml
+# Per-environment credential files with real passwords
+environments/*/credentials-*.yaml
+environments/*/*.env
 
 # Helmfile state
 helmfile.lock
