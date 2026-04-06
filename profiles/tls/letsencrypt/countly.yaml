@@ -2,7 +2,7 @@
 # Automated TLS via cert-manager with Let's Encrypt.
 # Requires cert-manager to be installed (see docs/PREREQUISITES.md).
 # Set ingress.hostname in your environment's global.yaml.
-ingress:
+gateway:
   tls:
     mode: letsencrypt
     clusterIssuer: letsencrypt-prod

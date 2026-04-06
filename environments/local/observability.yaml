@@ -7,16 +7,8 @@ mode: full
 # To retrieve it: kubectl get secret -n observability <release>-countly-observability-grafana -o jsonpath='{.data.admin-password}' | base64 -d
 # To use your own secret: set grafana.admin.existingSecret and grafana.admin.passwordKey
 
-# Grafana ingress with self-signed TLS
-ingress:
+# Grafana Gateway API
+gateway:
   enabled: true
-  className: nginx
-  annotations:
-    # Must match the Countly chart's ClusterIssuer: <release-name>-ca-issuer
-    cert-manager.io/cluster-issuer: countly-ca-issuer
-  hosts:
-    - host: obs-test.count.ly
-  tls:
-    - hosts:
-        - obs-test.count.ly
-      secretName: grafana-tls
+  className: eg
+  hostname: obs-test.count.ly

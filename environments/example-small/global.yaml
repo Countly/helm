@@ -8,7 +8,7 @@ global:
   kafkaConnect: balanced
   kafkaConnectSizing: small
 
-ingress:
+gateway:
   hostname: analytics-dev.example.com
 
 backingServices:

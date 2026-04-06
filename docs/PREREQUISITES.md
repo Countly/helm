@@ -51,18 +51,20 @@ helm upgrade --install mongodb-kubernetes-operator mongodb/mongodb-kubernetes \
   --create-namespace -n mongodb
 ```
 
-## 4. F5 NGINX Ingress Controller (OSS)
+## 4. Envoy Gateway
 
 ```bash
-helm repo add nginx-stable https://helm.nginx.com/stable
-helm repo update
-helm upgrade --install nginx-ingress nginx-stable/nginx-ingress \
-  --version 2.1.0 \
-  -f nginx-ingress-values.yaml \
-  --create-namespace -n ingress-nginx
+helm install eg oci://docker.io/envoyproxy/gateway-helm \
+  --version v1.3.2 \
+  --create-namespace -n envoy-gateway-system
 ```
 
-Configuration is in `nginx-ingress-values.yaml` — includes global ConfigMap (worker tuning, buffers, timeouts, OTEL), HPA, resources, and Prometheus metrics.
+This installs the `eg` GatewayClass used by all charts. Wait for it to be ready:
+
+```bash
+kubectl wait --timeout=5m -n envoy-gateway-system \
+  deployment/envoy-gateway --for=condition=Available
+```
 
 ## Verification
 
@@ -73,7 +75,7 @@ kubectl get pods -n cert-manager
 kubectl get pods -n clickhouse-operator-system
 kubectl get pods -n kafka
 kubectl get pods -n mongodb
-kubectl get pods -n ingress-nginx
+kubectl get pods -n envoy-gateway-system
 ```
 
 ## 5. Observability Stack (optional)

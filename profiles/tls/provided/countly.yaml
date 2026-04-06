@@ -1,7 +1,7 @@
 # TLS Profile: Provided Certificate
 # Use your own TLS certificate stored in a Kubernetes Secret.
 # Set ingress.tls.secretName in your environment's countly.yaml or global.yaml.
-ingress:
+gateway:
   tls:
     mode: existingSecret
 

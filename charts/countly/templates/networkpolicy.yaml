@@ -33,11 +33,11 @@ spec:
         - podSelector:
             matchLabels:
               {{- include "countly.selectorLabels" . | nindent 14 }}
-    # Allow ingress controller traffic to frontend, api, ingestor, jobserver
+    # Allow Envoy Gateway proxy traffic to frontend, api, ingestor, jobserver
     - from:
         - namespaceSelector:
             matchLabels:
-              {{- toYaml .Values.networkPolicy.ingressNamespaceSelector | nindent 14 }}
+              {{- toYaml .Values.networkPolicy.gatewayNamespaceSelector | nindent 14 }}
       ports:
         - port: {{ .Values.api.port }}
           protocol: TCP

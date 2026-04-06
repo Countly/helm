@@ -1,0 +1,44 @@
+{{- if and .Values.gateway.enabled .Values.gateway.create }}
+{{- $tlsMode := include "countly.tls.mode" . -}}
+{{- $hostname := include "countly.hostname" . -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ include "countly.fullname" . }}
+  labels:
+    {{- include "countly.labels" . | nindent 4 }}
+  annotations:
+    {{- include "countly.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
+    {{- if eq $tlsMode "letsencrypt" }}
+    cert-manager.io/cluster-issuer: {{ .Values.gateway.tls.clusterIssuer | default "letsencrypt-prod" | quote }}
+    {{- end }}
+    {{- if eq $tlsMode "selfSigned" }}
+    cert-manager.io/cluster-issuer: {{ (.Values.gateway.tls.selfSigned).issuerName | default (printf "%s-ca-issuer" (include "countly.fullname" .)) | quote }}
+    {{- end }}
+    {{- with .Values.gateway.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  gatewayClassName: {{ .Values.gateway.className }}
+  listeners:
+    {{- if ne $tlsMode "http" }}
+    - name: https
+      port: 443
+      protocol: HTTPS
+      hostname: {{ $hostname | quote }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ include "countly.tls.secretName" . }}
+            kind: Secret
+    - name: http
+      port: 80
+      protocol: HTTP
+      hostname: {{ $hostname | quote }}
+    {{- else }}
+    - name: http
+      port: 80
+      protocol: HTTP
+      hostname: {{ $hostname | quote }}
+    {{- end }}
+{{- end }}

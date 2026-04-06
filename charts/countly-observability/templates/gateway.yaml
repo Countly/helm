@@ -1,0 +1,24 @@
+{{- if and (include "obs.deployGrafana" .) .Values.gateway.enabled .Values.gateway.create }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ include "obs.fullname" . }}-grafana
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "obs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+  {{- if or ((.Values.argocd).enabled) .Values.gateway.annotations }}
+  annotations:
+    {{- include "obs.syncWave" (dict "wave" "5" "root" .) | nindent 4 }}
+    {{- with .Values.gateway.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  gatewayClassName: {{ .Values.gateway.className }}
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+      hostname: {{ .Values.gateway.hostname | quote }}
+{{- end }}

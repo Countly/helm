@@ -1,35 +1,10 @@
 # Local environment — Countly chart choices (non-sizing)
 
-# Ingress with self-signed TLS
-ingress:
+# Gateway API with self-signed TLS
+gateway:
   enabled: true
-  className: nginx
+  className: eg
   hostname: helm-test.count.ly
-  annotations:
-    nginx.org/client-max-body-size: "50m"
-    nginx.org/proxy-buffering: "True"
-    nginx.org/proxy-buffer-size: "256k"
-    nginx.org/proxy-buffers: "16 256k"
-    nginx.org/proxy-busy-buffers-size: "512k"
-    nginx.org/proxy-max-temp-file-size: "2048m"
-    nginx.org/client-body-buffer-size: "2m"
-    nginx.org/proxy-connect-timeout: "60s"
-    nginx.org/proxy-read-timeout: "120s"
-    nginx.org/proxy-send-timeout: "120s"
-    nginx.org/keepalive: "256"
-    nginx.org/server-snippets: |
-      otel_trace on;
-      otel_trace_context propagate;
-      client_header_timeout 30s;
-    nginx.org/location-snippets: |
-      proxy_set_header X-Request-ID $request_id;
-      proxy_set_header X-Request-Start $msec;
-      proxy_request_buffering on;
-      proxy_next_upstream error timeout http_502 http_503 http_504;
-      proxy_next_upstream_timeout 30s;
-      proxy_next_upstream_tries 3;
-      proxy_temp_file_write_size 1m;
-      client_body_timeout 120s;
   tls:
     mode: selfSigned
 

@@ -101,7 +101,7 @@ MongoDB secret name
 Resolve the effective hostname.
 */}}
 {{- define "countly.hostname" -}}
-{{- .Values.ingress.hostname | default "countly.example.com" -}}
+{{- .Values.gateway.hostname | default "countly.example.com" -}}
 {{- end -}}
 
 {{/*
@@ -109,14 +109,14 @@ TLS mode resolution.
 Returns: letsencrypt, existingSecret, selfSigned, or http.
 */}}
 {{- define "countly.tls.mode" -}}
-{{- ((.Values.ingress).tls).mode | default "http" -}}
+{{- ((.Values.gateway).tls).mode | default "http" -}}
 {{- end -}}
 
 {{/*
 Effective TLS secret name.
 */}}
 {{- define "countly.tls.secretName" -}}
-{{- ((.Values.ingress).tls).secretName | default (printf "%s-tls" (include "countly.fullname" .)) -}}
+{{- ((.Values.gateway).tls).secretName | default (printf "%s-tls" (include "countly.fullname" .)) -}}
 {{- end -}}
 
 {{/*

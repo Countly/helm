@@ -9,7 +9,7 @@ Required:
 2. ClickHouse Operator
 3. Strimzi Kafka Operator
 4. MongoDB Community Operator
-5. F5 NGINX Ingress Controller
+5. Envoy Gateway
 
 ## Step 1: Create Your Environment
 
@@ -31,7 +31,7 @@ global:
   security: hardened                # Security: open | hardened
   storageClass: gp3                 # Your cluster's storage class
 
-ingress:
+gateway:
   hostname: analytics.example.com   # Your domain
 ```
 

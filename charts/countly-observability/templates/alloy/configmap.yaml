@@ -14,7 +14,7 @@ data:
     discovery.kubernetes "pods" {
       role = "pod"
       namespaces {
-        names = ["{{ .Values.countlyNamespace }}", "{{ .Values.ingressNamespace }}", "{{ .Values.clickhouseNamespace }}", "{{ .Values.mongodbNamespace }}", "{{ .Values.kafkaNamespace }}", "{{ .Values.certManagerNamespace }}", "{{ .Values.clickhouseOperatorNamespace }}"]
+        names = ["{{ .Values.countlyNamespace }}", "{{ .Values.gatewayNamespace }}", "{{ .Values.clickhouseNamespace }}", "{{ .Values.mongodbNamespace }}", "{{ .Values.kafkaNamespace }}", "{{ .Values.certManagerNamespace }}", "{{ .Values.clickhouseOperatorNamespace }}"]
       }
     }
 

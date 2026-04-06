@@ -350,26 +350,26 @@ data:
       scrape_timeout  = "10s"
     }
 
-    // ===== NGINX Ingress Controller =====
-    discovery.kubernetes "nginx_ingress_pods" {
+    // ===== Envoy Gateway =====
+    discovery.kubernetes "envoy_gateway_pods" {
       role = "pod"
       namespaces {
-        names = ["{{ .Values.ingressNamespace }}"]
+        names = ["{{ .Values.gatewayNamespace }}"]
       }
     }
 
-    discovery.relabel "nginx_ingress" {
-      targets = discovery.kubernetes.nginx_ingress_pods.targets
+    discovery.relabel "envoy_gateway" {
+      targets = discovery.kubernetes.envoy_gateway_pods.targets
 
       rule {
         source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
-        regex         = "{{ .Values.nginxIngress.podLabelName }}"
+        regex         = "envoy"
         action        = "keep"
       }
 
       rule {
         source_labels = ["__meta_kubernetes_pod_container_port_number"]
-        regex         = "{{ .Values.nginxIngress.metricsPort }}"
+        regex         = "{{ .Values.envoyGateway.metricsPort }}"
         action        = "keep"
       }
 

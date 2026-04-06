@@ -34,10 +34,10 @@ global:
   storageClass: ""                # Default storage class for all PVCs (leave empty for cluster default)
   imagePullSecrets: []            # Docker config secrets for private registries
 
-# --- Ingress ---
-ingress:
+# --- Gateway API ---
+gateway:
   hostname: analytics.example.com
-  className: nginx
+  className: eg
 
 # --- Backing Service Modes ---
 backingServices:

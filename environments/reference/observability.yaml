@@ -20,14 +20,13 @@ countlyNamespace: countly
 clickhouseNamespace: clickhouse
 mongodbNamespace: mongodb
 kafkaNamespace: kafka
-ingressNamespace: ingress-nginx
+gatewayNamespace: envoy-gateway-system
 certManagerNamespace: cert-manager
 clickhouseOperatorNamespace: clickhouse-operator-system
 
-# --- NGINX Ingress Controller Scrape Configuration ---
-nginxIngress:
-  podLabelName: "nginx-ingress"           # F5 NGINX IC = "nginx-ingress", community = "ingress-nginx"
-  metricsPort: "9113"
+# --- Envoy Gateway Scrape Configuration ---
+envoyGateway:
+  metricsPort: "19000"
 
 # --- Global Settings (inherited from helmfile globals) ---
 global:
@@ -385,7 +384,7 @@ kubeStateMetrics:
   namespaces:
     - countly
     - observability
-    - ingress-nginx
+    - envoy-gateway-system
     - kube-system
     - clickhouse
     - mongodb
@@ -411,15 +410,17 @@ nodeExporter:
       memory: "300Mi"
 
 # =============================================================================
-# Ingress (for Grafana)
+# Gateway API (for Grafana)
 # =============================================================================
-ingress:
+gateway:
   enabled: false
-  className: nginx
+  create: true
+  className: eg
   annotations: {}
-  hosts:
-    - host: obs.example.com
-  tls: []
+  hostname: obs.example.com
+  existingGateway:
+    name: ""
+    namespace: ""
 
 # =============================================================================
 # Network Policy

@@ -13,16 +13,14 @@ countlyNamespace: countly
 clickhouseNamespace: clickhouse
 mongodbNamespace: mongodb
 kafkaNamespace: kafka
-ingressNamespace: ingress-nginx
+gatewayNamespace: envoy-gateway-system
 certManagerNamespace: cert-manager
 clickhouseOperatorNamespace: clickhouse-operator-system
 
-# -- NGINX Ingress Controller scrape configuration
-nginxIngress:
-  # -- Pod label app.kubernetes.io/name value (F5 NGINX IC = "nginx-ingress", community = "ingress-nginx")
-  podLabelName: "nginx-ingress"
-  # -- Container port number for Prometheus metrics
-  metricsPort: "9113"
+# -- Envoy Gateway scrape configuration
+envoyGateway:
+  # -- Container port number for Prometheus metrics (Envoy default: 19000)
+  metricsPort: "19000"
 
 # ============================================================
 # Global
@@ -391,13 +389,18 @@ nodeExporter:
 # ============================================================
 # Networking
 # ============================================================
-ingress:
+gateway:
   enabled: false
-  className: nginx
+  # -- Create a Gateway resource; set false to attach HTTPRoute to an existing Gateway
+  create: true
+  # -- GatewayClass name (Envoy Gateway default install uses "eg")
+  className: eg
   annotations: {}
-  hosts:
-    - host: obs.example.com
-  tls: []
+  hostname: obs.example.com
+  # -- Reference an existing Gateway when create: false
+  existingGateway:
+    name: ""
+    namespace: ""
 
 networkPolicy:
   enabled: false

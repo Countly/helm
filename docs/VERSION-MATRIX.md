@@ -2,9 +2,9 @@
 
 Known-good operator and image version combinations.
 
-| Strimzi | Apache Kafka | CH Sink Connector | ClickHouse | ClickHouse Operator | cert-manager | MongoDB | MCK | NGINX IC | NGINX IC Chart | Status |
-|---------|-------------|-------------------|------------|---------------------|--------------|---------|-----|----------|----------------|--------|
-| 0.51.0 | 4.2.0 | 1.3.5 | 26.2 | 0.0.2 | 1.17.2 | 8.2.5 | 1.7.0 | 5.3.4 | 2.1.0 | **Current** |
+| Strimzi | Apache Kafka | CH Sink Connector | ClickHouse | ClickHouse Operator | cert-manager | MongoDB | MCK | Envoy Gateway | Status |
+|---------|-------------|-------------------|------------|---------------------|--------------|---------|-----|---------------|--------|
+| 0.51.0 | 4.2.0 | 1.3.5 | 26.2 | 0.0.2 | 1.17.2 | 8.2.5 | 1.7.0 | v1.3.2 | **Current** |
 
 ## Observability Stack
 
@@ -27,4 +27,4 @@ These versions are pinned in `charts/countly-observability/values.yaml` and can 
 - **ClickHouse Operator** uses `clickhouse.com/v1alpha1` CRDs. The `clickhouseOperator.apiVersion` value allows overriding when the operator graduates.
 - **MCK** (MongoDB Controllers for Kubernetes) manages `MongoDBCommunity` CRDs and generates connection string secrets automatically.
 - CR `apiVersion` fields are configurable in each chart's values for forward compatibility.
-- **NGINX IC** is the F5 NGINX Ingress Controller (OSS), replacing the retired community ingress-nginx. Chart `nginx-stable/nginx-ingress`.
+- **Envoy Gateway** is the CNCF Envoy Gateway project. Chart `oci://docker.io/envoyproxy/gateway-helm`. Installs the `eg` GatewayClass and Envoy Gateway CRDs (`ClientTrafficPolicy`, `BackendTrafficPolicy`).

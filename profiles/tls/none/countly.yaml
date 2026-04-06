@@ -1,6 +1,6 @@
 # TLS Profile: None (HTTP only)
 # No TLS — plain HTTP ingress.
-ingress:
+gateway:
   tls:
     mode: http
 

@@ -23,7 +23,7 @@ global:
     - name: countly-registry
   storageClass: gp3
 
-ingress:
+gateway:
   hostname: analytics.example.com
   tls:
     mode: letsencrypt

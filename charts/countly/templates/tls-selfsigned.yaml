@@ -1,8 +1,8 @@
 {{- $tlsMode := include "countly.tls.mode" . -}}
 {{- if eq $tlsMode "selfSigned" }}
 {{- $fullname := include "countly.fullname" . -}}
-{{- $caSecretName := (.Values.ingress.tls.selfSigned).caSecretName | default (printf "%s-ca-keypair" $fullname) -}}
-{{- $issuerName := (.Values.ingress.tls.selfSigned).issuerName | default (printf "%s-ca-issuer" $fullname) -}}
+{{- $caSecretName := (.Values.gateway.tls.selfSigned).caSecretName | default (printf "%s-ca-keypair" $fullname) -}}
+{{- $issuerName := (.Values.gateway.tls.selfSigned).issuerName | default (printf "%s-ca-issuer" $fullname) -}}
 {{- $selfSignedIssuerName := printf "%s-selfsigned-issuer" $fullname -}}
 ---
 # Step 1: SelfSigned issuer (bootstraps the CA)

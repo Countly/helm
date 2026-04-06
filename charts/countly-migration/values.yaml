@@ -44,17 +44,20 @@ service:
   port: 8080
   annotations: {}
 
-# -- Ingress configuration (optional)
-ingress:
+# -- Gateway API configuration (optional)
+gateway:
   enabled: false
-  className: ""
+  # -- Create a Gateway resource; set false to attach HTTPRoute to an existing Gateway
+  create: true
+  # -- GatewayClass name (Envoy Gateway default install uses "eg")
+  className: eg
   annotations: {}
-  hosts: []
-  #  - host: migration.example.internal
-  #    paths:
-  #      - path: /
-  #        pathType: Prefix
-  tls: []
+  # -- e.g. migration.example.internal
+  hostname: ""
+  # -- Reference an existing Gateway when create: false
+  existingGateway:
+    name: ""
+    namespace: ""
 
 # -- ArgoCD external link on the Deployment resource
 externalLink:

@@ -1,0 +1,141 @@
+{{- if .Values.gateway.enabled }}
+{{- $tlsMode := include "countly.tls.mode" . -}}
+{{- $hostname := include "countly.hostname" . -}}
+{{- $fullname := include "countly.fullname" . -}}
+{{- $gwName := ternary (include "countly.fullname" .) .Values.gateway.existingGateway.name .Values.gateway.create -}}
+{{- $gwNamespace := ternary .Release.Namespace (.Values.gateway.existingGateway.namespace | default .Release.Namespace) .Values.gateway.create -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ $fullname }}
+  labels:
+    {{- include "countly.labels" . | nindent 4 }}
+  annotations:
+    {{- include "countly.syncWave" (dict "wave" "11" "root" .) | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ $gwName }}
+      namespace: {{ $gwNamespace }}
+      {{- if ne $tlsMode "http" }}
+      sectionName: https
+      {{- else }}
+      sectionName: http
+      {{- end }}
+  hostnames:
+    - {{ $hostname | quote }}
+  rules:
+    # Ingestor — exact-match paths take priority over prefix routes below
+    - matches:
+        - path:
+            type: Exact
+            value: /i/bulk
+        - path:
+            type: Exact
+            value: /i/feedback/input
+        - path:
+            type: Exact
+            value: /i/feedback/inputs
+        - path:
+            type: Exact
+            value: /i
+      backendRefs:
+        - name: {{ $fullname }}-ingestor
+          port: {{ .Values.ingestor.port }}
+    # API — /i/ sub-paths, /o, /o/, /api
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /i/
+        - path:
+            type: Exact
+            value: /o
+        - path:
+            type: PathPrefix
+            value: /o/
+        - path:
+            type: PathPrefix
+            value: /api
+      backendRefs:
+        - name: {{ $fullname }}-api
+          port: {{ .Values.api.port }}
+    # Job server
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /jobs
+      backendRefs:
+        - name: {{ $fullname }}-jobserver
+          port: {{ .Values.jobserver.port }}
+    # Frontend — static assets, dashboard paths, catch-all
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /appimages
+        - path:
+            type: PathPrefix
+            value: /images
+        - path:
+            type: PathPrefix
+            value: /sdk
+        - path:
+            type: PathPrefix
+            value: /views
+        - path:
+            type: PathPrefix
+            value: /stylesheets
+        - path:
+            type: PathPrefix
+            value: /javascripts
+        - path:
+            type: PathPrefix
+            value: /fonts
+        - path:
+            type: PathPrefix
+            value: /star
+        - path:
+            type: PathPrefix
+            value: /surveys
+        - path:
+            type: PathPrefix
+            value: /feedback
+        - path:
+            type: PathPrefix
+            value: /at/
+        - path:
+            type: PathPrefix
+            value: /campaign/
+        - path:
+            type: PathPrefix
+            value: /dashboards/images/screenshots/
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ $fullname }}-frontend
+          port: {{ .Values.frontend.port }}
+{{- if ne $tlsMode "http" }}
+---
+# HTTP → HTTPS redirect
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ $fullname }}-http-redirect
+  labels:
+    {{- include "countly.labels" . | nindent 4 }}
+  annotations:
+    {{- include "countly.syncWave" (dict "wave" "11" "root" .) | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ $gwName }}
+      namespace: {{ $gwNamespace }}
+      sectionName: http
+  hostnames:
+    - {{ $hostname | quote }}
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
+{{- end }}
+{{- end }}

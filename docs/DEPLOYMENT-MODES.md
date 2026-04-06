@@ -2,18 +2,18 @@
 
 ## TLS Modes
 
-Set in `global.yaml` -> `ingress.tls.mode`:
+Set in `global.yaml` -> `gateway.tls.mode`:
 
 | Mode | Description | Requirements |
 |------|-------------|-------------|
 | `http` | No TLS (default) | None |
-| `letsencrypt` | Auto-provisioned via cert-manager | cert-manager + ClusterIssuer, DNS pointing to ingress |
+| `letsencrypt` | Auto-provisioned via cert-manager | cert-manager + ClusterIssuer, DNS pointing to gateway |
 | `existingSecret` | Pre-created TLS secret or ExternalSecret-created TLS secret | Kubernetes TLS secret in countly namespace |
 | `selfSigned` | Self-signed CA via cert-manager | cert-manager (dev/local only) |
 
 ### Let's Encrypt Example
 ```yaml
-ingress:
+gateway:
   hostname: analytics.example.com
   tls:
     mode: letsencrypt
@@ -22,7 +22,7 @@ ingress:
 
 ### Existing Certificate Example
 ```yaml
-ingress:
+gateway:
   hostname: analytics.example.com
   tls:
     mode: existingSecret
@@ -31,7 +31,7 @@ ingress:
 
 ### Existing Certificate From Secret Manager Example
 ```yaml
-ingress:
+gateway:
   hostname: analytics.example.com
   tls:
     mode: existingSecret
