@@ -1,0 +1,63 @@
+# Reference values for the optional countly-migration app.
+#
+# Keep this file for every customer even when migration is disabled.
+# When a customer later adds argocd/customers/migration/<customer>.yaml, this
+# file already shows the expected non-secret knobs and bundled-vs-external
+# service modes.
+
+image:
+  repository: countly/countly-migration
+  tag: ""
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+deployment:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+backingServices:
+  mongodb:
+    mode: bundled
+    releaseName: "countly"
+    namespace: mongodb
+    username: "app"
+    database: admin
+    replicaSet: ""
+    # External mode example:
+    # mode: external
+    # uri: "mongodb://app:password@mongodb.example:27017/admin?replicaSet=rs0&ssl=false"
+  clickhouse:
+    mode: bundled
+    releaseName: "countly"
+    namespace: clickhouse
+    username: "default"
+    tls: "false"
+    # External mode example:
+    # mode: external
+    # url: "http://clickhouse.example:8123"
+  redis:
+    url: ""
+    # External mode example:
+    # url: "redis://redis.example:6379"
+
+config:
+  RERUN_MODE: "resume"
+  LOG_LEVEL: "info"
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "2"
+    memory: "3Gi"
+
+worker:
+  enabled: true
+
+redis:
+  enabled: true

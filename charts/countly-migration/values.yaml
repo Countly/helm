@@ -1,0 +1,284 @@
+# -- Override the chart name used in resource names
+nameOverride: ""
+# -- Override the full resource name
+fullnameOverride: ""
+
+# -- Container image configuration
+image:
+  repository: countly/countly-migration
+  # -- Defaults to "latest" when empty
+  tag: ""
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+# -- Service account configuration
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+# -- ArgoCD integration
+argocd:
+  enabled: false
+
+# -- Deployment configuration
+# For multi-pod mode: set replicas > 1 and strategy.type to RollingUpdate
+deployment:
+  replicas: 1
+  strategy:
+    type: Recreate
+    # RollingUpdate settings (used when strategy.type is RollingUpdate)
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  terminationGracePeriodSeconds: 90
+
+# -- Additional pod annotations
+podAnnotations: {}
+# -- Additional pod labels
+podLabels: {}
+
+# -- Service configuration
+service:
+  type: ClusterIP
+  port: 8080
+  annotations: {}
+
+# -- Ingress configuration (optional)
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+  #  - host: migration.example.internal
+  #    paths:
+  #      - path: /
+  #        pathType: Prefix
+  tls: []
+
+# -- ArgoCD external link on the Deployment resource
+externalLink:
+  enabled: false
+  # -- URL shown in ArgoCD UI (e.g. https://migration.example.internal/runs/current)
+  url: ""
+
+# -- Backing services (credential sources for MongoDB, ClickHouse, Redis)
+backingServices:
+  mongodb:
+    # -- bundled: auto-discover from sibling countly-mongodb chart; external: provide full URI
+    mode: bundled
+    # -- Full MongoDB connection string (external mode only)
+    uri: ""
+    # -- Release name prefix of the sibling countly-mongodb chart (bundled mode)
+    releaseName: "countly"
+    # -- MongoDB host override (bundled mode; auto-constructed from releaseName if empty)
+    host: ""
+    port: "27017"
+    username: "app"
+    # -- MongoDB app user password (must match countly-mongodb chart)
+    password: ""
+    database: "admin"
+    replicaSet: ""
+    # -- Namespace where countly-mongodb chart is deployed
+    namespace: mongodb
+  clickhouse:
+    # -- bundled: auto-discover from sibling countly-clickhouse chart; external: provide full URL
+    mode: bundled
+    # -- Full ClickHouse HTTP URL (external mode only)
+    url: ""
+    # -- Release name prefix of the sibling countly-clickhouse chart (bundled mode)
+    releaseName: "countly"
+    # -- ClickHouse host override (bundled mode; auto-constructed from releaseName if empty)
+    host: ""
+    port: "8123"
+    tls: "false"
+    username: "default"
+    # -- ClickHouse default user password (must match countly-clickhouse chart)
+    password: ""
+    # -- Namespace where countly-clickhouse chart is deployed
+    namespace: clickhouse
+  redis:
+    # -- Full Redis connection URL (e.g. redis://redis:6379)
+    url: ""
+
+# -- Secrets management
+secrets:
+  # -- values: create Secret from values; existingSecret: reference pre-created; externalSecret: use ESO
+  mode: values
+  # -- Preserve secrets on helm uninstall/upgrade
+  keep: true
+  existingSecret:
+    # -- Name of pre-created Secret containing MONGO_URI, CLICKHOUSE_URL, CLICKHOUSE_PASSWORD, REDIS_URL
+    name: ""
+  externalSecret:
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: ""
+      kind: ClusterSecretStore
+    remoteRefs:
+      mongoUri: ""
+      clickhouseUrl: ""
+      clickhousePassword: ""
+      redisUrl: ""
+
+# -- Application config (non-secret environment variables)
+config:
+  SERVICE_NAME: countly-migration
+  SERVICE_PORT: "8080"
+  SERVICE_HOST: "0.0.0.0"
+  GRACEFUL_SHUTDOWN_TIMEOUT_MS: "60000"
+  RERUN_MODE: "resume"
+  LOG_LEVEL: "info"
+
+  # MongoDB source
+  MONGO_DB: "countly_drill"
+  MONGO_COLLECTION_PREFIX: "drill_events"
+  MONGO_READ_PREFERENCE: "primary"
+  MONGO_READ_CONCERN: "majority"
+  MONGO_RETRY_READS: "true"
+  MONGO_APP_NAME: "countly-migration"
+  MONGO_BATCH_ROWS_TARGET: "10000"
+  MONGO_CURSOR_BATCH_SIZE: "2000"
+  MONGO_MAX_TIME_MS: "120000"
+
+  # Transform
+  TRANSFORM_VERSION: "v1"
+
+  # ClickHouse target
+  CLICKHOUSE_DB: "countly_drill"
+  CLICKHOUSE_TABLE: "drill_events"
+  CLICKHOUSE_USERNAME: "default"
+  CLICKHOUSE_QUERY_TIMEOUT_MS: "120000"
+  CLICKHOUSE_MAX_RETRIES: "8"
+  CLICKHOUSE_RETRY_BASE_DELAY_MS: "1000"
+  CLICKHOUSE_RETRY_MAX_DELAY_MS: "30000"
+  CLICKHOUSE_USE_DEDUP_TOKEN: "true"
+
+  # Backpressure
+  BACKPRESSURE_ENABLED: "true"
+  BACKPRESSURE_PARTS_TO_THROW_INSERT: "300"
+  BACKPRESSURE_MAX_PARTS_IN_TOTAL: "500"
+  BACKPRESSURE_PARTITION_PCT_HIGH: "0.50"
+  BACKPRESSURE_PARTITION_PCT_LOW: "0.35"
+  BACKPRESSURE_TOTAL_PCT_HIGH: "0.50"
+  BACKPRESSURE_TOTAL_PCT_LOW: "0.40"
+  BACKPRESSURE_POLL_INTERVAL_MS: "15000"
+  BACKPRESSURE_MAX_PAUSE_EPISODE_MS: "180000"
+
+  # State management
+  MANIFEST_DB: "countly_drill"
+  REDIS_KEY_PREFIX: "mig"
+  TIMELINE_SNAPSHOT_INTERVAL: "10"
+
+  # Garbage collection
+  GC_ENABLED: "true"
+  GC_RSS_SOFT_LIMIT_MB: "1536"
+  GC_RSS_HARD_LIMIT_MB: "2048"
+  GC_HEAP_USED_RATIO: "0.70"
+  GC_EVERY_N_BATCHES: "10"
+
+# -- Health probes
+probes:
+  liveness:
+    path: /healthz
+    initialDelaySeconds: 20
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 6
+  readiness:
+    path: /readyz
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+# -- Resource requests and limits
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "2"
+    memory: "3Gi"
+
+# -- Pod-level security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+# -- Container-level security context
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+
+# -- Node selector
+nodeSelector: {}
+# -- Tolerations
+tolerations: []
+# -- Affinity rules
+affinity: {}
+
+# -- Network policy (optional)
+networkPolicy:
+  enabled: false
+  ingress: {}
+  egress: {}
+
+# -- Multi-pod worker coordination settings
+# These take effect when deployment.replicas > 1.
+worker:
+  enabled: true                      # MULTI_POD_ENABLED
+  lockTtlSec: 300                    # LOCK_TTL_SECONDS — collection lock expiration
+  lockRenewMs: 60000                 # LOCK_RENEW_MS — lock renewal interval
+  podHeartbeatMs: 30000              # POD_HEARTBEAT_MS — heartbeat interval
+  podDeadAfterSec: 180               # POD_DEAD_AFTER_SEC — dead pod threshold
+  rangeParallelThreshold: 500000     # RANGE_PARALLEL_THRESHOLD — split large collections
+  rangeCount: 100                    # RANGE_COUNT — number of time ranges
+  rangeLeaseTtlSec: 300              # RANGE_LEASE_TTL_SEC — range lease expiration
+  progressUpdateMs: 5000             # PROGRESS_UPDATE_MS — progress report interval
+  asyncWriteFlushIntervalMs: 5000    # ASYNC_WRITE_FLUSH_INTERVAL_MS
+  asyncWriteFlushBatchSize: 10       # ASYNC_WRITE_FLUSH_BATCH_SIZE
+
+# -- Pod disruption budget (recommended when replicas > 1)
+pdb:
+  enabled: false
+  minAvailable: 1
+
+# -- Prometheus ServiceMonitor (optional)
+serviceMonitor:
+  enabled: false
+  interval: "30s"
+  scrapeTimeout: "10s"
+  path: /stats
+
+# -- Bundled Redis subchart (Bitnami)
+# Deploys Redis alongside the migration service.
+# When enabled and backingServices.redis.url is empty, the chart auto-wires the URL.
+# Set redis.enabled=false and provide backingServices.redis.url to use an external Redis.
+redis:
+  enabled: true
+  architecture: standalone
+  # -- Explicit sync-wave ensures Redis is healthy before the migration Deployment (wave 10)
+  commonAnnotations:
+    argocd.argoproj.io/sync-wave: "0"
+  auth:
+    enabled: false
+  master:
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "2Gi"
+      limits:
+        cpu: "1"
+        memory: "2Gi"
+    persistence:
+      enabled: true
+      size: 8Gi
+  commonConfiguration: |-
+    appendonly yes
+    appendfsync everysec
+    save 900 1
+    save 300 10
+    save 60 10000
