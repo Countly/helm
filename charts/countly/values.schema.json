@@ -164,6 +164,12 @@
             },
             "passwordSecret": {
               "type": "string"
+            },
+            "mailConfigAuthUser": {
+              "type": "string"
+            },
+            "mailConfigAuthPass": {
+              "type": "string"
             }
           }
         },

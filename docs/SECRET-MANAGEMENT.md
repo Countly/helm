@@ -15,6 +15,8 @@ secrets:
     encryptionReportsKey: "my-key"
     webSessionSecret: "my-session"
     passwordSecret: "my-password"
+    mailConfigAuthUser: "smtp-user"
+    mailConfigAuthPass: "smtp-pass"
   clickhouse:
     password: "ch-password"
   mongodb:
@@ -57,6 +59,9 @@ secrets:
         encryptionReportsKey: "acme-countly-encryption-reports-key"
         webSessionSecret: "acme-countly-web-session-secret"
         passwordSecret: "acme-countly-password-secret"
+        # Optional override. By default hosted deployments can use:
+        # mailConfigAuthUser: "countly-ssl-smtp-user"
+        # mailConfigAuthPass: "countly-ssl-smtp-pass"
       clickhouse:
         password: "acme-countly-clickhouse-password"
       mongodb:
@@ -84,6 +89,8 @@ All secrets are required on first install. On upgrades, existing values are pres
 | countly | common | encryptionReportsKey | Report encryption (min 8 chars) |
 | countly | common | webSessionSecret | Session cookie signing (min 8 chars) |
 | countly | common | passwordSecret | Password hashing (min 8 chars) |
+| countly | common | mailConfigAuthUser | Optional SMTP auth username |
+| countly | common | mailConfigAuthPass | Optional SMTP auth password |
 | countly | clickhouse | password | ClickHouse default user auth |
 | countly | mongodb | password | MongoDB app user auth, reuse the same GSM key as `countly-mongodb.users.app.password` |
 | countly-mongodb | users.app | password | Must match countly secrets.mongodb.password |

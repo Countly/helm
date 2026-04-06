@@ -283,7 +283,15 @@ config:
   # --- Common (shared by all components) ---
   common:
     NODE_ENV: production
+    # Plugin example for direct/public repo values:
+    # COUNTLY_PLUGINS: "mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crash-analytics,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides,heatmaps,retention_segments,formulas,funnels,cohorts,ab-testing,performance-monitoring,config-transfer,data-migration,two-factor-auth,blocking,concurrent_users,revenue,activity-map,flows,surveys,event-timeline,drill,multi,active_users,ip-blocker,kafka,clickhouse"
+    # Plugin example for Countly-hosted/private repo values:
+    # COUNTLY_PLUGINS: "adjust,journey_engine,content,mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,sdk"
     COUNTLY_PLUGINS: "mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crash-analytics,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides,heatmaps,retention_segments,formulas,funnels,cohorts,ab-testing,performance-monitoring,config-transfer,data-migration,two-factor-auth,blocking,concurrent_users,revenue,activity-map,flows,surveys,event-timeline,drill,multi,active_users,ip-blocker,kafka,clickhouse"
+    # Optional SMTP non-secret settings. Put auth user/pass in credentials-countly.yaml.
+    # COUNTLY_CONFIG__MAIL_CONFIG_PORT: "587"
+    # COUNTLY_CONFIG__MAIL_CONFIG_SERVICE: "Postmark"
+    # COUNTLY_CONFIG__MAIL_STRINGS_FROM: "Countly <no-reply@count.ly>"
     COUNTLY_CONFIG__FILESTORAGE: gridfs
     COUNTLY_CONFIG__DRILL_EVENTS_DRIVER: clickhouse
     COUNTLY_CONFIG__SHARED_CONNECTION: "true"
