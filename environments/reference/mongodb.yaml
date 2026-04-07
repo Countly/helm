@@ -10,7 +10,7 @@ global:
   imageRegistry: ""
   imagePullSecrets: []
   storageClass: ""
-  sizing: small                           # local | small | production
+  sizing: small                           # local | small | tier1 | production
   scheduling:
     nodeSelector: {}
     tolerations: []
@@ -90,7 +90,7 @@ users:
 # =============================================================================
 exporter:
   enabled: true
-  image: percona/mongodb_exporter:0.40.0
+  image: percona/mongodb_exporter:0.47.2
   port: 9216
   resources:
     requests:

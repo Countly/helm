@@ -1,0 +1,64 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: countly-observability
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/Countly/countly-deployment.git
+        revision: main
+        files:
+          - path: customers/*.yaml
+  template:
+    metadata:
+      name: "{{ .customer }}-observability"
+      annotations:
+        argocd.argoproj.io/sync-wave: "15"
+    spec:
+      project: "{{ .project }}"
+      sources:
+        - repoURL: https://github.com/Countly/helm.git
+          targetRevision: main
+          path: '{{ if eq .observability "disabled" }}charts/noop{{ else }}charts/countly-observability{{ end }}'
+          helm:
+            releaseName: countly-observability
+            valueFiles:
+              - "../../profiles/observability/{{ .observability }}/observability.yaml"
+              - "../../profiles/security/{{ .security }}/observability.yaml"
+              - "$values/environments/{{ .environment }}/global.yaml"
+              - "../../profiles/sizing/{{ .sizing }}/observability.yaml"
+              - "$values/environments/{{ .environment }}/observability.yaml"
+              - "$values/environments/{{ .environment }}/credentials-observability.yaml"
+            parameters:
+              - name: argocd.enabled
+                value: "true"
+              - name: global.sizing
+                value: "{{ .sizing }}"
+              - name: global.security
+                value: "{{ .security }}"
+              - name: global.observability
+                value: "{{ .observability }}"
+        - repoURL: https://github.com/Countly/countly-deployment.git
+          targetRevision: main
+          ref: values
+      destination:
+        server: "{{ .server }}"
+        namespace: observability
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m

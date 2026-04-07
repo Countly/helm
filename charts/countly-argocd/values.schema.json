@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Countly ArgoCD Chart Values",
+  "type": "object",
+  "required": ["repoURL", "environment", "destination"],
+  "properties": {
+    "repoURL": {
+      "type": "string",
+      "description": "Git repo containing the Helm charts",
+      "minLength": 1
+    },
+    "targetRevision": {
+      "type": "string",
+      "description": "Git branch, tag, or commit SHA"
+    },
+    "environment": {
+      "type": "string",
+      "description": "Environment name (maps to environments/<name>/ directory)",
+      "minLength": 1
+    },
+    "destination": {
+      "type": "object",
+      "required": ["server"],
+      "properties": {
+        "server": {
+          "type": "string",
+          "description": "Target cluster API server URL",
+          "minLength": 1
+        }
+      }
+    },
+    "project": {
+      "type": "string",
+      "description": "ArgoCD project name (defaults to release name if empty)"
+    },
+    "global": {
+      "type": "object",
+      "properties": {
+        "sizing": { "type": "string" },
+        "security": { "type": "string" },
+        "tls": { "type": "string" },
+        "observability": { "type": "string" },
+        "kafkaConnect": { "type": "string" },
+        "kafkaConnectSizing": { "type": "string" }
+      }
+    },
+    "mongodb": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "namespace": { "type": "string" }
+      }
+    },
+    "clickhouse": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "namespace": { "type": "string" }
+      }
+    },
+    "kafka": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "namespace": { "type": "string" }
+      }
+    },
+    "countly": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "namespace": { "type": "string" }
+      }
+    },
+    "observability": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "namespace": { "type": "string" }
+      }
+    },
+    "migration": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "namespace": { "type": "string" }
+      }
+    },
+    "syncPolicy": {
+      "type": "object",
+      "properties": {
+        "automated": { "type": "boolean" },
+        "selfHeal": { "type": "boolean" },
+        "prune": { "type": "boolean" },
+        "retry": {
+          "type": "object",
+          "properties": {
+            "limit": { "type": "integer", "minimum": 0 },
+            "backoff": {
+              "type": "object",
+              "properties": {
+                "duration": { "type": "string" },
+                "factor": { "type": "integer" },
+                "maxDuration": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

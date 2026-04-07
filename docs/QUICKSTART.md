@@ -57,8 +57,24 @@ environments/local/global.yaml                    # Global settings (profile sel
 profiles/sizing/local/<chart>.yaml                # Sizing (resources, replicas, HA)
 profiles/<dimension>/<value>/<chart>.yaml          # Optional dimension profiles
 environments/local/<chart>.yaml                   # Environment choices (ingress, OTEL, etc.)
-environments/local/secrets-<chart>.yaml           # Credentials (gitignored)
+environments/local/credentials-<chart>.yaml       # Credentials overrides
 ```
+
+Important:
+- the repo does not ship real local secret files
+- create them before installing by copying from `environments/reference/`
+
+Recommended setup:
+
+```bash
+cp environments/reference/credentials-countly.yaml environments/local/credentials-countly.yaml
+cp environments/reference/credentials-mongodb.yaml environments/local/credentials-mongodb.yaml
+cp environments/reference/credentials-clickhouse.yaml environments/local/credentials-clickhouse.yaml
+cp environments/reference/credentials-kafka.yaml environments/local/credentials-kafka.yaml
+cp environments/reference/credentials-observability.yaml environments/local/credentials-observability.yaml
+```
+
+Then fill in the required passwords.
 
 ## Install Charts
 
@@ -72,8 +88,9 @@ helm install countly-mongodb ./charts/countly-mongodb \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
   -f profiles/sizing/local/mongodb.yaml \
+  -f profiles/security/open/mongodb.yaml \
   -f environments/local/mongodb.yaml \
-  -f environments/local/secrets-mongodb.yaml
+  -f environments/local/credentials-mongodb.yaml
 ```
 
 ### 2. ClickHouse
@@ -84,8 +101,9 @@ helm install countly-clickhouse ./charts/countly-clickhouse \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
   -f profiles/sizing/local/clickhouse.yaml \
+  -f profiles/security/open/clickhouse.yaml \
   -f environments/local/clickhouse.yaml \
-  -f environments/local/secrets-clickhouse.yaml
+  -f environments/local/credentials-clickhouse.yaml
 ```
 
 ### 3. Kafka
@@ -95,9 +113,13 @@ helm install countly-kafka ./charts/countly-kafka \
   -n kafka --create-namespace \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
+  -f profiles/kafka-connect/balanced/kafka.yaml \
+  -f profiles/kafka-connect-sizing/local/kafka.yaml \
   -f profiles/sizing/local/kafka.yaml \
+  -f profiles/observability/full/kafka.yaml \
+  -f profiles/security/open/kafka.yaml \
   -f environments/local/kafka.yaml \
-  -f environments/local/secrets-kafka.yaml
+  -f environments/local/credentials-kafka.yaml
 ```
 
 ### 4. Countly
@@ -108,8 +130,11 @@ helm install countly ./charts/countly \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
   -f profiles/sizing/local/countly.yaml \
+  -f profiles/tls/selfSigned/countly.yaml \
+  -f profiles/observability/full/countly.yaml \
+  -f profiles/security/open/countly.yaml \
   -f environments/local/countly.yaml \
-  -f environments/local/secrets-countly.yaml
+  -f environments/local/credentials-countly.yaml
 ```
 
 ### 5. Observability
@@ -120,8 +145,10 @@ helm install countly-observability ./charts/countly-observability \
   --wait --timeout 10m \
   -f environments/local/global.yaml \
   -f profiles/sizing/local/observability.yaml \
+  -f profiles/observability/full/observability.yaml \
+  -f profiles/security/open/observability.yaml \
   -f environments/local/observability.yaml \
-  -f environments/local/secrets-observability.yaml
+  -f environments/local/credentials-observability.yaml
 ```
 
 ## Verify
@@ -140,6 +167,12 @@ Grafana: https://grafana.local
 ## Upgrade
 
 Replace `helm install` with `helm upgrade` (same flags, omit `--create-namespace`).
+
+If you install the optional migration chart directly, first run:
+
+```bash
+helm dependency build ./charts/countly-migration
+```
 
 ## Uninstall
 
@@ -165,11 +198,11 @@ environments/local/
   clickhouse.yaml           # ServiceMonitor disabled (no Prometheus Operator CRD)
   kafka.yaml                # JMX metrics disabled (KafkaNodePool CRD limitation)
   observability.yaml        # mode: full, Grafana ingress (grafana.local, selfSigned TLS)
-  secrets-countly.yaml      # App secrets (encryption key, session, password)
-  secrets-mongodb.yaml      # MongoDB user passwords
-  secrets-clickhouse.yaml   # ClickHouse default password
-  secrets-kafka.yaml        # Kafka Connect ClickHouse password
-  secrets-observability.yaml # Empty stub (no secrets needed)
+  credentials-countly.yaml       # Create from environments/reference/
+  credentials-mongodb.yaml       # Create from environments/reference/
+  credentials-clickhouse.yaml    # Create from environments/reference/
+  credentials-kafka.yaml         # Create from environments/reference/
+  credentials-observability.yaml # Create from environments/reference/
 ```
 
 ## Known Issues (Local)

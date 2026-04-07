@@ -1,0 +1,60 @@
+# -- Git repo containing the Helm charts
+repoURL: "https://github.com/Countly/helm.git"
+targetRevision: main
+
+# -- Environment name (maps to environments/<name>/ directory)
+environment: example-production
+
+# -- Target cluster
+destination:
+  server: "https://kubernetes.default.svc"
+
+# -- ArgoCD project name (defaults to release name if empty)
+# Each customer MUST have a unique project to avoid collisions.
+project: ""
+
+# -- Profile selections (passed to child charts via valueFiles)
+global:
+  sizing: production
+  security: hardened
+  tls: letsencrypt
+  observability: full
+  kafkaConnect: balanced
+  kafkaConnectSizing: auto
+
+# -- Component toggles
+mongodb:
+  enabled: true
+  namespace: mongodb
+
+clickhouse:
+  enabled: true
+  namespace: clickhouse
+
+kafka:
+  enabled: true
+  namespace: kafka
+
+countly:
+  enabled: true
+  namespace: countly
+
+observability:
+  enabled: true
+  namespace: observability
+
+migration:
+  enabled: false
+  namespace: countly-migration
+
+# -- Sync policy for child Applications
+syncPolicy:
+  automated: true
+  selfHeal: true
+  prune: true
+  retry:
+    limit: 5
+    backoff:
+      duration: 5s
+      factor: 2
+      maxDuration: 3m

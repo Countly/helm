@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: mongodb-kubernetes-operator
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/Countly/helm.git
+        revision: main
+        files:
+          - path: argocd/customers/*.yaml
+  template:
+    metadata:
+      name: "{{ .customer }}-mongodb-kubernetes-operator"
+      annotations:
+        argocd.argoproj.io/sync-wave: "-28"
+    spec:
+      project: default
+      source:
+        repoURL: https://mongodb.github.io/helm-charts
+        chart: mongodb-kubernetes
+        targetRevision: 1.7.0
+        helm:
+          releaseName: mongodb-kubernetes-operator
+          valuesObject:
+            operator:
+              watchedResources:
+                - mongodbcommunity
+      destination:
+        server: "{{ .server }}"
+        namespace: mongodb
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

@@ -1,0 +1,72 @@
+=== Countly ArgoCD Deployment ===
+
+Environment: {{ .Values.environment }}
+Cluster:     {{ .Values.destination.server }}
+Project:     {{ include "countly-argocd.projectName" . }}
+
+Applications deployed (sync wave order):
+  Wave 0:  {{ if .Values.mongodb.enabled }}mongodb{{ end }} {{ if .Values.clickhouse.enabled }}clickhouse{{ end }}
+  Wave 5:  {{ if .Values.kafka.enabled }}kafka{{ end }}
+  Wave 10: {{ if .Values.countly.enabled }}countly{{ end }}
+  Wave 15: {{ if .Values.observability.enabled }}observability{{ end }}
+  Wave 20: {{ if .Values.migration.enabled }}migration{{ end }}
+
+--- Status ---
+
+  # List all Countly applications
+  kubectl get applications -n argocd -l app.kubernetes.io/instance={{ .Release.Name }}
+
+  # Sync all
+  argocd app sync -l app.kubernetes.io/instance={{ .Release.Name }}
+
+--- Multi-Cluster ---
+
+  # Deploy to another cluster
+  helm install countly-<cluster> charts/countly-argocd \
+    --set environment=<env-name> \
+    --set destination.server=https://<cluster-api> \
+    -n argocd
+
+--- Required: ArgoCD Custom Health Checks ---
+
+  Add these to your argocd-cm ConfigMap for sync waves to
+  block on actual readiness:
+
+  resource.customizations.health.kafka.strimzi.io_Kafka: |
+    hs = {}
+    if obj.status ~= nil and obj.status.conditions ~= nil then
+      for _, c in ipairs(obj.status.conditions) do
+        if c.type == "Ready" and c.status == "True" then
+          hs.status = "Healthy"; hs.message = c.message or "Ready"; return hs
+        end
+        if c.type == "NotReady" then
+          hs.status = "Progressing"; hs.message = c.message or "Not ready"; return hs
+        end
+      end
+    end
+    hs.status = "Progressing"; hs.message = "Waiting for status"; return hs
+
+  # Same pattern for: KafkaConnect, KafkaNodePool, KafkaConnector
+
+  resource.customizations.health.clickhouse.com_ClickHouseCluster: |
+    hs = {}
+    if obj.status ~= nil and obj.status.status ~= nil then
+      if obj.status.status == "Completed" then
+        hs.status = "Healthy"; hs.message = "Completed"; return hs
+      end
+    end
+    hs.status = "Progressing"; hs.message = "Provisioning"; return hs
+
+  resource.customizations.health.mongodbcommunity.mongodb.com_MongoDBCommunity: |
+    hs = {}
+    if obj.status ~= nil and obj.status.phase ~= nil then
+      if obj.status.phase == "Running" then
+        hs.status = "Healthy"; hs.message = "Running"; return hs
+      end
+    end
+    hs.status = "Progressing"; hs.message = "Provisioning"; return hs
+
+--- Teardown ---
+
+  helm uninstall {{ .Release.Name }} -n argocd
+  # Cascading finalizers will delete all child Applications

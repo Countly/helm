@@ -13,7 +13,7 @@ spec:
   restartPolicy: Never
   containers:
   - name: test
-    image: busybox:1.35
+    image: busybox:1.37.0
     command: ['sh', '-c', 'wget -qO- --timeout=10 http://{{ include "obs.fullname" . }}-prometheus:9090/-/ready']
 ---
 {{- end }}
@@ -32,7 +32,7 @@ spec:
   restartPolicy: Never
   containers:
   - name: test
-    image: busybox:1.35
+    image: busybox:1.37.0
     command: ['sh', '-c', 'wget -qO- --timeout=10 http://{{ include "obs.fullname" . }}-loki:3100/ready']
 ---
 {{- end }}
@@ -51,7 +51,7 @@ spec:
   restartPolicy: Never
   containers:
   - name: test
-    image: busybox:1.35
+    image: busybox:1.37.0
     command: ['sh', '-c', 'wget -qO- --timeout=10 http://{{ include "obs.fullname" . }}-tempo:3200/ready']
 ---
 {{- end }}
@@ -70,7 +70,7 @@ spec:
   restartPolicy: Never
   containers:
   - name: test
-    image: busybox:1.35
+    image: busybox:1.37.0
     command: ['sh', '-c', 'wget -qO- --timeout=10 http://{{ include "obs.fullname" . }}-grafana:3000/api/health']
 ---
 {{- end }}
@@ -89,6 +89,6 @@ spec:
   restartPolicy: Never
   containers:
   - name: test
-    image: busybox:1.35
+    image: busybox:1.37.0
     command: ['sh', '-c', 'wget -qO- --timeout=10 http://{{ include "obs.fullname" . }}-alloy-otlp:12345/-/ready']
 {{- end }}

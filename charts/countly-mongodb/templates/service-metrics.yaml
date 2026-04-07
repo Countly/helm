@@ -6,6 +6,10 @@ metadata:
   labels:
     {{- include "countly-mongodb.labels" . | nindent 4 }}
     countly.io/metrics: "true"
+  {{- if ((.Values.argocd).enabled) }}
+  annotations:
+    {{- include "countly-mongodb.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
+  {{- end }}
 spec:
   selector:
     {{- include "countly-mongodb.selectorLabels" . | nindent 4 }}

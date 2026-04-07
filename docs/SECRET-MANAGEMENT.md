@@ -54,20 +54,26 @@ secrets:
       kind: ClusterSecretStore
     remoteRefs:
       common:
-        encryptionReportsKey: "countly/encryption-reports-key"
-        webSessionSecret: "countly/web-session-secret"
-        passwordSecret: "countly/password-secret"
+        encryptionReportsKey: "acme-countly-encryption-reports-key"
+        webSessionSecret: "acme-countly-web-session-secret"
+        passwordSecret: "acme-countly-password-secret"
       clickhouse:
-        url: "countly/clickhouse-url"
-        username: "countly/clickhouse-username"
-        password: "countly/clickhouse-password"
-        database: "countly/clickhouse-database"
-      kafka:
-        brokers: "countly/kafka-brokers"
-        securityProtocol: "countly/kafka-security-protocol"
+        password: "acme-countly-clickhouse-password"
       mongodb:
-        connectionString: "countly/mongodb-connection-string"
+        password: "acme-mongodb-app-password"
 ```
+
+Recommended naming convention:
+- `<customer>-gar-dockerconfig`
+- `<customer>-countly-encryption-reports-key`
+- `<customer>-countly-web-session-secret`
+- `<customer>-countly-password-secret`
+- `<customer>-countly-clickhouse-password`
+- `<customer>-kafka-connect-clickhouse-password`
+- `<customer>-clickhouse-default-user-password`
+- `<customer>-mongodb-admin-password`
+- `<customer>-mongodb-app-password`
+- `<customer>-mongodb-metrics-password`
 
 ## Required Secrets
 
@@ -79,7 +85,7 @@ All secrets are required on first install. On upgrades, existing values are pres
 | countly | common | webSessionSecret | Session cookie signing (min 8 chars) |
 | countly | common | passwordSecret | Password hashing (min 8 chars) |
 | countly | clickhouse | password | ClickHouse default user auth |
-| countly | mongodb | password | MongoDB app user auth |
+| countly | mongodb | password | MongoDB app user auth, reuse the same GSM key as `countly-mongodb.users.app.password` |
 | countly-mongodb | users.app | password | Must match countly secrets.mongodb.password |
 | countly-mongodb | users.metrics | password | Prometheus exporter auth |
 | countly-clickhouse | auth.defaultUserPassword | password | Must match countly secrets.clickhouse.password |
@@ -101,6 +107,9 @@ The ClickHouse password must be identical across three charts:
 - `countly.yaml` -> `secrets.clickhouse.password`
 - `clickhouse.yaml` -> `auth.defaultUserPassword.password`
 - `kafka.yaml` -> `kafkaConnect.clickhouse.password`
+
+For External Secrets / Secret Manager, use one shared secret name for all three
+references by default, for example `acme-clickhouse-password`.
 
 The MongoDB password must match across two charts:
 - `countly.yaml` -> `secrets.mongodb.password`

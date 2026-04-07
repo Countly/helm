@@ -1,11 +1,6 @@
-name: Update Changelog
+name: Update Changelog (disabled)
 
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - 'CHANGELOG.md'
-      - '.github/**'
   workflow_dispatch:
     inputs:
       since_tag:

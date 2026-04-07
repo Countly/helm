@@ -7,6 +7,7 @@ metadata:
     {{- include "countly-kafka.labels" . | nindent 4 }}
   annotations:
     strimzi.io/use-connector-resources: "true"
+    {{- include "countly-kafka.syncWave" (dict "wave" "10" "root" .) | nindent 4 }}
 spec:
   version: {{ .Values.version | quote }}
   replicas: {{ .Values.kafkaConnect.replicas }}
@@ -19,7 +20,7 @@ spec:
         name: {{ include "countly-kafka.fullname" . }}-metrics
         key: connect-metrics-config.yml
   {{- end }}
-  image: {{ .Values.kafkaConnect.image }}
+  image: {{ include "countly-kafka.connectImage" . | quote }}
   groupId: {{ .Values.kafkaConnect.workerConfig | dig "group.id" "connect-cluster" }}
   offsetStorageTopic: {{ .Values.kafkaConnect.workerConfig | dig "offset.storage.topic" "connect-offsets" }}
   configStorageTopic: {{ .Values.kafkaConnect.workerConfig | dig "config.storage.topic" "connect-configs" }}
