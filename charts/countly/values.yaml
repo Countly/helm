@@ -528,10 +528,12 @@ secrets:
         encryptionReportsKey: ""
         webSessionSecret: ""
         passwordSecret: ""
-        # Shared defaults for Countly-hosted customers using GCP External Secrets.
-        # Override only when a customer needs dedicated SMTP credentials.
-        mailConfigAuthUser: "countly-ssl-smtp-user"
-        mailConfigAuthPass: "countly-ssl-smtp-pass"
+        # Optional SMTP auth refs when using External Secrets.
+        # Example:
+        # mailConfigAuthUser: "countly-ssl-smtp-user"
+        # mailConfigAuthPass: "countly-ssl-smtp-pass"
+        mailConfigAuthUser: ""
+        mailConfigAuthPass: ""
       clickhouse:
         url: ""
         username: ""
