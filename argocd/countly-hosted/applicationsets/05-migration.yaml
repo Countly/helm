@@ -12,18 +12,18 @@ spec:
         repoURL: https://github.com/Countly/countly-deployment.git
         revision: main
         files:
-          - path: customers/*.yaml
+          - path: customers/migration/*.yaml
   template:
     metadata:
       name: "{{ .customer }}-migration"
       annotations:
-        argocd.argoproj.io/sync-wave: "10"
+        argocd.argoproj.io/sync-wave: "20"
     spec:
       project: "{{ .project }}"
       sources:
         - repoURL: https://github.com/Countly/helm.git
           targetRevision: main
-          path: '{{ if eq .migration "enabled" }}charts/countly-migration{{ else }}charts/noop{{ end }}'
+          path: charts/countly-migration
           helm:
             releaseName: countly-migration
             valueFiles:

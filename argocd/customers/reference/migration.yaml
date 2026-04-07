@@ -1,0 +1,11 @@
+# Copy this file to:
+#   argocd/customers/migration/<customer>.yaml
+#
+# Create that file only when the migration app should be enabled for a customer.
+# The values should usually match the base customer metadata in:
+#   argocd/customers/<customer>.yaml
+
+customer: example-customer
+environment: example-customer
+project: countly-customers
+server: https://kubernetes.default.svc

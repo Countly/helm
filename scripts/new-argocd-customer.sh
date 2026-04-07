@@ -26,7 +26,6 @@ Defaults:
   observability full
   kafkaConnect  balanced
   kafkaConnectSizing auto
-  migration     disabled
   gcpSA         set after scaffold for External Secrets Workload Identity
 EOF
 }
@@ -93,6 +92,7 @@ project="${positionals[3]:-countly-customers}"
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 env_dir="${repo_root}/environments/${customer}"
 customer_file="${repo_root}/argocd/customers/${customer}.yaml"
+migration_customer_file="${repo_root}/argocd/customers/migration/${customer}.yaml"
 
 if [[ -e "${env_dir}" ]]; then
   echo "Environment already exists: ${env_dir}" >&2
@@ -105,6 +105,7 @@ if [[ -e "${customer_file}" ]]; then
 fi
 
 mkdir -p "$(dirname "${customer_file}")"
+mkdir -p "$(dirname "${migration_customer_file}")"
 
 cp -R "${repo_root}/environments/reference" "${env_dir}"
 
@@ -170,7 +171,59 @@ cat > "${env_dir}/observability.yaml" <<'EOF'
 EOF
 
 cat > "${env_dir}/migration.yaml" <<'EOF'
-# Customer-specific migration overrides only.
+# Customer-specific migration overrides.
+# Keep this file even when migration is disabled so future enablement only
+# requires filling the matching credentials file and creating the matching
+# migration metadata file.
+
+image:
+  repository: countly/countly-migration
+  tag: ""
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+deployment:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+backingServices:
+  mongodb:
+    mode: bundled
+    releaseName: "countly"
+    namespace: mongodb
+    username: "app"
+    database: admin
+    replicaSet: ""
+  clickhouse:
+    mode: bundled
+    releaseName: "countly"
+    namespace: clickhouse
+    username: "default"
+    tls: "false"
+  redis:
+    url: ""
+
+config:
+  RERUN_MODE: "resume"
+  LOG_LEVEL: "info"
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "2"
+    memory: "3Gi"
+
+worker:
+  enabled: true
+
+redis:
+  enabled: true
 EOF
 
 if [[ "${secret_mode}" == "gcp-secrets" ]]; then
@@ -216,7 +269,7 @@ secrets:
         webSessionSecret: "${customer}-countly-web-session-secret"
         passwordSecret: "${customer}-countly-password-secret"
       clickhouse:
-        password: "${customer}-countly-clickhouse-password"
+        password: "${customer}-clickhouse-password"
       mongodb:
         password: "${customer}-mongodb-app-password"
 EOF
@@ -270,6 +323,26 @@ users:
     enabled: true
   metrics:
     enabled: true
+EOF
+
+  cat > "${env_dir}/credentials-migration.yaml" <<EOF
+# Migration secrets sourced from Google Secret Manager through External Secrets.
+# mongoUri usually reuses the MongoDB app connection string.
+# clickhouseUrl usually points at the ClickHouse HTTP endpoint.
+# clickhousePassword reuses the existing Countly ClickHouse password secret.
+# redisUrl should point at the bundled Redis service or your external Redis URL.
+secrets:
+  mode: externalSecret
+  externalSecret:
+    refreshInterval: "1h"
+    secretStoreRef:
+      name: gcp-secrets
+      kind: ClusterSecretStore
+    remoteRefs:
+      mongoUri: "${customer}-mongodb-connection-string"
+      clickhouseUrl: "${customer}-migration-clickhouse-url"
+      clickhousePassword: "${customer}-clickhouse-password"
+      redisUrl: "${customer}-migration-redis-url"
 EOF
 else
   cat > "${env_dir}/countly.yaml" <<'EOF'
@@ -331,6 +404,18 @@ users:
     enabled: true
     password: ""                 # REQUIRED: metrics exporter password
 EOF
+
+  cat > "${env_dir}/credentials-migration.yaml" <<'EOF'
+# Migration secrets — FILL IN when migration is enabled
+secrets:
+  mode: values
+
+backingServices:
+  mongodb:
+    password: ""                 # REQUIRED when migration uses bundled MongoDB
+  clickhouse:
+    password: ""                 # REQUIRED when migration uses bundled ClickHouse
+EOF
 fi
 
 cat > "${customer_file}" <<EOF
@@ -350,7 +435,6 @@ tls: letsencrypt
 observability: full
 kafkaConnect: balanced
 kafkaConnectSizing: auto
-migration: disabled
 nginxIngress:
   service:
     loadBalancerIP: ""              # Optional: reserve a static GCP IP and set it here for the nginx LoadBalancer
@@ -367,6 +451,9 @@ Important:
     * argocd/customers/${customer}.yaml
     * environments/${customer}/global.yaml
     * environments/${customer}/credentials-*.yaml
+  - Migration stays disabled until you create:
+    * argocd/customers/migration/${customer}.yaml
+    * start from argocd/customers/reference/migration.yaml
   - Set server to the actual cluster endpoint Argo knows, not an arbitrary IP.
   - The generated credentials files are already shaped for secret mode: ${secret_mode}
 
@@ -374,6 +461,7 @@ Next:
   1. Fill in or confirm environments/${customer}/credentials-*.yaml
   2. Set argocd/customers/${customer}.yaml cluster metadata
   3. Review environments/${customer}/*.yaml for customer-specific overrides
-  4. If using GCP Secret Manager, create secrets using the ${customer}-<component>-<secret> convention
-  5. Commit and sync countly-bootstrap
+  4. To enable migration later, copy argocd/customers/reference/migration.yaml to argocd/customers/migration/${customer}.yaml and replace it with customer, environment, project, and server from argocd/customers/${customer}.yaml
+  5. If using GCP Secret Manager, create secrets using the ${customer}-<component>-<secret> convention
+  6. Commit and sync countly-bootstrap
 EOF
