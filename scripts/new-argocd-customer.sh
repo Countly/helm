@@ -453,7 +453,7 @@ Important:
     * environments/${customer}/credentials-*.yaml
   - Migration stays disabled until you create:
     * argocd/customers/migration/${customer}.yaml
-    * start from argocd/customers/reference/migration.yaml
+    * start from argocd/reference/migration-customer.yaml
   - Set server to the actual cluster endpoint Argo knows, not an arbitrary IP.
   - The generated credentials files are already shaped for secret mode: ${secret_mode}
 
@@ -461,7 +461,7 @@ Next:
   1. Fill in or confirm environments/${customer}/credentials-*.yaml
   2. Set argocd/customers/${customer}.yaml cluster metadata
   3. Review environments/${customer}/*.yaml for customer-specific overrides
-  4. To enable migration later, copy argocd/customers/reference/migration.yaml to argocd/customers/migration/${customer}.yaml and replace it with customer, environment, project, and server from argocd/customers/${customer}.yaml
+  4. To enable migration later, copy argocd/reference/migration-customer.yaml to argocd/customers/migration/${customer}.yaml and replace it with customer, environment, project, and server from argocd/customers/${customer}.yaml
   5. If using GCP Secret Manager, create secrets using the ${customer}-<component>-<secret> convention
   6. Commit and sync countly-bootstrap
 EOF
