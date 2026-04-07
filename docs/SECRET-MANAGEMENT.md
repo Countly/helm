@@ -59,9 +59,9 @@ secrets:
         encryptionReportsKey: "acme-countly-encryption-reports-key"
         webSessionSecret: "acme-countly-web-session-secret"
         passwordSecret: "acme-countly-password-secret"
-        # Optional override. By default hosted deployments can use:
-        # mailConfigAuthUser: "countly-ssl-smtp-user"
-        # mailConfigAuthPass: "countly-ssl-smtp-pass"
+        # Optional SMTP auth refs:
+        # mailConfigAuthUser: "my-smtp-auth-user-secret"
+        # mailConfigAuthPass: "my-smtp-auth-pass-secret"
       clickhouse:
         password: "acme-countly-clickhouse-password"
       mongodb:
