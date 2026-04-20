@@ -554,7 +554,7 @@ secrets:
 # -- Network policy restricting ingress to Countly pods
 networkPolicy:
   # -- Enable the NetworkPolicy
-  enabled: false
+  enabled: true
   # -- Namespace label selector for ingress controller traffic
   ingressNamespaceSelector:
     kubernetes.io/metadata.name: ingress-nginx
@@ -568,6 +568,7 @@ ingress:
   # -- Deploy the Ingress resource
   enabled: true
   # -- Ingress class name (e.g. nginx, traefik)
+  # For OpenShift with built-in router, set to "" and use Route instead, or keep nginx if Nginx Ingress Controller is installed
   className: nginx
   # -- Ingress annotations (F5 NGINX Ingress Controller defaults shown)
   annotations:

@@ -5,6 +5,9 @@ metadata:
   name: {{ .Release.Namespace }}
   labels:
     {{- include "countly.labels" . | nindent 4 }}
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
   {{- if ((.Values.argocd).enabled) }}
   annotations:
     {{- include "countly.syncWave" (dict "wave" "0" "root" .) | nindent 4 }}
